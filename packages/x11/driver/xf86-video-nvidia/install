@@ -22,8 +22,6 @@
 
 . config/options $1
 
-$SCRIPTS/build busybox-hosttools
-
 VER=`ls $BUILD/linux*/modules/lib/modules`
 
 mkdir -p $INSTALL/$XORG_PATH_MODULES/drivers
@@ -46,17 +44,13 @@ mkdir -p $INSTALL/usr/lib
 mkdir -p $INSTALL/lib/modules/$VER/nvidia
   cp $PKG_BUILD/kernel/nvidia.ko $INSTALL/lib/modules/$VER/nvidia
 
-$ROOT/$TOOLCHAIN/sbin/depmod -b $INSTALL $VER > /dev/null
-for i in `ls $INSTALL/lib/modules/*/modules.* | grep -v modules.dep | grep -v modules.alias | grep -v modules.symbols`; do
-  rm -f $i
-done
-
 mkdir -p $INSTALL/usr/bin
   cp $PKG_BUILD/nvidia-smi $INSTALL/usr/bin
 
 if [ "$VDPAU" = yes ]; then
   $SCRIPTS/install libvdpau
 
-  cp $PKG_BUILD/libvdpau_nvidia.so* $INSTALL/usr/lib/libvdpau_nvidia.so.1
-  ln -sf libvdpau_nvidia.so.1 $INSTALL/usr/lib/libvdpau_nvidia.so
+  mkdir -p $INSTALL/usr/lib/vdpau
+  cp $PKG_BUILD/libvdpau_nvidia.so* $INSTALL/usr/lib/vdpau/libvdpau_nvidia.so.1
+  ln -sf libvdpau_nvidia.so.1 $INSTALL/usr/lib/vdpau/libvdpau_nvidia.so
 fi
