@@ -32,9 +32,12 @@ add_group tape 33
 add_group tty 5
 add_group video 39
 
+mkdir -p $INSTALL/etc/udev
+  cp $PKG_BUILD/udev.conf $INSTALL/etc/udev
+  ln -sf /dev/rules.d $INSTALL/etc/udev/rules.d
+
 mkdir -p $INSTALL/usr/bin
   cp $PKG_BUILD/$1/udevadm $INSTALL/usr/bin
-  cp $PKG_BUILD/$1/udevd $INSTALL/usr/bin
 
 mkdir -p $INSTALL/usr/lib
   cp -PR $PKG_BUILD/libudev/.libs/libudev.so* $INSTALL/usr/lib
@@ -42,6 +45,7 @@ mkdir -p $INSTALL/usr/lib
   rm -rf $INSTALL/usr/lib/libgudev*.*T
 
 mkdir -p $INSTALL/usr/lib/udev
+  cp $PKG_BUILD/$1/udevd $INSTALL/usr/lib/udev
   for i in accelerometer ata_id cdrom_id collect firmware mtd_probe scsi_id usb-db v4l_id; do
     cp $PKG_BUILD/extras/$i/$i $INSTALL/usr/lib/udev
   done
@@ -66,6 +70,14 @@ mkdir -p $INSTALL/usr/lib/udev/rules.d
 
 mkdir -p $INSTALL/usr/lib/udev/devices
 
-mkdir -p $INSTALL/etc/udev
-  cp $PKG_BUILD/udev.conf $INSTALL/etc/udev
-  ln -sf /dev/rules.d $INSTALL/etc/udev/rules.d
+mkdir -p $INSTALL/usr/lib/systemd/system
+  cp $PKG_BUILD/init/*.socket $INSTALL/usr/lib/systemd/system
+  cp $PKG_BUILD/init/*.service $INSTALL/usr/lib/systemd/system
+
+mkdir -p $INSTALL/usr/lib/systemd/system/basic.target.wants
+  ln -sf ../udev-trigger.service $INSTALL/usr/lib/systemd/system/basic.target.wants/udev-trigger.service
+  ln -sf ../udev.service $INSTALL/usr/lib/systemd/system/basic.target.wants/udev.service
+
+mkdir -p $INSTALL/usr/lib/systemd/system/sockets.target.wants
+  ln -sf ../udev-control.socket $INSTALL/usr/lib/systemd/system/sockets.target.wants/udev-control.socket
+  ln -sf ../udev-kernel.socket $INSTALL/usr/lib/systemd/system/sockets.target.wants/udev-kernel.socket
