@@ -70,6 +70,14 @@ mkdir -p $INSTALL/usr/lib
   cp -P $PKG_BUILD/avahi-client/.libs/*.so*[.0-9] $INSTALL/usr/lib/
   cp -P $PKG_BUILD/avahi-compat-libdns_sd/.libs/*.so*[.0-9] $INSTALL/usr/lib/
 
+mkdir -p $INSTALL/usr/lib/systemd/system
+  cp $PKG_BUILD/avahi-daemon/avahi-daemon.service $INSTALL/usr/lib/systemd/system
+  cp $PKG_BUILD/avahi-daemon/avahi-daemon.socket $INSTALL/usr/lib/systemd/system
+  cp $PKG_BUILD/avahi-dnsconfd/avahi-dnsconfd.service $INSTALL/usr/lib/systemd/system
+  enable_service avahi-daemon.service
+  enable_service avahi-daemon.socket
+  enable_service avahi-dnsconfd.service
+
 mkdir -p $PYTHON_LIB_DIR/site-packages/avahi
   cp -P $PKG_BUILD/avahi-python/avahi/*.py $PYTHON_LIB_DIR/site-packages/avahi
 
