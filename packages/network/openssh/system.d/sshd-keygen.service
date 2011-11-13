@@ -1,0 +1,12 @@
+[Unit]
+Description=SSH server keys generation.
+After=syslog.target
+Before=sshd.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/openssh/sshd-keygen
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
