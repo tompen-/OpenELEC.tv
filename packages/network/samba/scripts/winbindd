@@ -1,3 +1,5 @@
+#!/bin/sh
+
 ################################################################################
 #      Copyright (C) 2009-2010 OpenELEC.tv
 #      http://www.openelec.tv
@@ -18,33 +20,14 @@
 #  http://www.gnu.org/copyleft/gpl.html
 ################################################################################
 
-# start Samba Server
-#
-# runlevels: openelec, textmode
+  SMB_USERCONF="/storage/.config/samba.conf"
+  SMB_DEFCONF="/etc/samba/smb.conf"
 
-(
-  if [ -f /var/config/settings.conf ]; then
-    . /var/config/settings.conf
-
-    if [ "$SAMBA_START" = "true" ]; then
-
-    # sleep 2 sec to be ensure network is started
-      usleep 2000000
-
-      progress  "Starting Samba server"
-
-      SMB_USERCONF="/storage/.config/samba.conf"
-      SMB_DEFCONF="/etc/samba/smb.conf"
-
-      if [ -f $SMB_USERCONF ]; then
-        SMB_ARG="--configfile=$SMB_USERCONF"
-      else
-        SMB_ARG="--configfile=$SMB_DEFCONF"
-      fi
-
-      mkdir -p /var/log/samba
-      smbd --daemon $SMB_ARG > /dev/null 2>&1
-      nmbd --daemon $SMB_ARG > /dev/null 2>&1
-    fi
+  if [ -f $SMB_USERCONF ]; then
+    SMB_ARG="--configfile=$SMB_USERCONF"
+  else
+    SMB_ARG="--configfile=$SMB_DEFCONF"
   fi
-)&
+
+# mkdir -p /var/log/samba
+  winbindd $SMB_ARG

@@ -1,0 +1,11 @@
+[Unit]
+Description=Samba NMB Daemon
+After=syslog.target network.target
+
+[Service]
+Type=forking
+PIDFile=/var/run/nmbd.pid
+ExecStart=/usr/lib/samba/nmbd
+
+[Install]
+WantedBy=multi-user.target
