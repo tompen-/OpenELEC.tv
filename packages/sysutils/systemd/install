@@ -27,12 +27,12 @@ add_group utmp 22
 mkdir -p $INSTALL/bin
   cp $PKG_BUILD/.libs/systemctl $INSTALL/bin
   cp $PKG_BUILD/systemd $INSTALL/bin
-#  cp $PKG_BUILD/systemd-ask-password $INSTALL/bin
+  cp $PKG_BUILD/systemd-ask-password $INSTALL/bin
   cp $PKG_BUILD/systemd-loginctl $INSTALL/bin
   cp $PKG_BUILD/systemd-machine-id-setup $INSTALL/bin
   cp $PKG_BUILD/.libs/systemd-notify $INSTALL/bin
   cp $PKG_BUILD/systemd-tmpfiles $INSTALL/bin
-#  cp $PKG_BUILD/systemd-tty-ask-password-agent $INSTALL/bin
+  cp $PKG_BUILD/systemd-tty-ask-password-agent $INSTALL/bin
 
 mkdir -p $INSTALL/sbin
   ln -sf /bin/systemd $INSTALL/sbin/init
@@ -164,10 +164,10 @@ mkdir -p $INSTALL/lib/systemd/system
   cp $PKG_BUILD/units/sysinit.target $INSTALL/lib/systemd/system
   cp $PKG_BUILD/units/syslog.socket $INSTALL/lib/systemd/system
   cp $PKG_BUILD/units/syslog.target $INSTALL/lib/systemd/system
-#  cp $PKG_BUILD/units/systemd-ask-password-console.path $INSTALL/lib/systemd/system
-#  cp $PKG_BUILD/units/systemd-ask-password-console.service $INSTALL/lib/systemd/system
-#  cp $PKG_BUILD/units/systemd-ask-password-wall.path $INSTALL/lib/systemd/system
-#  cp $PKG_BUILD/units/systemd-ask-password-wall.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-ask-password-console.path $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-ask-password-console.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-ask-password-wall.path $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-ask-password-wall.service $INSTALL/lib/systemd/system
   cp $PKG_BUILD/units/systemd-binfmt.service $INSTALL/lib/systemd/system
   cp $PKG_BUILD/units/systemd-hostnamed.service $INSTALL/lib/systemd/system
   cp $PKG_BUILD/units/systemd-initctl.service $INSTALL/lib/systemd/system
@@ -226,7 +226,7 @@ mkdir -p $INSTALL/lib/systemd/system
   enable_service var-run.mount local-fs.target
 
   enable_service getty.target multi-user.target
-#  enable_service systemd-ask-password-wall.path multi-user.target
+  enable_service systemd-ask-password-wall.path multi-user.target
   enable_service systemd-logind.service multi-user.target
   enable_service systemd-user-sessions.service multi-user.target
 
@@ -252,7 +252,7 @@ mkdir -p $INSTALL/lib/systemd/system
   enable_service sys-kernel-config.mount sysinit.target
   enable_service sys-kernel-debug.mount sysinit.target
   enable_service sys-kernel-security.mount sysinit.target
-#  enable_service systemd-ask-password-console.path sysinit.target
+  enable_service systemd-ask-password-console.path sysinit.target
   enable_service systemd-binfmt.service sysinit.target
   enable_service systemd-kmsg-syslogd.service sysinit.target
   enable_service systemd-modules-load.service sysinit.target
