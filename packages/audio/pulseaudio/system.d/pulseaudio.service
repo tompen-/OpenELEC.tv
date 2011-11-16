@@ -1,0 +1,11 @@
+[Unit]
+Description=Pulseaudio Sound Server
+After=sound.target
+Before=default.target
+
+[Service]
+ExecStart=/usr/bin/pulseaudio --system --log-target=file:/var/log/pulseaudio.log --log-level=debug
+Restart=always
+
+[Install]
+WantedBy=sound.target
