@@ -51,15 +51,9 @@ mkdir -p $INSTALL/etc/dbus-1/session.d
 mkdir -p $INSTALL/usr/share/dbus-1/services
 mkdir -p $INSTALL/usr/share/dbus-1/system-services
 
-mkdir -p $INSTALL/usr/lib/systemd/system
-  cp $PKG_BUILD/.build-target/bus/dbus.service $INSTALL/usr/lib/systemd/system
-  cp $PKG_BUILD/.build-target/bus/dbus.socket $INSTALL/usr/lib/systemd/system
-
-mkdir -p $INSTALL/usr/lib/systemd/system/dbus.target.wants
-  ln -sf ../dbus.socket $INSTALL/usr/lib/systemd/system/dbus.target.wants/dbus.socket
-
-mkdir -p $INSTALL/usr/lib/systemd/system/multi-user.target.wants
-  ln -sf ../dbus.service $INSTALL/usr/lib/systemd/system/multi-user.target.wants/dbus.service
-
-mkdir -p $INSTALL/usr/lib/systemd/system/sockets.target.wants
-  ln -sf ../dbus.socket $INSTALL/usr/lib/systemd/system/sockets.target.wants/dbus.socket
+mkdir -p $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/.build-target/bus/dbus.service $INSTALL/lib/systemd/system
+    enable_service dbus.service multi-user.target
+  cp $PKG_BUILD/.build-target/bus/dbus.socket $INSTALL/lib/systemd/system
+    enable_service dbus.socket dbus.target
+    enable_service dbus.socket sockets.target
