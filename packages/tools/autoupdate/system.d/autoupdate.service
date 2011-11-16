@@ -1,0 +1,15 @@
+[Unit]
+Description=Automatic Update Manager
+DefaultDependencies=no
+ConditionFileIsExecutable=/usr/bin/autoupdate
+Conflicts=shutdown.target
+After=default.target
+Before=shutdown.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/autoupdate
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target

@@ -24,8 +24,8 @@ TMP_DIR="$HOME/.xbmc/temp"
 
 if [ -f /etc/update.conf ]; then
   . /etc/update.conf
-elif [ -f /var/config/settings.conf ]; then
-  . /var/config/settings.conf
+elif [ -f /run/config/settings.conf ]; then
+  . /run/config/settings.conf
   AUTOUPDATE="$UPDATE_AUTO"
 else
   exit 0
