@@ -70,14 +70,9 @@ mkdir -p $INSTALL/usr/lib/udev/rules.d
 
 mkdir -p $INSTALL/usr/lib/udev/devices
 
-mkdir -p $INSTALL/usr/lib/systemd/system
-  cp $PKG_BUILD/init/*.socket $INSTALL/usr/lib/systemd/system
-  cp $PKG_BUILD/init/*.service $INSTALL/usr/lib/systemd/system
-
-mkdir -p $INSTALL/usr/lib/systemd/system/basic.target.wants
-  ln -sf ../udev-trigger.service $INSTALL/usr/lib/systemd/system/basic.target.wants/udev-trigger.service
-  ln -sf ../udev.service $INSTALL/usr/lib/systemd/system/basic.target.wants/udev.service
-
-mkdir -p $INSTALL/usr/lib/systemd/system/sockets.target.wants
-  ln -sf ../udev-control.socket $INSTALL/usr/lib/systemd/system/sockets.target.wants/udev-control.socket
-  ln -sf ../udev-kernel.socket $INSTALL/usr/lib/systemd/system/sockets.target.wants/udev-kernel.socket
+mkdir -p $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/init/udev-control.socket $INSTALL/lib/systemd/system && enable_service udev-control.socket sockets.target
+  cp $PKG_BUILD/init/udev-kernel.socket $INSTALL/lib/systemd/system && enable_service udev-kernel.socket sockets.target
+  cp $PKG_BUILD/init/udev-settle.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/init/udev-trigger.service $INSTALL/lib/systemd/system && enable_service udev-trigger.service basic.target
+  cp $PKG_BUILD/init/udev.service $INSTALL/lib/systemd/system && enable_service udev.service basic.target
