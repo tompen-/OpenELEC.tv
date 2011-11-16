@@ -71,7 +71,7 @@ ac_cv_func_chroot=no \
             --with-avahi-group=avahi \
             --with-autoipd-user=avahiautoipd \
             --with-autoipd-group=avahiautoipd \
-            --with-systemdsystemunitdir=/usr/lib/systemd/system \
+            --with-systemdsystemunitdir=/lib/systemd/system \
 
 make V=1
 
