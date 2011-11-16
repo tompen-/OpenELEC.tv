@@ -16,4 +16,4 @@ Type=oneshot
 ExecStart=/usr/bin/cpupower frequency-set -g performance
 
 [Install]
-WantedBy=default.target
+WantedBy=local-fs.target

@@ -15,5 +15,4 @@ Before=shutdown.target
 
 [Service]
 Type=oneshot
-#ExecStart=/usr/bin/cpupower frequency-set -g ondemand
-ExecStart=/usr/bin/xbmc-send --host=127.0.0.1 -a Notification(CPUTimer:,läuft_auch,10000)
+ExecStart=/usr/bin/cpupower frequency-set -g ondemand
