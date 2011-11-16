@@ -1,0 +1,14 @@
+[Unit]
+Description=Setup System Settings.
+DefaultDependencies=no
+ConditionPathExists=/var/config
+After=local-fs.target systemd-tmpfiles-setup.service
+Before=sysinit.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/systemd/scripts/openelec-settings
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target

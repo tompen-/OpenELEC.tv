@@ -1,3 +1,5 @@
+#!/bin/sh
+
 ################################################################################
 #      This file is part of OpenELEC - http://www.openelec.tv
 #      Copyright (C) 2009-2011 Stephan Raue (stephan@openelec.tv)
@@ -19,16 +21,22 @@
 ################################################################################
 
 #
-# copy userconfig and samples
+# create system config
 #
-# runlevels: openelec, textmode
 
-progress "copy system config"
+HOME="/storage"
+XBMC_SETTINGS_FILE="/usr/share/xbmc/addons/os.openelec.settings/default_settings.xml"
+OPENELEC_SETTINGS_PATH="$HOME/.xbmc/userdata/addon_data/os.openelec.settings"
+OPENELEC_SETTINGS_FILE="settings.xml"
 
-if [ -f /usr/share/xbmc/addons/os.openelec.settings/default_settings.xml ]; then
-  if [ ! -f $HOME/.xbmc/userdata/addon_data/os.openelec.settings/settings.xml ]; then
-    mkdir -p $HOME/.xbmc/userdata/addon_data/os.openelec.settings
-    cp /usr/share/xbmc/addons/os.openelec.settings/default_settings.xml \
-       $HOME/.xbmc/userdata/addon_data/os.openelec.settings/settings.xml
+if [ -f $XBMC_SETTINGS_FILE ]; then
+  if [ ! -f $OPENELEC_SETTINGS_PATH/$OPENELEC_SETTINGS_FILE ]; then
+    mkdir -p $OPENELEC_SETTINGS_PATH
+    cp $XBMC_SETTINGS_FILE $OPENELEC_SETTINGS_PATH/$OPENELEC_SETTINGS_FILE
   fi
+fi
+
+if [ -f "$OPENELEC_SETTINGS_PATH/$OPENELEC_SETTINGS_FILE" ]; then
+  mkdir -p /run/config
+  cat "$OPENELEC_SETTINGS_PATH/$OPENELEC_SETTINGS_FILE" | awk -F\" '{print $2"=\""$4"\""}' | sed '/^=/d' > /run/config/settings.conf
 fi

@@ -25,3 +25,6 @@
 mkdir -p $INSTALL/usr/share/xbmc/addons/os.openelec.settings
   cp -R $PKG_DIR/source/* $INSTALL/usr/share/xbmc/addons/os.openelec.settings
   cp -R $PKG_DIR/config/* $INSTALL/usr/share/xbmc/addons/os.openelec.settings
+
+mkdir -p $INSTALL/usr/lib/systemd/scripts
+  cp $PKG_DIR/scripts/openelec-settings $INSTALL/usr/lib/systemd/scripts
