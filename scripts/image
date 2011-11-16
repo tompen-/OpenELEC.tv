@@ -57,17 +57,19 @@ IMAGE_NAME="$DISTRONAME-$TARGET_VERSION"
   mkdir -p $INSTALL/etc
   mkdir -p $INSTALL/lib
   mkdir -p $INSTALL/sbin
+  mkdir -p $INSTALL/tmp
   mkdir -p $INSTALL/dev
   mkdir -p $INSTALL/proc
   mkdir -p $INSTALL/run
+  mkdir -p $INSTALL/media
   mkdir -p $INSTALL/sys
   mkdir -p $INSTALL/usr
   mkdir -p $INSTALL/var
   mkdir -p $INSTALL/flash
   mkdir -p $INSTALL/storage
   ln -sf /var $INSTALL/usr/var
-  ln -sf /var/tmp $INSTALL/tmp
-  ln -sf /var/media $INSTALL/media
+#  ln -sf /var/tmp $INSTALL/tmp
+#  ln -sf /var/media $INSTALL/media
 
   if [ "$TARGET_ARCH" = "x86_64" -o "$TARGET_ARCH" = "powerpc64" ]; then
     ln -s /lib $INSTALL/lib64

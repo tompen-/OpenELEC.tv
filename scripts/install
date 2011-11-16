@@ -43,9 +43,45 @@ if [ -n "$PKG_ARCH" -a ! "$PKG_ARCH" = "any" ]; then
   echo "$PKG_ARCH" | grep -q "\-$TARGET_ARCH" && exit 0
 fi
 
+$SCRIPTS/build $@
+
+printf  "%${INDENT}c INSTALL  $1\n" >&$SILENT_OUT
+export INDENT=$((${INDENT:-1}+$INDENT_SIZE))
+
+for p in $PKG_DEPENDS; do
+  $SCRIPTS/install $p
+done
+
+if [ -f $PKG_DIR/install ]; then
+  $PKG_DIR/install $@ >&$VERBOSE_OUT
+fi
+
 if [ -d $PKG_DIR/init.d ]; then
   mkdir -p $INSTALL/etc/init.d
   cp $PKG_DIR/init.d/* $INSTALL/etc/init.d/
+fi
+
+if [ -d $PKG_DIR/system.d ]; then
+  mkdir -p $INSTALL/lib/systemd/system
+  for unit in $PKG_DIR/system.d/*; do
+    cp $unit $INSTALL/lib/systemd/system
+    enable_service `basename $unit`
+  done
+fi
+
+if [ -d $PKG_DIR/tmpfiles.d ]; then
+  mkdir -p $INSTALL/usr/lib/tmpfiles.d
+  cp $PKG_DIR/tmpfiles.d/*.conf $INSTALL/usr/lib/tmpfiles.d
+fi
+
+if [ -d $PKG_DIR/modules-load.d ]; then
+  mkdir -p $INSTALL/usr/lib/modules-load.d
+  cp $PKG_DIR/modules-load.d/*.conf $INSTALL/usr/lib/modules-load.d
+fi
+
+if [ -d $PKG_DIR/sysctl.d ]; then
+  mkdir -p $INSTALL/usr/lib/sysctl.d
+  cp $PKG_DIR/sysctl.d/*.conf $INSTALL/usr/lib/sysctl.d
 fi
 
 if [ -d $PKG_DIR/profile.d ]; then
@@ -61,19 +97,6 @@ fi
 if [ -d $PKG_DIR/init.network ]; then
   mkdir -p $INSTALL/etc/init.d/network
   cp $PKG_DIR/init.network/* $INSTALL/etc/init.d/network/
-fi
-
-$SCRIPTS/build $@
-
-printf  "%${INDENT}c INSTALL  $1\n" >&$SILENT_OUT
-export INDENT=$((${INDENT:-1}+$INDENT_SIZE))
-
-for p in $PKG_DEPENDS; do
-  $SCRIPTS/install $p
-done
-
-if [ -f $PKG_DIR/install ]; then
-  $PKG_DIR/install $@ >&$VERBOSE_OUT
 fi
 
 for i in `sed -n "s/^\([^#].*\)=\".*$/\1/p" $PROJECT_DIR/$PROJECT/options | grep -v "#"`; do
