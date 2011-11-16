@@ -36,13 +36,13 @@ if [ "$SAMBA_SERVER" = "yes" ]; then
     cp $PKG_DIR/scripts/nmbd $INSTALL/usr/lib/samba
     cp $PKG_DIR/scripts/winbindd $INSTALL/usr/lib/samba
 
-  mkdir -p $INSTALL/usr/lib/systemd/system
-    cp $PKG_DIR/config/smb.service $INSTALL/usr/lib/systemd/system
-    cp $PKG_DIR/config/nmb.service $INSTALL/usr/lib/systemd/system
-    cp $PKG_DIR/config/winbind.service $INSTALL/usr/lib/systemd/system
-    enable_service smb.service
-    enable_service nmb.service
-    enable_service winbind.service
+  mkdir -p $INSTALL/lib/systemd/system
+    cp $PKG_DIR/config/smb.service $INSTALL/lib/systemd/system
+      enable_service smb.service
+    cp $PKG_DIR/config/nmb.service $INSTALL/lib/systemd/system
+      enable_service nmb.service
+    cp $PKG_DIR/config/winbind.service $INSTALL/lib/systemd/system
+      enable_service winbind.service
 
   mkdir -p $INSTALL/etc/samba
     cp $PKG_DIR/config/smb.conf $INSTALL/etc/samba

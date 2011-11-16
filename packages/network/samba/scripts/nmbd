@@ -29,5 +29,4 @@
     SMB_ARG="--configfile=$SMB_DEFCONF"
   fi
 
-# mkdir -p /var/log/samba
   nmbd $SMB_ARG

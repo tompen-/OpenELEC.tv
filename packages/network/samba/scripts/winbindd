@@ -29,5 +29,4 @@
     SMB_ARG="--configfile=$SMB_DEFCONF"
   fi
 
-# mkdir -p /var/log/samba
   winbindd $SMB_ARG
