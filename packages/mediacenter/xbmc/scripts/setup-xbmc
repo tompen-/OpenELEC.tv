@@ -1,3 +1,5 @@
+#!/bin/sh
+
 ################################################################################
 #      Copyright (C) 2009-2010 OpenELEC.tv
 #      http://www.openelec.tv
@@ -20,30 +22,10 @@
 
 # setup XBMC
 #
-# runlevels: openelec
-
-progress "setup XBMC"
-
-#
-# clean temp dir
-#
-  rm -rf $HOME/.xbmc/temp/*
-
-#
-# add some default settings
-#
-  mkdir -p $HOME/.xbmc/userdata
 
 #
 # setup directories for XBMC sources
 #
-
-  [ ! -d "$HOME/music" ] && mkdir -p $HOME/music
-  [ ! -d "$HOME/pictures" ] && mkdir -p $HOME/pictures
-  [ ! -d "$HOME/tvshows" ] && mkdir -p $HOME/tvshows
-  [ ! -d "$HOME/videos" ] && mkdir -p $HOME/videos
-
-  mkdir -p $HOME/.xbmc/userdata
 
   if [ ! -f $HOME/.xbmc/userdata/sources.xml ] ; then
     cat > $HOME/.xbmc/userdata/sources.xml << EOF
@@ -80,10 +62,6 @@ EOF
 #
 # common setup guisettings
 #
-
-  mkdir -p $HOME/.xbmc/userdata
-
-  [ ! -d "$HOME/screenshots" ] && mkdir -p $HOME/screenshots
 
   if [ ! -f $HOME/.xbmc/userdata/guisettings.xml ] ; then
     echo "<settings>" > $HOME/.xbmc/userdata/guisettings.xml

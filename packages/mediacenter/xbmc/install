@@ -29,6 +29,10 @@ mkdir -p $INSTALL/usr/bin
   cp $PKG_DIR/scripts/gputemp $INSTALL/usr/bin
   cp $PKG_BUILD/tools/EventClients/Clients/XBMC\ Send/xbmc-send.py $INSTALL/usr/bin/xbmc-send
 
+mkdir -p $INSTALL/usr/lib/systemd/scripts
+  cp $PKG_DIR/scripts/setup-xbmc $INSTALL/usr/lib/systemd/scripts
+  cp $PKG_DIR/scripts/xbmc-userfonts $INSTALL/usr/lib/systemd/scripts
+
 mkdir -p $INSTALL/usr/lib/xbmc
   cp $PKG_BUILD/xbmc.bin $INSTALL/usr/lib/xbmc
   cp $PKG_BUILD/xbmc-xrandr $INSTALL/usr/lib/xbmc

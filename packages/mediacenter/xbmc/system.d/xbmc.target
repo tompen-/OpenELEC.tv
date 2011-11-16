@@ -1,0 +1,6 @@
+[Unit]
+Description=XBMC Media Center
+Conflicts=rescue.service rescue.target
+Requires=graphical.target
+After=graphical.target
+AllowIsolate=yes

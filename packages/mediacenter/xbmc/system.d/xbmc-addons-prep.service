@@ -1,0 +1,12 @@
+[Unit]
+Description=Preparing XBMC Addons
+DefaultDependencies=no
+Before=xbmc.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'chmod +x /storage/.xbmc/addons/*/bin/*'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=xbmc.target
