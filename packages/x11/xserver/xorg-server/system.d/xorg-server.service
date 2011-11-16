@@ -1,0 +1,11 @@
+[Unit]
+Description=Xorg Server
+#After=syslog.target udev-settle.service dbus-service systemconfig.service
+Requisite=graphical.target
+Before=graphical.target
+
+[Service]
+Environment=DISPLAY=:0.0
+EnvironmentFile=/run/config/settings.conf
+ExecStart=/usr/bin/Xorg vt01 $X11_ARGS
+Restart=always

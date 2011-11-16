@@ -22,34 +22,14 @@
 
 . /etc/profile
 
-if [ "$RUNLEVEL" = openelec ]; then
+XORG_CONF_USER="/storage/.config/xorg.conf"
+XORG_CONF_USER_DRV="/storage/.config/xorg-${xorg_driver}.conf"
+XORG_CONF_DEFAULT="/etc/X11/xorg.conf"
+XORG_CONF_DEFAULT_DRV="/etc/X11/xorg-${xorg_driver}.conf"
 
-  logger -t Xorg "### starting Xorg with driver ${xorg_driver} ###"
+XORG_ARGS="-s 0 -noreset -allowMouseOpenFail -nocursor -nolisten tcp"
 
-  ##############################################################################
-  # setup xorg.conf paths
-  ##############################################################################
-
-  logger -t Xorg "### setup xorg.conf paths ###"
-
-  XORG_CONF_USER="/storage/.config/xorg.conf"
-  XORG_CONF_USER_DRV="/storage/.config/xorg-${xorg_driver}.conf"
-  XORG_CONF_DEFAULT="/etc/X11/xorg.conf"
-  XORG_CONF_DEFAULT_DRV="/etc/X11/xorg-${xorg_driver}.conf"
-
-  ##############################################################################
-  # creating start options
-  ##############################################################################
-
-  logger -t Xorg "### creating start options ###"
-
-  XORG_ARGS="-s 0 -noreset -allowMouseOpenFail -nocursor -nolisten tcp"
-
-  if [ "$DEBUG" = yes ]; then
-    XORG_ARGS="$XORG_ARGS -logverbose 6 -verbose 6"
-  fi
-
-  # load user defined xorg.conf, if exist
+# load user defined xorg.conf, if exist
   if [ -f "$XORG_CONF_USER" ]; then
     XORG_ARGS="$XORG_ARGS -config $XORG_CONF_USER"
   elif [ -f "$XORG_CONF_USER_DRV" ]; then
@@ -60,16 +40,10 @@ if [ "$RUNLEVEL" = openelec ]; then
     XORG_ARGS="$XORG_ARGS -config $XORG_CONF_DEFAULT_DRV"
   fi
 
-  ##############################################################################
-  # creating needed directories and symlinks
-  ##############################################################################
-
-  logger -t Xorg "### creating needed directories and symlinks ###"
-
-  mkdir -p /var/cache/xkb
-  mkdir -p /var/lib
-  mkdir -m 1777 -p /tmp/.ICE-unix
-  chown root:root /tmp/.ICE-unix
+#  mkdir -p /var/cache/xkb
+#  mkdir -p /var/lib
+#  mkdir -m 1777 -p /tmp/.ICE-unix
+#  chown root:root /tmp/.ICE-unix
 
   if [ "${xorg_driver}" = "nvidia" ]; then
     ln -sf /usr/lib/libGL_nvidia.so.1 /var/lib/libGL.so
@@ -83,14 +57,5 @@ if [ "$RUNLEVEL" = openelec ]; then
     ln -sf /usr/lib/xorg/modules/extensions/libglx_mesa.so /var/lib/libglx.so
   fi
 
-  ##############################################################################
-  # starting Xorg
-  ##############################################################################
-
-  logger -t Xorg "### starting Xorg with '$DISPLAY vt01 $XORG_ARGS' ###"
-
-  Xorg $DISPLAY vt01 $XORG_ARGS > /dev/null 2>&1 &
-
-fi
-
-exit 0
+#  Xorg $DISPLAY vt01 $XORG_ARGS > /dev/null 2>&1 &
+echo "X11_ARGS=\"$XORG_ARGS\"" >> /run/config/settings.conf
