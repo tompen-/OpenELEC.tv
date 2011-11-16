@@ -46,6 +46,9 @@ NFS_OVERLAY="192.168.1.1:/var/lib/overlay"
       debugging)
         DEBUG=yes
         ;;
+      textmode)
+        INIT_ARGS="$INIT_ARGS --unit=textmode.target"
+        ;;
       nosplash)
         SPLASH=no
         ;;
@@ -251,7 +254,7 @@ NFS_OVERLAY="192.168.1.1:/var/lib/overlay"
   /bin/busybox mount --move /sys /sysroot/sys
 
 # switch to new sysroot and start real init
-  exec /bin/busybox switch_root /sysroot /sbin/init
+  exec /bin/busybox switch_root /sysroot /sbin/init $INIT_ARGS
 
   error "INIT_3" "Error in initramfs. Could not switch to new root"
   debug_shell
