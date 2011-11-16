@@ -1,8 +1,8 @@
-#!/bin/sh 
+#!/bin/sh
+
 ################################################################################
 #      This file is part of OpenELEC - http://www.openelec.tv
 #      Copyright (C) 2009-2011 Stephan Raue (stephan@openelec.tv)
-#      Copyright (C) 2010-2011 Roman Weber (roman@openelec.tv)
 #
 #  This Program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -19,32 +19,23 @@
 #  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #  http://www.gnu.org/copyleft/gpl.html
 ################################################################################
+# Attempts to generate a unique system ID based on one local MAC address
+# MachineID SHOULD be the same between upgrades/reinstalls
+# MAC is hashed so that it cant be reversed making it anonymous
+# Used to help with global usage statistics also needed for dbus/systemd
+# (see http://0pointer.de/public/systemd-man/machine-id.html)
+################################################################################
 
-. config/options $1
+MACHINEID="00000000000000000000000000000000"
 
-# systemd fails to build with LTO support
-  strip_lto
+if [ -e "/sys/class/net/eth0/address" ]; then
+  MAC_ADRESS=`cat /sys/class/net/eth0/address`
+elif [ -e "/sys/class/net/wlan0/address" ]; then
+  MAC_ADRESS=`cat /sys/class/net/wlan0/address`
+fi
 
-cd $PKG_BUILD
-./configure --host=$TARGET_NAME \
-            --build=$HOST_NAME \
-            --prefix=/usr \
-            --sysconfdir=/etc \
-            --libexecdir=/usr/lib/systemd \
-            --localstatedir=/var \
-            --disable-static \
-            --enable-shared \
-            --disable-selinux \
-            --disable-pam \
-            --disable-gtk \
-            --with-distro=other \
-            --with-sysvinit-path="" \
-            --with-sysvrcd-path="" \
-            --with-rootdir="" \
+if [ -n "$MAC_ADRESS" ]; then
+  MACHINEID=`echo $MAC_ADRESS | md5sum | cut -f1 -d" "`
+fi
 
-make
-
-make DESTDIR=`pwd`/.install install
-
-mkdir -p $SYSROOT_PREFIX/usr/lib/pkgconfig
-  cp systemd.pc $SYSROOT_PREFIX/usr/lib/pkgconfig
+echo $MACHINEID > /dev/machine-id

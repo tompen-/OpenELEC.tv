@@ -1,0 +1,12 @@
+[Unit]
+Description=Machine ID generation.
+After=tmp.mount udev-trigger.service
+Before=dbus.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/systemd/scripts/machine-id
+RemainAfterExit=yes
+
+#[Install]
+#WantedBy=multi-user.target

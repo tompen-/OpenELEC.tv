@@ -20,48 +20,306 @@
 #  http://www.gnu.org/copyleft/gpl.html
 ################################################################################
 
-
 . config/options $1
-cd $PKG_BUILD
-make DESTDIR=$ROOT/$BUILD/image/system install
-#mkdir -p $INSTALL/usr/bin
-#mkdir -p $INSTALL/lib/systemd
-# cp $PKG_BUILD/systemd-cgls $INSTALL/usr/bin
-# cp $PKG_BUILD/systemd-cgroups-agent $INSTALL/lib/systemd
-# cp $PKG_BUILD/systemd-logger $INSTALL/lib/systemd
-# cp $PKG_BUILD/systemd-shutdownd $INSTALL/lib/systemd
-# cp $PKG_BUILD/systemd-shutdown $INSTALL/lib/systemd
-# cp $PKG_BUILD/systemd-modules-load $INSTALL/lib/systemd
-# cp $PKG_BUILD/systemd-kmsg-syslogd $INSTALL/lib/systemd
-# cp $PKG_BUILD/systemd-tmpfiles $INSTALL/lib/systemd
 
-#mkdir -p $INSTALL/usr/share/dbus-1/interfaces
-# cp $PKG_BUILD/org.freedesktop.systemd1.*.xml $INSTALL/usr/share/dbus-1/interfaces
+add_group utmp 22
 
-#mkdir -p $INSTALL/etc/dbus-1/system.d
-# cp $PKG_BUILD/src/org.freedesktop.systemd1.conf $INSTALL/etc/dbus-1/system.d
+mkdir -p $INSTALL/bin
+  cp $PKG_BUILD/.libs/systemctl $INSTALL/bin
+  cp $PKG_BUILD/systemd $INSTALL/bin
+#  cp $PKG_BUILD/systemd-ask-password $INSTALL/bin
+  cp $PKG_BUILD/systemd-loginctl $INSTALL/bin
+  cp $PKG_BUILD/systemd-machine-id-setup $INSTALL/bin
+  cp $PKG_BUILD/.libs/systemd-notify $INSTALL/bin
+  cp $PKG_BUILD/systemd-tmpfiles $INSTALL/bin
+#  cp $PKG_BUILD/systemd-tty-ask-password-agent $INSTALL/bin
 
-#mkdir -p $INSTALL/usr/share/dbus-1/system-services
-# cp $PKG_BUILD/src/org.freedesktop.systemd1.service $INSTALL/usr/share/dbus-1/system-services
-# cp $PKG_BUILD/src/org.freedesktop.systemd1.service $INSTALL/usr/share/dbus-1/services/org.freedesktop.systemd1.service
+mkdir -p $INSTALL/sbin
+  ln -sf /bin/systemd $INSTALL/sbin/init
+  ln -sf /bin/systemctl $INSTALL/sbin/reboot
+  ln -sf /bin/systemctl $INSTALL/sbin/shutdown
+  ln -sf /bin/systemctl $INSTALL/sbin/halt
+  ln -sf /bin/systemctl $INSTALL/sbin/poweroff
 
-#mkdir -p $INSTALL/etc/systemd
-# cp $PKG_DIR/config/system.conf $INSTALL/etc/systemd
+mkdir -p $INSTALL/etc
+  ln -sf /dev/machine-id $INSTALL/etc/machine-id
 
-#mkdir -p $INSTALL/usr/share/polkit-1/actions
-# cp $PKG_BUILD/src/org.freedesktop.systemd1.policy $INSTALL/usr/share/polkit-1/actions
+# not needed:
+# mkdir -p $INSTALL/etc/bash_completion.d
+#   cp $PKG_BUILD/src/systemctl-bash-ompletion.sh $INSTALL/etc/bash_completion.d
+#
+# mkdir -p $INSTALL/etc/binfmt.d
+# mkdir -p $INSTALL/etc/modules-load.d
+# mkdir -p $INSTALL/etc/sysctl.d
+# mkdir -p $INSTALL/etc/tmpfiles.d
 
-#mkdir -p $INSTALL/lib/udev/rules.d
-# cp $PKG_BUILD/src/99-systemd.rules $INSTALL/lib/udev/rules.d
+mkdir -p $INSTALL/etc/dbus-1/system.d
+  cp $PKG_BUILD/src/org.freedesktop.hostname1.conf $INSTALL/etc/dbus-1/system.d
+  cp $PKG_BUILD/src/org.freedesktop.locale1.conf $INSTALL/etc/dbus-1/system.d
+  cp $PKG_BUILD/src/org.freedesktop.login1.conf $INSTALL/etc/dbus-1/system.d
+  cp $PKG_BUILD/src/org.freedesktop.systemd1.conf $INSTALL/etc/dbus-1/system.d
+  cp $PKG_BUILD/src/org.freedesktop.timedate1.conf $INSTALL/etc/dbus-1/system.d
 
-#mkdir -p $INSTALL/etc/systemd
-# ln -s /var/etc/systemd/system $INSTALL/etc/systemd/system
+mkdir -p $INSTALL/etc/systemd
+  cp $PKG_BUILD/src/system.conf $INSTALL/etc/systemd
+  cp $PKG_BUILD/src/systemd-logind.conf $INSTALL/etc/systemd
+    sed -e "s,^#NAutoVTs=6,NAutoVTs=2," -i $INSTALL/etc/systemd/systemd-logind.conf
+  cp $PKG_BUILD/src/user.conf $INSTALL/etc/systemd
 
-#mkdir -p $INSTALL/bin
-# cp $PKG_BUILD/systemctl $INSTALL/bin
-# ln -s /bin/systemctl $INSTALL/sbin/reboot 
-# ln -s /bin/systemctl $INSTALL/sbin/halt
-# ln -s /bin/systemctl $INSTALL/sbin/poweroff
-# cp $PKG_BUILD/systemd $INSTALL/bin
-# cp $PKG_BUILD/systemd-notify $INSTALL/bin
+mkdir -p $INSTALL/etc/systemd/system/getty.target.wants
+  ln -sf /lib/systemd/system/getty@.service $INSTALL/etc/systemd/system/getty.target.wants/getty@tty1.service
+mkdir -p $INSTALL/etc/systemd/system/local-fs.target.wants
+mkdir -p $INSTALL/etc/systemd/system/multi-user.target.wants
+  ln -sf /lib/systemd/system/remote-fs.target $INSTALL/etc/systemd/system/multi-user.target.wants/remote-fs.target
+mkdir -p $INSTALL/etc/systemd/system/sysinit.target.wants
+mkdir -p $INSTALL/etc/systemd/user
+mkdir -p $INSTALL/etc/xdg/systemd
+  ln -sf /etc/systemd/user $INSTALL/etc/xdg/systemd/user
 
+# mkdir -p $INSTALL/lib/security
+
+mkdir -p $INSTALL/lib/systemd
+  cp $PKG_BUILD/systemd-ac-power $INSTALL/lib/systemd
+  cp $PKG_BUILD/systemd-binfmt $INSTALL/lib/systemd
+  cp $PKG_BUILD/systemd-cgroups-agent $INSTALL/lib/systemd
+  cp $PKG_BUILD/systemd-detect-virt $INSTALL/lib/systemd
+  cp $PKG_BUILD/systemd-fsck $INSTALL/lib/systemd
+  cp $PKG_BUILD/.libs/systemd-hostnamed $INSTALL/lib/systemd
+  cp $PKG_BUILD/.libs/systemd-initctl $INSTALL/lib/systemd
+  cp $PKG_BUILD/.libs/systemd-kmsg-syslogd $INSTALL/lib/systemd
+  cp $PKG_BUILD/.libs/systemd-localed $INSTALL/lib/systemd
+  cp $PKG_BUILD/.libs/systemd-logind $INSTALL/lib/systemd
+  cp $PKG_BUILD/systemd-modules-load $INSTALL/lib/systemd
+  cp $PKG_BUILD/systemd-quotacheck $INSTALL/lib/systemd
+  cp $PKG_BUILD/systemd-random-seed $INSTALL/lib/systemd
+  cp $PKG_BUILD/.libs/systemd-readahead-collect $INSTALL/lib/systemd
+  cp $PKG_BUILD/.libs/systemd-readahead-replay $INSTALL/lib/systemd
+  cp $PKG_BUILD/systemd-remount-api-vfs $INSTALL/lib/systemd
+  cp $PKG_BUILD/systemd-reply-password $INSTALL/lib/systemd
+  cp $PKG_BUILD/systemd-shutdown $INSTALL/lib/systemd
+  cp $PKG_BUILD/.libs/systemd-shutdownd $INSTALL/lib/systemd
+  cp $PKG_BUILD/.libs/systemd-stdout-syslog-bridge $INSTALL/lib/systemd
+  cp $PKG_BUILD/systemd-sysctl $INSTALL/lib/systemd
+  cp $PKG_BUILD/.libs/systemd-timedated $INSTALL/lib/systemd
+  cp $PKG_BUILD/systemd-timestamp $INSTALL/lib/systemd
+  cp $PKG_BUILD/.libs/systemd-uaccess $INSTALL/lib/systemd
+  cp $PKG_BUILD/systemd-update-utmp $INSTALL/lib/systemd
+  cp $PKG_BUILD/systemd-user-sessions $INSTALL/lib/systemd
+  cp $PKG_BUILD/systemd-vconsole-setup $INSTALL/lib/systemd
+
+# install default units, comment out not needed units
+mkdir -p $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/basic.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/bluetooth.target $INSTALL/lib/systemd/system
+#  cp $PKG_BUILD/units/console-shell.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/cryptsetup.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/dev-hugepages.mount $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/dev-mqueue.mount $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/emergency.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/emergency.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/final.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/fsck-root.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/fsck@.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/getty.target $INSTALL/lib/systemd/system
+#  cp $PKG_BUILD/units/getty@.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/graphical.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/halt.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/halt.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/http-daemon.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/kexec.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/kexec.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/local-fs-pre.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/local-fs.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/mail-transfer-agent.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/media.mount $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/multi-user.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/network.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/nss-lookup.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/poweroff.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/poweroff.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/printer.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/proc-sys-fs-binfmt_misc.automount $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/proc-sys-fs-binfmt_misc.mount $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/quotacheck.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/quotaon.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/reboot.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/reboot.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/remote-fs-pre.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/remote-fs.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/remount-rootfs.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/rescue.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/rescue.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/rpcbind.target $INSTALL/lib/systemd/system
+#  cp $PKG_BUILD/units/serial-getty@.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/shutdown.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/sigpwr.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/smartcard.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/sockets.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/sound.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/swap.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/sys-fs-fuse-connections.mount $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/sys-kernel-config.mount $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/sys-kernel-debug.mount $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/sys-kernel-security.mount $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/sysinit.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/syslog.socket $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/syslog.target $INSTALL/lib/systemd/system
+#  cp $PKG_BUILD/units/systemd-ask-password-console.path $INSTALL/lib/systemd/system
+#  cp $PKG_BUILD/units/systemd-ask-password-console.service $INSTALL/lib/systemd/system
+#  cp $PKG_BUILD/units/systemd-ask-password-wall.path $INSTALL/lib/systemd/system
+#  cp $PKG_BUILD/units/systemd-ask-password-wall.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-binfmt.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-hostnamed.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-initctl.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-initctl.socket $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-kmsg-syslogd.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-localed.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-logind.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-modules-load.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-random-seed-load.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-random-seed-save.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-readahead-collect.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-readahead-done.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-readahead-done.timer $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-readahead-replay.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-remount-api-vfs.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-shutdownd.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-shutdownd.socket $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-stdout-syslog-bridge.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-stdout-syslog-bridge.socket $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-sysctl.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-timedated.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-tmpfiles-clean.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-tmpfiles-clean.timer $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-tmpfiles-setup.service $INSTALL/lib/systemd/system
+#  cp $PKG_BUILD/units/systemd-update-utmp-runlevel.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-update-utmp-shutdown.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-user-sessions.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/systemd-vconsole-setup.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/time-sync.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/umount.target $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/user@.service $INSTALL/lib/systemd/system
+  cp $PKG_BUILD/units/var-run.mount $INSTALL/lib/systemd/system
+
+#  ln -sf getty@.service $INSTALL/lib/systemd/system/autovt@.service
+  ln -sf reboot.target $INSTALL/lib/systemd/system/ctrl-alt-del.target
+  ln -sf systemd-hostnamed.service $INSTALL/lib/systemd/system/dbus-org.freedesktop.hostname1.service
+  ln -sf systemd-localed.service $INSTALL/lib/systemd/system/dbus-org.freedesktop.locale1.service
+  ln -sf systemd-logind.service $INSTALL/lib/systemd/system/dbus-org.freedesktop.login1.service
+  ln -sf systemd-timedated.service $INSTALL/lib/systemd/system/dbus-org.freedesktop.timedate1.service
+#  ln -sf poweroff.target $INSTALL/lib/systemd/system/runlevel0.target
+#  ln -sf rescue.target $INSTALL/lib/systemd/system/runlevel1.target
+#  ln -sf multi-user.target $INSTALL/lib/systemd/system/runlevel2.target
+#  ln -sf multi-user.target $INSTALL/lib/systemd/system/runlevel3.target
+#  ln -sf multi-user.target $INSTALL/lib/systemd/system/runlevel4.target
+#  ln -sf graphical.target $INSTALL/lib/systemd/system/runlevel5.target
+#  ln -sf reboot.target $INSTALL/lib/systemd/system/runlevel6.target
+
+
+# enable default services, comment out not needed services
+  enable_service systemd-tmpfiles-clean.timer basic.target
+
+  enable_service fsck-root.service local-fs.target
+  enable_service media.mount local-fs.target
+  enable_service remount-rootfs.service local-fs.target
+  enable_service systemd-remount-api-vfs.service local-fs.target
+  enable_service var-run.mount local-fs.target
+
+  enable_service getty.target multi-user.target
+#  enable_service systemd-ask-password-wall.path multi-user.target
+  enable_service systemd-logind.service multi-user.target
+  enable_service systemd-user-sessions.service multi-user.target
+
+#  enable_service systemd-update-utmp-runlevel.service runlevel1.target
+#  enable_service systemd-update-utmp-runlevel.service runlevel2.target
+#  enable_service systemd-update-utmp-runlevel.service runlevel3.target
+#  enable_service systemd-update-utmp-runlevel.service runlevel4.target
+#  enable_service systemd-update-utmp-runlevel.service runlevel5.target
+
+  enable_service systemd-random-seed-save.service shutdown.target
+  enable_service systemd-update-utmp-shutdown.service shutdown.target
+
+  enable_service syslog.socket sockets.target
+  enable_service systemd-initctl.socket sockets.target
+  enable_service systemd-shutdownd.socket sockets.target
+  enable_service systemd-stdout-syslog-bridge.socket sockets.target
+
+  enable_service cryptsetup.target sysinit.target
+  enable_service dev-hugepages.mount sysinit.target
+  enable_service dev-mqueue.mount sysinit.target
+  enable_service proc-sys-fs-binfmt_misc.automount sysinit.target
+  enable_service sys-fs-fuse-connections.mount sysinit.target
+  enable_service sys-kernel-config.mount sysinit.target
+  enable_service sys-kernel-debug.mount sysinit.target
+  enable_service sys-kernel-security.mount sysinit.target
+#  enable_service systemd-ask-password-console.path sysinit.target
+  enable_service systemd-binfmt.service sysinit.target
+  enable_service systemd-kmsg-syslogd.service sysinit.target
+  enable_service systemd-modules-load.service sysinit.target
+  enable_service systemd-random-seed-load.service sysinit.target
+  enable_service systemd-sysctl.service sysinit.target
+  enable_service systemd-tmpfiles-setup.service sysinit.target
+  enable_service systemd-vconsole-setup.service sysinit.target
+
+# set default target
+#  ln -sf graphical.target $INSTALL/lib/systemd/system/default.target
+  if [ -n $MEDIACENTER ]; then
+    ln -sf $MEDIACENTER.target $INSTALL/lib/systemd/system/default.target
+  fi
+
+mkdir -p $INSTALL/lib/systemd/system-generators
+  cp $PKG_BUILD/systemd-getty-generator $INSTALL/lib/systemd/system-generators
+
+mkdir -p $INSTALL/lib/systemd/system-shutdown
+
+mkdir -p $INSTALL/usr/bin
+  cp $PKG_BUILD/src/systemd-analyze $INSTALL/usr/bin
+  cp $PKG_BUILD/systemd-cgls $INSTALL/usr/bin
+  cp $PKG_BUILD/.libs/systemd-nspawn $INSTALL/usr/bin
+  cp $PKG_BUILD/systemd-stdio-bridge $INSTALL/usr/bin
+
+mkdir -p $INSTALL/usr/lib
+  cp -P $PKG_BUILD/.libs/libsystemd-daemon.so* $INSTALL/usr/lib
+  cp -P $PKG_BUILD/.libs/libsystemd-login.so* $INSTALL/usr/lib
+
+mkdir -p $INSTALL/usr/lib/binfmt.d
+mkdir -p $INSTALL/usr/lib/modules-load.d
+mkdir -p $INSTALL/usr/lib/sysctl.d
+mkdir -p $INSTALL/usr/lib/tmpfiles.d
+  cp $PKG_BUILD/tmpfiles.d/systemd.conf $INSTALL/usr/lib/tmpfiles.d
+  cp $PKG_BUILD/tmpfiles.d/tmp.conf $INSTALL/usr/lib/tmpfiles.d
+  cp $PKG_BUILD/tmpfiles.d/x11.conf $INSTALL/usr/lib/tmpfiles.d
+mkdir -p $INSTALL/usr/lib/systemd/systemd/user-generators
+mkdir -p $INSTALL/usr/lib/systemd/user
+  cp $PKG_BUILD/units/user/default.target $INSTALL/usr/lib/systemd/user
+  cp $PKG_BUILD/units/user/exit.service $INSTALL/usr/lib/systemd/user
+  cp $PKG_BUILD/units/user/exit.target $INSTALL/usr/lib/systemd/user
+  ln -sf /lib/systemd/system/bluetooth.target $INSTALL/usr/lib/systemd/user/bluetooth.target
+  ln -sf /lib/systemd/system/printer.target $INSTALL/usr/lib/systemd/user/printer.target
+  ln -sf /lib/systemd/system/shutdown.target $INSTALL/usr/lib/systemd/user/shutdown.target
+  ln -sf /lib/systemd/system/sockets.target $INSTALL/usr/lib/systemd/user/sockets.target
+  ln -sf /lib/systemd/system/sound.target $INSTALL/usr/lib/systemd/user/sound.target
+
+mkdir -p $INSTALL/usr/lib/systemd/scripts
+  cp $PKG_DIR/scripts/machine-id $INSTALL/usr/lib/systemd/scripts
+
+mkdir -p $INSTALL/usr/lib/udev/rules.d
+  cp $PKG_BUILD/src/70-uaccess.rules $INSTALL/usr/lib/udev/rules.d
+  cp $PKG_BUILD/src/71-seat.rules $INSTALL/usr/lib/udev/rules.d
+  cp $PKG_BUILD/src/73-seat-late.rules $INSTALL/usr/lib/udev/rules.d
+  cp $PKG_BUILD/src/99-systemd.rules $INSTALL/usr/lib/udev/rules.d
+
+mkdir -p $INSTALL/usr/share/dbus-1/interfaces
+  cp $PKG_BUILD/org.freedesktop.*.xml $INSTALL/usr/share/dbus-1/interfaces
+
+mkdir -p $INSTALL/usr/share/dbus-1/services
+  ln -sf ../system-services/org.freedesktop.systemd1.service $INSTALL/usr/share/dbus-1/services/org.freedesktop.systemd1.service
+
+mkdir -p $INSTALL/usr/share/dbus-1/system-services
+  cp $PKG_BUILD/src/org.freedesktop.*.service $INSTALL/usr/share/dbus-1/system-services
+
+mkdir -p $INSTALL/usr/share/polkit-1/actions
+  cp $PKG_BUILD/src/org.freedesktop.*.policy $INSTALL/usr/share/polkit-1/actions
+
+mkdir -p $INSTALL/usr/share/systemd
+  cp $PKG_BUILD/src/kbd-model-map $INSTALL/usr/share/systemd
