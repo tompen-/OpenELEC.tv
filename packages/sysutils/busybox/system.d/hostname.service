@@ -1,0 +1,15 @@
+[Unit]
+Description=Setup Hostname.
+DefaultDependencies=no
+After=local-fs.target systemconfig.service
+Before=sysinit.target
+After=syslog.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/run/config/settings.conf
+ExecStart=/bin/sh -c 'echo "${NET_HOSTNAME}" > /proc/sys/kernel/hostname'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target

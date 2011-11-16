@@ -1,0 +1,11 @@
+[Unit]
+Description=Setup CDROM Settings.
+After=udev.target
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/sysctl -w dev.cdrom.lock=0
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

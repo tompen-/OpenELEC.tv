@@ -1,0 +1,13 @@
+[Unit]
+Description=User Autostart Script
+DefaultDependencies=no
+ConditionPathExists=/storage/.config/autostart.sh
+Before=graphical.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh /storage/.config/autostart.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

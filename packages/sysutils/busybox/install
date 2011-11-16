@@ -39,8 +39,11 @@ USER_PWD="`$ROOT/$TOOLCHAIN/bin/cryptpw -m sha512 $USER_PASSWORD`"
     cp $PKG_DIR/scripts/createlog $INSTALL/usr/bin/
     cp $PKG_DIR/scripts/lsb_release $INSTALL/usr/bin/
 
-  mkdir -p $INSTALL/sbin
-    cp $PKG_DIR/scripts/init $INSTALL/sbin/
+#  mkdir -p $INSTALL/sbin
+#    cp $PKG_DIR/scripts/init $INSTALL/sbin/
+
+  mkdir -p $INSTALL/usr/lib/systemd/scripts
+    cp $PKG_DIR/scripts/user-settings $INSTALL/usr/lib/systemd/scripts
 
   mkdir -p $INSTALL/etc
     cp $PKG_DIR/config/profile $INSTALL/etc
@@ -58,7 +61,8 @@ USER_PWD="`$ROOT/$TOOLCHAIN/bin/cryptpw -m sha512 $USER_PASSWORD`"
     ln -sf /proc/self/mounts $INSTALL/etc/mtab
 
   # create /etc/hostname
-    echo $HOSTNAME > $INSTALL/etc/hostname
+#    echo $HOSTNAME > $INSTALL/etc/hostname
+    ln -sf /proc/sys/kernel/hostname $INSTALL/etc/hostname
 
   mkdir -p $INSTALL/etc/modprobe.d
     cp $PKG_DIR/modprobe.d/* $INSTALL/etc/modprobe.d

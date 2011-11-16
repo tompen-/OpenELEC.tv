@@ -1,6 +1,8 @@
+#!/bin/sh
+
 ################################################################################
-#      Copyright (C) 2009-2010 OpenELEC.tv
-#      http://www.openelec.tv
+#      This file is part of OpenELEC - http://www.openelec.tv
+#      Copyright (C) 2009-2011 Stephan Raue (stephan@openelec.tv)
 #
 #  This Program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -18,18 +20,25 @@
 #  http://www.gnu.org/copyleft/gpl.html
 ################################################################################
 
-# start text mode shell
 #
-# runlevels: textmode
+# copy userconfig and samples
+#
 
-TTY="1"
+if [ -d /usr/config ]; then
+  cd /usr/config
+  mkdir -p /storage/.config
 
-echo "###########################################"
-echo "## it seems we are running in Text mode. ##"
-echo "## .... starting shell on console $TTY .... ##"
-echo "## ...... switch with ctrl-alt-f$TTY ...... ##"
-echo "###########################################"
+  for dir in `find . -type d`; do
+    mkdir -p /storage/.config/$dir
+  done
 
-while true; do
-  openvt -w -c $TTY /bin/sh
-done
+  for config in `find . -type f -name "*.conf"`; do
+    if [ ! -f /storage/.config/$config ]; then
+      cp $config /storage/.config/$config
+    fi
+  done
+
+  for sample in `find . -type f -name "*.sample"`; do
+    cp $sample /storage/.config/$sample
+  done
+fi

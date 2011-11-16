@@ -1,0 +1,15 @@
+[Unit]
+Description=Show Version
+DefaultDependencies=no
+Before=local-fs.target
+
+[Service]
+Type=oneshot
+#ExecStart=/bin/sh -c 'cat /etc/openelec-release'
+ExecStart=/usr/bin/lsb_release
+RemainAfterExit=yes
+#StandardOutput=syslog+console
+StandardOutput=tty
+
+[Install]
+WantedBy=sysinit.target

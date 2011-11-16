@@ -1,0 +1,15 @@
+[Unit]
+Description=Textmode Shell
+Before=getty.target
+
+[Service]
+Environment=HOME=/storage TTY=1
+WorkingDirectory=/storage
+ExecStart=/usr/bin/openvt -w -s -c $TTY /bin/sh
+Restart=always
+RestartSec=0
+StandardInput=tty-force
+StandardOutput=inherit
+
+[Install]
+WantedBy=textmode.target
