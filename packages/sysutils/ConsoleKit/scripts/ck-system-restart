@@ -20,4 +20,4 @@
 #  http://www.gnu.org/copyleft/gpl.html
 ################################################################################
 
-reboot
+systemctrl reboot

@@ -30,6 +30,17 @@ mkdir -p $INSTALL/etc/ConsoleKit/seats.d
 mkdir -p $INSTALL/etc/dbus-1/system.d
   cp -P $PKG_BUILD/data/ConsoleKit.conf $INSTALL/etc/dbus-1/system.d
 
+mkdir -p $INSTALL/lib/systemd/system
+  cp -P $PKG_BUILD/data/console-kit-daemon.service $INSTALL/lib/systemd/system
+  cp -P $PKG_BUILD/data/console-kit-log-system-restart.service $INSTALL/lib/systemd/system
+    enable_service console-kit-log-system-restart.service kexec.target
+    enable_service console-kit-log-system-restart.service reboot.target
+  cp -P $PKG_BUILD/data/console-kit-log-system-start.service $INSTALL/lib/systemd/system
+    enable_service console-kit-log-system-start.service basic.target
+  cp -P $PKG_BUILD/data/console-kit-log-system-stop.service $INSTALL/lib/systemd/system
+    enable_service console-kit-log-system-stop.service halt.target
+    enable_service console-kit-log-system-stop.service poweroff.target
+
 mkdir -p $INSTALL/usr/bin
   cp -P $PKG_BUILD/tools/ck-log-system-restart $INSTALL/usr/bin
   cp -P $PKG_BUILD/tools/ck-log-system-start $INSTALL/usr/bin
@@ -50,10 +61,10 @@ mkdir -p $INSTALL/usr/lib/ConsoleKit
 mkdir -p $INSTALL/usr/lib/ConsoleKit/run-seat.d
 mkdir -p $INSTALL/usr/lib/ConsoleKit/run-session.d
 mkdir -p $INSTALL/usr/lib/ConsoleKit/scripts
-#  cp -P $PKG_BUILD/tools/linux/ck-system-restart $INSTALL/usr/lib/ConsoleKit/scripts
-#  cp -P $PKG_BUILD/tools/linux/ck-system-stop $INSTALL/usr/lib/ConsoleKit/scripts
-  cp -P $PKG_DIR/scripts/ck-system-restart $INSTALL/usr/lib/ConsoleKit/scripts
-  cp -P $PKG_DIR/scripts/ck-system-stop $INSTALL/usr/lib/ConsoleKit/scripts
+  cp -P $PKG_BUILD/tools/linux/ck-system-restart $INSTALL/usr/lib/ConsoleKit/scripts
+  cp -P $PKG_BUILD/tools/linux/ck-system-stop $INSTALL/usr/lib/ConsoleKit/scripts
+#  cp -P $PKG_DIR/scripts/ck-system-restart $INSTALL/usr/lib/ConsoleKit/scripts
+#  cp -P $PKG_DIR/scripts/ck-system-stop $INSTALL/usr/lib/ConsoleKit/scripts
 
 mkdir -p $INSTALL/usr/share/dbus-1/interfaces
   cp -P $PKG_BUILD/src/org.freedesktop.ConsoleKit.Manager.xml $INSTALL/usr/share/dbus-1/interfaces
