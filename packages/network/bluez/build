@@ -74,6 +74,7 @@ cd $PKG_BUILD
             --enable-thermometer \
             --disable-hal \
             --disable-capng \
+            --with-systemdsystemunitdir=/lib/systemd/system \
             --with-gnu-ld \
             $DEBUG_CONFIG \
             $DEVTOOLS_CONFIG
