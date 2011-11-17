@@ -61,6 +61,7 @@ cd $PKG_BUILD
             --disable-fake \
             --disable-capng \
             --enable-datafiles \
+            --with-systemdunitdir=/lib/systemd/system \
             --disable-silent-rules \
 
 make

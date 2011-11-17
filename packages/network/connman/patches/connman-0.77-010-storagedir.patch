@@ -1,0 +1,24 @@
+diff -Naur connman-0.77/Makefile.am connman-0.77.patch/Makefile.am
+--- connman-0.77/Makefile.am	2011-08-23 03:16:04.000000000 +0200
++++ connman-0.77.patch/Makefile.am	2011-11-17 04:41:54.624794205 +0100
+@@ -98,7 +98,7 @@
+ 
+ scriptdir = $(libdir)/connman/scripts
+ 
+-storagedir = $(localstatedir)/lib/connman
++storagedir = /run/cache/connman
+ 
+ configdir = ${sysconfdir}/connman
+ 
+diff -Naur connman-0.77/Makefile.in connman-0.77.patch/Makefile.in
+--- connman-0.77/Makefile.in	2011-08-23 03:16:31.000000000 +0200
++++ connman-0.77.patch/Makefile.in	2011-11-17 04:42:13.736045635 +0100
+@@ -916,7 +916,7 @@
+ statedir = $(localstatedir)/run/connman
+ plugindir = $(libdir)/connman/plugins
+ scriptdir = $(libdir)/connman/scripts
+-storagedir = $(localstatedir)/lib/connman
++storagedir = /run/cache/connman
+ configdir = ${sysconfdir}/connman
+ @MAINTAINER_MODE_FALSE@build_plugindir = $(plugindir)
+ @MAINTAINER_MODE_TRUE@build_plugindir = $(abs_top_srcdir)/plugins/.libs
