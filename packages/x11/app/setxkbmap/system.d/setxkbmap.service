@@ -1,0 +1,12 @@
+[Unit]
+Description=Setup Keymap
+Requires=graphical.target
+After=graphical.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/systemd/scripts/setxkbmap
+#RemainAfterExit=yes
+
+#[Install]
+#WantedBy=graphical.target
