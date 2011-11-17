@@ -18,23 +18,6 @@
 #  http://www.gnu.org/copyleft/gpl.html
 ################################################################################
 
-import os
-import sys
-import xbmcaddon
+import xbmc, time, os, subprocess
 
-__scriptname__ = "OpenELEC OS Settings Dialog"
-__author__ = "OpenELEC"
-__url__ = "http://www.openelec.tv"
-__svn_url__ = ""
-__credits__ = ""
-__version__ = "0.1.14"
-__XBMC_Revision__ = "22240"
-
-__settings__   = xbmcaddon.Addon(id='os.openelec.settings')
-__language__   = __settings__.getLocalizedString
-__cwd__        = __settings__.getAddonInfo('path')
-
-if __name__ == "__main__":
-	if __settings__.openSettings():
-		path = xbmc.translatePath( os.path.join( __cwd__, 'scripts', "refresh-settings") )
-		os.system(path)
+os.system("systemctl start setxkbmap.service")

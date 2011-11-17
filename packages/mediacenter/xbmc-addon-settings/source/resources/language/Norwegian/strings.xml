@@ -18,18 +18,16 @@
 	<string id="2111">Vertsnavn</string>
 	<string id="2120">Nettverkskort</string>
 	<string id="2121">Overføringsteknologi</string>
-	<string id="2122">Nettverksgrensesnitt</string>
+	<string id="2122">Autoconnect</string>
 	<string id="2130">IP instillinger</string>
 	<string id="2131">Statisk IP adresse</string>
-	<string id="2132">Nettverksprefix lengde</string>
+	<string id="2132">Network netmask</string>
 	<string id="2133">Standard gateway</string>
 	<string id="2134">Foretrukket DNS-server</string>
 	<string id="2135">Alternativ DNS-server</string>
 	<string id="2136">Alternativ DNS-server</string>
 	<string id="2150">WLAN instillinger</string>
 	<string id="2151">WLAN SSID</string>
-	<string id="2152">Skjult Nettverk</string>
-	<string id="2153">WLAN Sikkerhet</string>
 	<string id="2154">WLAN Passord</string>
 
 	<!-- SAMBA -->

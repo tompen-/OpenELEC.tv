@@ -1,0 +1,89 @@
+#!/bin/sh
+
+################################################################################
+#      Copyright (C) 2009-2010 OpenELEC.tv
+#      http://www.openelec.tv
+#
+#  This Program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2, or (at your option)
+#  any later version.
+#
+#  This Program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with OpenELEC.tv; see the file COPYING.  If not, write to
+#  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+#  http://www.gnu.org/copyleft/gpl.html
+################################################################################
+
+OPENELEC_ADDON_HOME="/storage/.xbmc/userdata/addon_data/os.openelec.settings"
+OPENELEC_ADDON_SETTINGS="$OPENELEC_ADDON_HOME/settings.xml"
+
+# parse settings file and export as variables
+  if [ -f $OPENELEC_ADDON_SETTINGS ] ; then
+    while read var; do
+      export `echo $var | awk -F\" '{print $2"="$4""}' | sed '/^=/d'`
+    done < $OPENELEC_ADDON_SETTINGS
+  fi
+
+# Network 1
+  if [ "$NET_NETWORK" = "WLAN" -a -n "$NET_SSID" ]; then
+    CONNMAN_SERVICE="$NET_SSID"
+    cmcc connect-hidden $NET_SSID $NET_PASSPHRASE
+  else
+    CONNMAN_SERVICE=Wired
+  fi
+
+  if [ -n "$NET_AUTOCONNECT" ]; then
+    cmcc edit $CONNMAN_SERVICE autoconnect $NET_AUTOCONNECT
+  fi
+
+  if [ -n "$NET_IPADDRESS" -a -n "$NET_NETMASK" -a -n "$NET_GATEWAY" ]; then
+    cmcc edit $CONNMAN_SERVICE ipv4 manual "$NET_IPADDRESS" "$NET_NETMASK" "$NET_GATEWAY"
+  else
+    cmcc edit $CONNMAN_SERVICE ipv4 dhcp
+  fi
+
+  if [ -n "$NET_DNS1" -o -n "$NET_DNS2" -o -n "$NET_DNS3" ]; then
+    cmcc edit $CONNMAN_SERVICE nameservers "$NET_DNS1" "$NET_DNS2" "$NET_DNS3"
+  else
+    cmcc edit $CONNMAN_SERVICE nameservers auto
+  fi
+
+# Network 2
+  if [ -n "$NET2_NETWORK" -a "$NET2_NETWORK" != "NONE" ]; then
+    if [ "$NET2_NETWORK" = "WLAN" -a -n "$NET2_SSID" ]; then
+      CONNMAN2_SERVICE="$NET2_SSID"
+      cmcc connect-hidden $NET2_SSID $NET2_PASSPHRASE
+    else
+      CONNMAN2_SERVICE=Wired
+    fi
+
+    if [ -n "$NET2_AUTOCONNECT" ]; then
+      cmcc edit $CONNMAN_SERVICE2 autoconnect $NET2_AUTOCONNECT
+    fi
+
+    if [ -n "$NET2_IPADDRESS" -a -n "$NET2_NETMASK" -a -n "$NET2_GATEWAY" ]; then
+      cmcc edit $CONNMAN2_SERVICE ipv4 manual "$NET2_IPADDRESS" "$NET2_NETMASK" "$NET2_GATEWAY"
+    else
+      cmcc edit $CONNMAN_SERVICE2 ipv4 dhcp
+    fi
+
+    if [ -n "$NET2_DNS1" -o -n "$NET2_DNS2" -o -n "$NET2_DNS3" ]; then
+      cmcc edit $CONNMAN2_SERVICE nameservers "$NET2_DNS1" "$NET2_DNS2" "$NET2_DNS3"
+    else
+      cmcc edit $CONNMAN2_SERVICE nameservers auto
+    fi
+  fi
+
+# setup keyboard layout
+  systemctl restart setxkbmap.service
+
+# notify about settings changes
+  xbmc-send --host=127.0.0.1 -a "Notification(OpenELEC Settings:,Configuration updated,5000)"
+
+# logger -t Connman "### [$i] cannot find /sys/class/net/$NET_IFACE/address ###"
