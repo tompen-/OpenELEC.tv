@@ -15,7 +15,7 @@ index 8bfbce7..587fc6d 100644
      pDialog->m_addon = addon;
      pDialog->m_saveToDisk = saveToDisk;
      pDialog->DoModal();
-+    *confirmed=pDialog->IsConfirmed();
++    if (confirmed) *confirmed=pDialog->IsConfirmed();
      ret = true;
    }
    else
