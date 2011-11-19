@@ -1,5 +1,3 @@
-#!/bin/sh
-
 ################################################################################
 #      This file is part of OpenELEC - http://www.openelec.tv
 #      Copyright (C) 2009-2011 Stephan Raue (stephan@openelec.tv)
@@ -20,35 +18,18 @@
 #  http://www.gnu.org/copyleft/gpl.html
 ################################################################################
 
-. config/options $1
-
-# dont build parallel
-  MAKEFLAGS=-j1
-
-cd $PKG_BUILD
-#ac_cv_c_stack_direction=-1 \
-#alex_cv_ieee854_float80=no \
-GTK_CONFIG='no' \
-./configure --host=$TARGET_NAME \
-            --build=$HOST_NAME \
-            --prefix=/usr \
-            --disable-static \
-            --enable-shared \
-            --enable-nasm \
-            --disable-rpath \
-            --disable-cpml \
-            --disable-gtktest \
-            --disable-efence \
-            --disable-analyzer-hooks \
-            --enable-decoder \
-            --disable-frontend \
-            --disable-mp3x \
-            --disable-mp3rtp \
-            --disable-dynamic-frontends \
-            --enable-expopt=no \
-            --enable-debug=no \
-            --with-gnu-ld \
-            --with-fileio=lame
-
-make
-$MAKEINSTALL
+PKG_NAME="linux-tbs-drivers"
+PKG_VERSION="111115"
+PKG_REV="1"
+PKG_ARCH="any"
+PKG_LICENSE="GPL"
+PKG_SITE="http://www.tbsdtv.com/english/Download.html"
+PKG_URL="http://www.tbsdtv.com/download/common/${PKG_NAME}_${PKG_VERSION}.zip"
+PKG_DEPENDS=""
+PKG_BUILD_DEPENDS="toolchain linux"
+PKG_PRIORITY="optional"
+PKG_SECTION="driver"
+PKG_SHORTDESC="Linux TBS tuner drivers"
+PKG_LONGDESC="Linux TBS tuner drivers"
+PKG_IS_ADDON="no"
+PKG_AUTORECONF="no"

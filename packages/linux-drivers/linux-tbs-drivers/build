@@ -22,33 +22,9 @@
 
 . config/options $1
 
-# dont build parallel
-  MAKEFLAGS=-j1
+cd $BUILD/${PKG_NAME}-${PKG_VERSION}/linux-tbs-drivers
 
-cd $PKG_BUILD
-#ac_cv_c_stack_direction=-1 \
-#alex_cv_ieee854_float80=no \
-GTK_CONFIG='no' \
-./configure --host=$TARGET_NAME \
-            --build=$HOST_NAME \
-            --prefix=/usr \
-            --disable-static \
-            --enable-shared \
-            --enable-nasm \
-            --disable-rpath \
-            --disable-cpml \
-            --disable-gtktest \
-            --disable-efence \
-            --disable-analyzer-hooks \
-            --enable-decoder \
-            --disable-frontend \
-            --disable-mp3x \
-            --disable-mp3rtp \
-            --disable-dynamic-frontends \
-            --enable-expopt=no \
-            --enable-debug=no \
-            --with-gnu-ld \
-            --with-fileio=lame
+[ "$TARGET_ARCH" = "i386" ] && ./v4l/tbs-x86_r3.sh
+[ "$TARGET_ARCH" = "x86_64" ] && ./v4l/tbs-x86_64.sh
 
-make
-$MAKEINSTALL
+make DIR=$(kernel_path)

@@ -22,33 +22,15 @@
 
 . config/options $1
 
-# dont build parallel
-  MAKEFLAGS=-j1
+ZIP_PKG="`echo $PKG_URL | sed 's%.*/\(.*\)$%\1%'`"
 
-cd $PKG_BUILD
-#ac_cv_c_stack_direction=-1 \
-#alex_cv_ieee854_float80=no \
-GTK_CONFIG='no' \
-./configure --host=$TARGET_NAME \
-            --build=$HOST_NAME \
-            --prefix=/usr \
-            --disable-static \
-            --enable-shared \
-            --enable-nasm \
-            --disable-rpath \
-            --disable-cpml \
-            --disable-gtktest \
-            --disable-efence \
-            --disable-analyzer-hooks \
-            --enable-decoder \
-            --disable-frontend \
-            --disable-mp3x \
-            --disable-mp3rtp \
-            --disable-dynamic-frontends \
-            --enable-expopt=no \
-            --enable-debug=no \
-            --with-gnu-ld \
-            --with-fileio=lame
+mkdir -p $BUILD/${PKG_NAME}-${PKG_VERSION}
 
-make
-$MAKEINSTALL
+# unzip main archive
+unzip $SOURCES/$1/$ZIP_PKG -d $BUILD/${PKG_NAME}-${PKG_VERSION} >/dev/null 2>&1
+# extract .tar.bz2
+tar xjf $BUILD/${PKG_NAME}-${PKG_VERSION}/linux-tbs-drivers.tar.bz2 -C $BUILD/${PKG_NAME}-${PKG_VERSION}
+# fix permissions
+chmod -R u+rwX $BUILD/${PKG_NAME}-${PKG_VERSION}/linux-tbs-drivers/*
+# fix typo
+sed -i 's|tbs5880trl|tbs5880ctrl|g' $BUILD/${PKG_NAME}-${PKG_VERSION}/linux-tbs-drivers/v4l/tbs-x86_64.sh
