@@ -1,0 +1,11 @@
+[Unit]
+Description=Installer
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/installer
+StandardInput=tty-force
+StandardOutput=inherit
+
+[Install]
+WantedBy=installer.target
