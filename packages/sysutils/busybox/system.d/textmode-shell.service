@@ -1,15 +1,22 @@
 [Unit]
 Description=Textmode Shell
-Before=getty.target
 
 [Service]
-Environment=HOME=/storage TTY=1
+Environment=HOME=/storage TERM=linux
 WorkingDirectory=/storage
-ExecStart=/usr/bin/openvt -w -s -c $TTY /bin/sh
+ExecStart=/sbin/getty -n 38400 tty1
 Restart=always
 RestartSec=0
-StandardInput=tty-force
-StandardOutput=inherit
+#UtmpIdentifier=$TTY
+#TTYPath=/dev/tty$TTY
+#TTYReset=yes
+#TTYVHangup=yes
+#TTYVTDisallocate=yes
+KillMode=process
+
+# Some login implementations ignore SIGTERM, so we send SIGHUP
+# instead, to ensure that login terminates cleanly.
+KillSignal=SIGHUP
 
 [Install]
 WantedBy=textmode.target
