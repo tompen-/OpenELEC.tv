@@ -83,7 +83,21 @@ OPENELEC_ADDON_SETTINGS="$OPENELEC_ADDON_HOME/settings.xml"
 # setup keyboard layout
   systemctl restart setxkbmap.service
 
+# start services
+  if [ "$SERVICE_SAMBA" = true ]; then
+    systemctl start smb.service
+  else
+    systemctl stop nmb.service
+    systemctl stop smb.service
+  fi
+
+  if [ "$SERVICE_SSHD" = true ]; then
+    systemctl start sshd.service
+  else
+    systemctl stop sshd.service
+  fi
+
 # notify about settings changes
-  xbmc-send --host=127.0.0.1 -a "Notification(OpenELEC Settings:,Configuration updated,5000)"
+  xbmc-send --host=127.0.0.1 -a "Notification(OpenELEC Settings:,System configuration updated,5000)"
 
 # logger -t Connman "### [$i] cannot find /sys/class/net/$NET_IFACE/address ###"

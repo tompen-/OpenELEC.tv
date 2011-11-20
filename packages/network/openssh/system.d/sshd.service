@@ -6,5 +6,5 @@ After=syslog.target network.target
 ExecStart=/usr/sbin/sshd -D
 ExecReload=/bin/kill -HUP $MAINPID
 
-[Install]
-WantedBy=multi-user.target
+# [Install]
+# WantedBy=multi-user.target

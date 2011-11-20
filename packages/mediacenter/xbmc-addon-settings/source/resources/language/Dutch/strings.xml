@@ -30,10 +30,11 @@
 	<string id="2151">WLAN SSID (router naam)</string>
 	<string id="2154">WLAN wachtwoord</string>
 
-	<!-- SAMBA -->
+	<!-- SERVICES -->
 	<string id="5000">Samba</string>
 	<string id="5010">Configuratie</string>
-	<string id="5011">Start Samba bij het opstarten</string>
+	<string id="5011">Start Samba Server on boot</string>
+	<string id="5012">Start SSH Server on boot</string>
 
 </strings>
 

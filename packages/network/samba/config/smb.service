@@ -1,6 +1,7 @@
 [Unit]
 Description=Samba SMB Daemon
 After=syslog.target network.target nmb.service
+Wants=nmb.service
 
 [Service]
 Type=forking
@@ -8,5 +9,5 @@ PIDFile=/var/run/smbd.pid
 LimitNOFILE=16384
 ExecStart=/usr/lib/samba/smbd
 
-[Install]
-WantedBy=multi-user.target
+# [Install]
+# WantedBy=multi-user.target

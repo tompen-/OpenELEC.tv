@@ -30,9 +30,10 @@
 	<string id="2151">SSID</string>
 	<string id="2154">Passphrase</string>
 
-	<!-- SAMBA -->
-	<string id="5000">Samba</string>
+	<!-- SERVICES -->
+	<string id="5000">Services</string>
 	<string id="5010">Démarrage</string>
-	<string id="5011">Lancer Samba au démarrage</string>
+	<string id="5011">Lancer Samba Server au démarrage</string>
+	<string id="5012">Lancer SSH Server au démarrage</string>
 
 </strings>

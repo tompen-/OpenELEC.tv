@@ -30,9 +30,9 @@
 	<string id="2151">WLAN SSID</string>
 	<string id="2154">WLAN Passphrase</string>
 
-	<!-- SAMBA -->
-	<string id="5000">Samba</string>
+	<!-- SERVICES -->
+	<string id="5000">Services</string>
 	<string id="5010">Boot</string>
-	<string id="5011">Start Samba at boot</string>
-
+	<string id="5011">Start Samba Server on boot</string>
+	<string id="5012">Start SSH Server on boot</string>
 </strings>

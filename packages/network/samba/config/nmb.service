@@ -7,5 +7,5 @@ Type=forking
 PIDFile=/var/run/nmbd.pid
 ExecStart=/usr/lib/samba/nmbd
 
-[Install]
-WantedBy=multi-user.target
+# [Install]
+# WantedBy=multi-user.target

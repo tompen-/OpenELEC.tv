@@ -30,9 +30,10 @@
 	<string id="2151">WLAN SSID</string>
 	<string id="2154">WLAN Passord</string>
 
-	<!-- SAMBA -->
-	<string id="5000">Samba</string>
+	<!-- SERVICES -->
+	<string id="5000">Services</string>
 	<string id="5010">Oppstart</string>
-	<string id="5011">Start Samba under oppstart</string>
+	<string id="5011">Start Samba Server under oppstart</string>
+	<string id="5012">Start SSH Server under oppstart</string>
 
 </strings>
