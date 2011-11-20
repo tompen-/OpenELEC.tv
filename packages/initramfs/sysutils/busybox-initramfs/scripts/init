@@ -49,6 +49,9 @@ NFS_OVERLAY="192.168.1.1:/var/lib/overlay"
       textmode)
         INIT_ARGS="$INIT_ARGS --unit=textmode.target"
         ;;
+      installer)
+        INIT_ARGS="$INIT_ARGS --unit=installer.target"
+        ;;
       nosplash)
         SPLASH=no
         ;;
