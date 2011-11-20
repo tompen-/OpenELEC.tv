@@ -44,7 +44,5 @@ cd $PKG_BUILD
 
 make
 
-make DESTDIR=`pwd`/.install install
-
 mkdir -p $SYSROOT_PREFIX/usr/lib/pkgconfig
   cp systemd.pc $SYSROOT_PREFIX/usr/lib/pkgconfig
