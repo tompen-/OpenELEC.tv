@@ -214,6 +214,9 @@ IMAGE_NAME="$DISTRONAME-$TARGET_VERSION"
 
       mkdir -p $RELEASE_DIR/licenses
         cp $ROOT/licenses/* $RELEASE_DIR/licenses
+        if [ "$SPOTIFY_SUPPORT" = no ]; then
+          rm $RELEASE_DIR/licenses/Spotify-Terms-of-use-*
+        fi
 
       mkdir -p $RELEASE_DIR/target
         cp $TARGET_IMG/$IMAGE_NAME.system $RELEASE_DIR/target/SYSTEM
