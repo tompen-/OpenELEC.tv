@@ -17760,7 +17760,7 @@ new file mode 100644
 index 0000000..1eb706e
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/session/Session.cpp
-@@ -0,0 +1,198 @@
+@@ -0,0 +1,202 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
