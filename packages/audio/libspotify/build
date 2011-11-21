@@ -22,12 +22,34 @@
 
 . config/options $1
 
-# As an FYI, if the libspotify does not get correctly installed during the build,
-# the xbmc build fails with message: "Could not find libva. VAAPI support disabled"
+# As a FYI, if libspotify does not get correctly installed during the build,
+# xbmc compile fails with message: "Could not find libva. VAAPI support disabled"
 # This is a bit misleading and might send someone to troubleshooting in the wrong direction.
 
 # should not be needed, but better safe than sorry
 if [ "$SPOTIFY_SUPPORT" = yes ]; then
+
+# Cleaning up any previous builds that possibly can be another libspotify version.
+
+  if [ -e $BUILD/toolchain/$TARGET_NAME/sysroot/usr/include/libspotify ]
+  then
+    rm -rf --preserve-root $BUILD/toolchain/$TARGET_NAME/sysroot/usr/include/libspotify
+  fi
+
+  #lists files matching wildcard and count them
+  NR_OF_FILES=$(ls $BUILD/toolchain/$TARGET_NAME/sysroot/usr/lib/libspotify.* 2> /dev/null | wc -l)
+  if [ "$NR_OF_FILES" != "0" ] #if there are 1 or more files, delete them.
+  then
+    rm $BUILD/toolchain/$TARGET_NAME/sysroot/usr/lib/libspotify.*
+  fi
+
+  if [ -e  $BUILD/toolchain/$TARGET_NAME/sysroot/usr/lib/pkgconfig/libspotify.pc ]
+  then
+    rm $BUILD/toolchain/$TARGET_NAME/sysroot/usr/lib/pkgconfig/libspotify.pc
+  fi
+
+# The rest of this script copies libspotify to fakeroot.
+# This allows XBMC to compile with spotify-support.
 
   mkdir -p $BUILD/toolchain/$TARGET_NAME/sysroot/usr/include
   mkdir -p $BUILD/toolchain/$TARGET_NAME/sysroot/usr/include/libspotify
