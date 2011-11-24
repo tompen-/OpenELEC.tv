@@ -17695,8 +17695,8 @@ index 0000000..a1a8cd8
 +        Session::getInstance()->processEvents();
 +        Session::getInstance()->unlock();
 +      }
-+      Session::getInstance()->m_nextEvent -= 5;
-+      Sleep(5);
++      Session::getInstance()->m_nextEvent -= 1;
++      Sleep(1);
 +    }
 +    Logger::printOut("exiting process thread");
 +    Session::getInstance()->disConnect();

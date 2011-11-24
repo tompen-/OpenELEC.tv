@@ -47,5 +47,11 @@
     else
       sysctl -w vm.swappiness=60 2>&1 > /dev/null
     fi
+  else
+    sysctl -w vm.dirty_ratio=80
+    sysctl -w vm.dirty_background_ratio=40
+    sysctl -w vm.dirty_expire_centisecs=18000
+    echo 16384 > /sys/block/`mount | grep "/storage" | cut -c 6-8`/queue/nr_requests
+    echo 4 > /sys/block/`mount | grep "/storage" | cut -c 6-8`/queue/writes_starved
   fi
 )&
