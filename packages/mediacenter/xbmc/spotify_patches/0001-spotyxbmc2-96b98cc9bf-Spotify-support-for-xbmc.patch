@@ -1,7 +1,7 @@
-From e6cc63311e2a649711d616b75357c6f383c752a8 Mon Sep 17 00:00:00 2001
-From: Tompen <tompen@tompen.serveftp.com>
-Date: Thu, 10 Nov 2011 10:30:12 +0000
-Subject: [PATCH] spotyxbmc2-560af9fc7b-Spotify-support-for-xbmc
+From da3f392d21079026886cd5a5397459acce667d78 Mon Sep 17 00:00:00 2001
+From: root <root@OpenELEC-dev.(none)>
+Date: Fri, 2 Dec 2011 00:11:23 +0000
+Subject: [PATCH] spotyxbmc2-96b98cc9bf-Spotify-support-for-xbmc
 
 ---
  .gitignore                                         |    2 +-
@@ -11,7 +11,7 @@ Subject: [PATCH] spotyxbmc2-560af9fc7b-Spotify-support-for-xbmc
  addons/plugin.music.spotyXBMC/default.py           |   20 +
  addons/plugin.music.spotyXBMC/fanart.jpg           |  Bin 0 -> 274905 bytes
  addons/plugin.music.spotyXBMC/icon.png             |  Bin 0 -> 7082 bytes
- .../resources/language/English/strings.xml         |   96 +
+ .../resources/language/English/strings.xml         |  105 +
  .../plugin.music.spotyXBMC/resources/settings.xml  |  101 +
  addons/webinterface.default/js/MediaLibrary.js     |   60 +-
  configure.in                                       |    3 +
@@ -22,6 +22,7 @@ Subject: [PATCH] spotyxbmc2-560af9fc7b-Spotify-support-for-xbmc
  xbmc/XBApplicationEx.cpp                           |    1 +
  xbmc/configure.in                                  | 1805 ++++++++++
  xbmc/cores/paplayer/CodecFactory.cpp               |    6 +
+ xbmc/dialogs/GUIDialogContextMenu.h                |    7 +-
  .../MusicDatabaseDirectory/DirectoryNodeAlbum.cpp  |   24 +-
  .../MusicDatabaseDirectory/DirectoryNodeArtist.cpp |   22 +-
  .../DirectoryNodeOverview.cpp                      |    7 +
@@ -34,20 +35,20 @@ Subject: [PATCH] spotyxbmc2-560af9fc7b-Spotify-support-for-xbmc
  xbmc/interfaces/json-rpc/methods.json              |    1 +
  xbmc/interfaces/json-rpc/types.json                |    3 +
  xbmc/music/Makefile                                |   32 +
- xbmc/music/spotyXBMC/Addon.music.spotify.cpp       |  516 +++
- xbmc/music/spotyXBMC/Addon.music.spotify.h         |   75 +
+ xbmc/music/spotyXBMC/Addon.music.spotify.cpp       |  737 ++++
+ xbmc/music/spotyXBMC/Addon.music.spotify.h         |   83 +
  xbmc/music/spotyXBMC/Logger.cpp                    |   36 +
  xbmc/music/spotyXBMC/Logger.h                      |   57 +
  xbmc/music/spotyXBMC/SxSettings.cpp                |  182 +
- xbmc/music/spotyXBMC/SxSettings.h                  |  135 +
+ xbmc/music/spotyXBMC/SxSettings.h                  |  156 +
  xbmc/music/spotyXBMC/Utils.cpp                     |  234 ++
  xbmc/music/spotyXBMC/Utils.h                       |   63 +
  xbmc/music/spotyXBMC/album/AlbumContainer.cpp      |   36 +
  xbmc/music/spotyXBMC/album/AlbumContainer.h        |   29 +
  xbmc/music/spotyXBMC/album/AlbumStore.cpp          |   91 +
  xbmc/music/spotyXBMC/album/AlbumStore.h            |   57 +
- xbmc/music/spotyXBMC/album/SxAlbum.cpp             |  126 +
- xbmc/music/spotyXBMC/album/SxAlbum.h               |  136 +
+ xbmc/music/spotyXBMC/album/SxAlbum.cpp             |  158 +
+ xbmc/music/spotyXBMC/album/SxAlbum.h               |  139 +
  xbmc/music/spotyXBMC/artist/ArtistContainer.cpp    |   51 +
  xbmc/music/spotyXBMC/artist/ArtistContainer.h      |   49 +
  xbmc/music/spotyXBMC/artist/ArtistStore.cpp        |   92 +
@@ -58,13 +59,13 @@ Subject: [PATCH] spotyxbmc2-560af9fc7b-Spotify-support-for-xbmc
  xbmc/music/spotyXBMC/player/Codec.h                |   62 +
  xbmc/music/spotyXBMC/player/PlayerHandler.cpp      |   81 +
  xbmc/music/spotyXBMC/player/PlayerHandler.h        |   60 +
- xbmc/music/spotyXBMC/playlist/PlaylistStore.cpp    |  181 +
- xbmc/music/spotyXBMC/playlist/PlaylistStore.h      |   84 +
+ xbmc/music/spotyXBMC/playlist/PlaylistStore.cpp    |  188 +
+ xbmc/music/spotyXBMC/playlist/PlaylistStore.h      |   85 +
  .../spotyXBMC/playlist/StarredBackgroundLoader.cpp |  167 +
  .../spotyXBMC/playlist/StarredBackgroundLoader.h   |   44 +
  xbmc/music/spotyXBMC/playlist/StarredList.cpp      |   98 +
  xbmc/music/spotyXBMC/playlist/StarredList.h        |   66 +
- xbmc/music/spotyXBMC/playlist/SxPlaylist.cpp       |  170 +
+ xbmc/music/spotyXBMC/playlist/SxPlaylist.cpp       |  171 +
  xbmc/music/spotyXBMC/playlist/SxPlaylist.h         |   90 +
  xbmc/music/spotyXBMC/playlist/TopLists.cpp         |  186 +
  xbmc/music/spotyXBMC/playlist/TopLists.h           |  108 +
@@ -78,11 +79,11 @@ Subject: [PATCH] spotyxbmc2-560af9fc7b-Spotify-support-for-xbmc
  xbmc/music/spotyXBMC/search/Search.h               |   88 +
  xbmc/music/spotyXBMC/search/SearchHandler.cpp      |   77 +
  xbmc/music/spotyXBMC/search/SearchHandler.h        |   58 +
- .../search/SearchResultBackgroundLoader.cpp        |   94 +
+ .../search/SearchResultBackgroundLoader.cpp        |   95 +
  .../search/SearchResultBackgroundLoader.h          |   47 +
  xbmc/music/spotyXBMC/session/BackgroundThread.cpp  |   67 +
  xbmc/music/spotyXBMC/session/BackgroundThread.h    |   44 +
- xbmc/music/spotyXBMC/session/Session.cpp           |  198 ++
+ xbmc/music/spotyXBMC/session/Session.cpp           |  202 ++
  xbmc/music/spotyXBMC/session/Session.h             |  111 +
  xbmc/music/spotyXBMC/session/SessionCallbacks.cpp  |   90 +
  xbmc/music/spotyXBMC/session/SessionCallbacks.h    |   66 +
@@ -98,10 +99,10 @@ Subject: [PATCH] spotyxbmc2-560af9fc7b-Spotify-support-for-xbmc
  xbmc/music/spotyXBMC/track/TrackStore.h            |   57 +
  xbmc/music/tags/MusicInfoTagLoaderWMA.cpp          |    2 +-
  xbmc/music/windows/GUIWindowMusicBase.cpp          |    8 +
- xbmc/music/windows/GUIWindowMusicNav.cpp           |    4 +-
+ xbmc/music/windows/GUIWindowMusicNav.cpp           | 1488 ++++----
  xbmc/music/windows/GUIWindowMusicPlaylist.cpp      |    4 +-
  xbmc/settings/Settings.cpp                         |    3 +-
- 97 files changed, 12312 insertions(+), 60 deletions(-)
+ 98 files changed, 13360 insertions(+), 811 deletions(-)
  create mode 100644 Readme.md
  create mode 100644 addons/plugin.music.spotyXBMC/addon.xml
  create mode 100644 addons/plugin.music.spotyXBMC/changelog.txt
@@ -5938,10 +5939,10 @@ HcmV?d00001
 
 diff --git a/addons/plugin.music.spotyXBMC/resources/language/English/strings.xml b/addons/plugin.music.spotyXBMC/resources/language/English/strings.xml
 new file mode 100644
-index 0000000..773f025
+index 0000000..f4d7647
 --- /dev/null
 +++ b/addons/plugin.music.spotyXBMC/resources/language/English/strings.xml
-@@ -0,0 +1,96 @@
+@@ -0,0 +1,105 @@
 +<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 +<strings>
 +    <string id="30001">spotyXBMC</string>
@@ -6036,7 +6037,16 @@ index 0000000..773f025
 +    <string id="30501">Top 100 Spotify albums</string>
 +    <string id="30502">Top 100 Spotify songs</string>
 +    <string id="30503">Spotify radio: </string>
-+    <string id="30504">Similar artists</string>
++    <string id="30504">* Similar artists</string>
++    <string id="30505">* Spotify inbox</string>
++    
++    <!-- Context buttons -->
++    <string id="30600">Spotify: star track</string>
++    <string id="30601">Spotify: unstar track</string>
++    <string id="30602">Spotify: star album</string>
++    <string id="30603">Spotify: unstar album</string>
++    <string id="30604">Spotify: browse album</string>
++    <string id="30605">Spotify: browse artist</string>
 +</strings>
 diff --git a/addons/plugin.music.spotyXBMC/resources/settings.xml b/addons/plugin.music.spotyXBMC/resources/settings.xml
 new file mode 100644
@@ -6288,10 +6298,10 @@ index 4886efc..81c9607 100755
  	}
 \ No newline at end of file
 diff --git a/configure.in b/configure.in
-index 83840a8..4ff45f1 100755
+index bca9239..bc3cf51 100755
 --- a/configure.in
 +++ b/configure.in
-@@ -1301,6 +1301,9 @@ else
+@@ -1313,6 +1313,9 @@ else
    AC_MSG_NOTICE($vdpau_disabled)
  fi
  
@@ -10094,7 +10104,7 @@ literal 0
 HcmV?d00001
 
 diff --git a/xbmc/Application.cpp b/xbmc/Application.cpp
-index 851185a..2390bef 100644
+index 36eb715..bb69447 100644
 --- a/xbmc/Application.cpp
 +++ b/xbmc/Application.cpp
 @@ -19,6 +19,9 @@
@@ -10115,7 +10125,7 @@ index 851185a..2390bef 100644
  using namespace std;
  using namespace ADDON;
  using namespace XFILE;
-@@ -1181,6 +1185,9 @@ bool CApplication::Initialize()
+@@ -1157,6 +1161,9 @@ bool CApplication::Initialize()
    else
      g_windowManager.ActivateWindow(g_SkinInfo->GetFirstWindow());
  
@@ -10125,7 +10135,7 @@ index 851185a..2390bef 100644
    g_sysinfo.Refresh();
  
    CLog::Log(LOGINFO, "removing tempfiles");
-@@ -1227,6 +1234,7 @@ bool CApplication::Initialize()
+@@ -1203,6 +1210,7 @@ bool CApplication::Initialize()
  
    // reset our screensaver (starts timers etc.)
    ResetScreenSaver();
@@ -10133,7 +10143,7 @@ index 851185a..2390bef 100644
    return true;
  }
  
-@@ -3087,6 +3095,10 @@ bool CApplication::Cleanup()
+@@ -3063,6 +3071,10 @@ bool CApplication::Cleanup()
  {
    try
    {
@@ -10145,7 +10155,7 @@ index 851185a..2390bef 100644
      g_windowManager.Delete(WINDOW_MUSIC_PLAYLIST_EDITOR);
      g_windowManager.Delete(WINDOW_MUSIC_FILES);
 diff --git a/xbmc/GUIInfoManager.cpp b/xbmc/GUIInfoManager.cpp
-index d2d8e87..1df3cf5 100644
+index b566a3d..0870b71 100644
 --- a/xbmc/GUIInfoManager.cpp
 +++ b/xbmc/GUIInfoManager.cpp
 @@ -4468,7 +4468,9 @@ bool CGUIInfoManager::GetLibraryBool(int condition)
@@ -12006,6 +12016,24 @@ index 8b3ca68..7e91311 100644
  
    return NULL;
  }
+diff --git a/xbmc/dialogs/GUIDialogContextMenu.h b/xbmc/dialogs/GUIDialogContextMenu.h
+index 9a9600f..5504cd4 100644
+--- a/xbmc/dialogs/GUIDialogContextMenu.h
++++ b/xbmc/dialogs/GUIDialogContextMenu.h
+@@ -113,7 +113,12 @@ enum CONTEXT_BUTTON { CONTEXT_BUTTON_CANCELLED = 0,
+                       CONTEXT_BUTTON_USER7,
+                       CONTEXT_BUTTON_USER8,
+                       CONTEXT_BUTTON_USER9,
+-                      CONTEXT_BUTTON_USER10
++                      CONTEXT_BUTTON_USER10,
++                      //spotify allow us to set stared tracks and albums
++                      CONTEXT_BUTTON_SPOTIFY_TOGGLE_STAR_TRACK,
++                      CONTEXT_BUTTON_SPOTIFY_TOGGLE_STAR_ALBUM,
++                      CONTEXT_BUTTON_SPOTIFY_BROWSE_ALBUM,
++                      CONTEXT_BUTTON_SPOTIFY_BROWSE_ARTIST
+                     };
+ 
+ class CContextButtons : public std::vector< std::pair<unsigned int, CStdString> >
 diff --git a/xbmc/filesystem/MusicDatabaseDirectory/DirectoryNodeAlbum.cpp b/xbmc/filesystem/MusicDatabaseDirectory/DirectoryNodeAlbum.cpp
 index fdc6d32..3657a47 100644
 --- a/xbmc/filesystem/MusicDatabaseDirectory/DirectoryNodeAlbum.cpp
@@ -12499,10 +12527,10 @@ index 32b722a..87f0a56 100644
  
 diff --git a/xbmc/music/spotyXBMC/Addon.music.spotify.cpp b/xbmc/music/spotyXBMC/Addon.music.spotify.cpp
 new file mode 100644
-index 0000000..2a6bbdc
+index 0000000..93820d2
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/Addon.music.spotify.cpp
-@@ -0,0 +1,516 @@
+@@ -0,0 +1,737 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -12554,477 +12582,698 @@ index 0000000..2a6bbdc
 +Addon_music_spotify* g_spotify;
 +
 +Addon_music_spotify::Addon_music_spotify() {
-+  if (Settings::enabled()) Session::getInstance()->enable();
++	if (Settings::enabled())
++		Session::getInstance()->enable();
 +}
 +
 +Addon_music_spotify::~Addon_music_spotify() {
-+  Session::getInstance()->deInit();
-+  Logger::printOut("removing spotify addon");
++	Session::getInstance()->deInit();
++	Logger::printOut("removing spotify addon");
 +}
 +
 +bool Addon_music_spotify::enable(bool enable) {
-+  if (enable)
-+    return Session::getInstance()->enable();
-+  else
-+    Session::getInstance()->deInit();
++	if (enable)
++		return Session::getInstance()->enable();
++	else
++		Session::getInstance()->deInit();
 +}
 +
 +bool Addon_music_spotify::isReady() {
-+  return Session::getInstance()->isReady();
++	return Session::getInstance()->isReady();
 +}
 +
 +bool Addon_music_spotify::GetPlaylists(CFileItemList& items) {
-+  if (isReady()) {
-+    PlaylistStore* ps = Session::getInstance()->getPlaylistStore();
-+    CMediaSource playlistShare;
-+    for (int i = 0; i < ps->getPlaylistCount(); i++) {
-+      if (!ps->getPlaylist(i)->isFolder() && ps->getPlaylist(i)->isLoaded()) {
-+        playlistShare.strPath.Format("musicdb://3/spotify:playlist:%i", i);
-+        const char* owner = ps->getPlaylist(i)->getOwnerName();
-+        if (owner != NULL
-+        )
-+          playlistShare.strName.Format("%s %s %s", ps->getPlaylist(i)->getName(), Settings::getByString(), owner);
-+        else
-+          playlistShare.strName.Format("%s", ps->getPlaylist(i)->getName());
-+        CFileItemPtr pItem(new CFileItem(playlistShare));
-+        SxThumb* thumb = ps->getPlaylist(i)->getThumb();
-+        if (thumb != NULL ) pItem->SetThumbnailImage(thumb->getPath());
-+        pItem->SetProperty("fanart_image", Settings::getFanart());
-+        items.Add(pItem);
-+      }
-+    }
-+  }
-+  return true;
++	if (isReady()) {
++		PlaylistStore* ps = Session::getInstance()->getPlaylistStore();
++		CMediaSource playlistShare;
++		for (int i = 0; i < ps->getPlaylistCount(); i++) {
++			if (!ps->getPlaylist(i)->isFolder() && ps->getPlaylist(i)->isLoaded()) {
++				playlistShare.strPath.Format("musicdb://3/spotify:playlist:%i", i);
++				const char* owner = ps->getPlaylist(i)->getOwnerName();
++				if (owner != NULL)
++					playlistShare.strName.Format("%s %s %s",
++							ps->getPlaylist(i)->getName(), Settings::getByString(), owner);
++				else
++					playlistShare.strName.Format("%s", ps->getPlaylist(i)->getName());
++				CFileItemPtr pItem(new CFileItem(playlistShare));
++				SxThumb* thumb = ps->getPlaylist(i)->getThumb();
++				if (thumb != NULL)
++					pItem->SetThumbnailImage(thumb->getPath());
++				pItem->SetProperty("fanart_image", Settings::getFanart());
++				items.Add(pItem);
++			}
++		}
++	}
++	return true;
 +}
 +
-+bool Addon_music_spotify::GetAlbums(CFileItemList& items, CStdString& path, CStdString artistName) {
-+  CURL url(path);
-+  CStdString uri = url.GetFileNameWithoutPath();
-+  if (uri.Left(14).Equals("spotify:artist")) {
-+    return getArtistAlbums(items, uri);
-+  } else if (uri.Left(15).Equals("spotify:toplist")) {
-+    return getTopListAlbums(items);
-+  } else {
-+    return getAllAlbums(items, artistName);
-+  }
-+  return true;
++bool Addon_music_spotify::GetAlbums(CFileItemList& items, CStdString& path,
++		CStdString artistName) {
++	CURL url(path);
++	CStdString uri = url.GetFileNameWithoutPath();
++	if (uri.Left(14).Equals("spotify:artist")) {
++		return getArtistAlbums(items, uri);
++	} else if (uri.Left(15).Equals("spotify:toplist")) {
++		return getTopListAlbums(items);
++	} else if (uri.Left(13).Equals("spotify:track")) {
++		sp_link *spLink = sp_link_create_from_string(uri.Left(uri.Find('.')));
++		if (!spLink)
++			return false;
++		sp_track *spTrack = sp_link_as_track(spLink);
++		if (spTrack) {
++			sp_artist* spArtist = sp_track_artist(spTrack, 0);
++			return getArtistAlbums(items, spArtist);
++		}
++	} else if (uri.Left(13).Equals("spotify:album")) {
++		Logger::printOut("browsing artist from album");
++		Logger::printOut(uri);
++		sp_link *spLink = sp_link_create_from_string(uri.Left(uri.Find('#')));
++		if (!spLink)
++			return false;
++		sp_album *spAlbum = sp_link_as_album(spLink);
++		if (spAlbum) {
++			sp_artist* spArtist = sp_album_artist(spAlbum);
++			return getArtistAlbums(items, spArtist);
++		}
++	} else {
++		return getAllAlbums(items, artistName);
++	}
++	return true;
 +}
 +
-+bool Addon_music_spotify::getArtistAlbums(CFileItemList& items, CStdString& artistStr) {
-+  if (isReady()) {
-+    sp_link *spLink = sp_link_create_from_string(artistStr);
-+    if (!spLink) return true;
-+    sp_artist *spArtist = sp_link_as_artist(spLink);
-+    if (!spArtist) return true;
-+    SxArtist* artist = ArtistStore::getInstance()->getArtist(spArtist, true);
-+    if (!artist) return true;
++bool Addon_music_spotify::getArtistAlbums(CFileItemList& items,
++		sp_artist* spArtist) {
++	SxArtist* artist = ArtistStore::getInstance()->getArtist(spArtist, false);
++	if (!artist)
++		return true;
 +
-+    //if its the first call the artist might not be loaded yet
-+    artist->doLoadTracksAndAlbums();
-+    Logger::printOut("get artist albums, done browsing, waiting for all albums to load");
-+    while (!artist->isAlbumsLoaded()) {
-+      // Session::getInstance()->processEvents();
-+    }
++	// Not pretty but we need to advance libspotify if we are loading the artist for the first time here (clicking "browse artist" from the context menu)
++	while (!Session::getInstance()->lock())
++		;
++	while (!artist->isLoaded()) {
++		Session::getInstance()->processEvents();
++	}
++	Session::getInstance()->unlock();
 +
-+    //add the similar artists item
-+    if (artist->getArtists().size() > 0) {
-+      CFileItemPtr pItem(new CFileItem(Settings::getSimilarArtistsString()));
-+      CStdString path;
-+      path.Format("musicdb://1/%s/", artistStr);
-+      pItem->SetPath(path);
-+      pItem->m_bIsFolder = true;
-+      items.Add(pItem);
-+      pItem->SetIconImage("DefaultMusicArtists.png");
-+      pItem->SetProperty("fanart_image", Settings::getFanart());
-+    }
++	//if its the first call the artist might not be loaded yet
++	artist->doLoadTracksAndAlbums();
++	Logger::printOut(
++			"get artist albums, done browsing, waiting for all albums to load");
 +
-+    //add the albums
-+    vector<SxAlbum*> albums = artist->getAlbums();
-+    for (int i = 0; i < albums.size(); i++) {
-+      items.Add(Utils::SxAlbumToItem(albums[i]));
++	while (!artist->isAlbumsLoaded()) {
++	}
 +
-+    }
-+  }
-+  return true;
++	//add the similar artists item
++	if (artist->getArtists().size() > 0) {
++		CFileItemPtr pItem(new CFileItem(Settings::getSimilarArtistsString()));
++		CStdString path;
++		sp_link* link = sp_link_create_from_artist(spArtist);
++		char* uri = new char[256];
++		sp_link_as_string(link, uri, 256);
++		sp_link_release(link);
++		path.Format("musicdb://1/%s/", uri);
++		delete uri;
++		pItem->SetPath(path);
++		pItem->m_bIsFolder = true;
++		items.Add(pItem);
++		pItem->SetIconImage("DefaultMusicArtists.png");
++		pItem->SetProperty("fanart_image", Settings::getFanart());
++	}
++
++	//add the albums
++	vector<SxAlbum*> albums = artist->getAlbums();
++	for (int i = 0; i < albums.size(); i++) {
++		items.Add(Utils::SxAlbumToItem(albums[i]));
++	}
++	return true;
 +}
 +
-+bool Addon_music_spotify::getAllAlbums(CFileItemList& items, CStdString& artistStr) {
++bool Addon_music_spotify::getArtistAlbums(CFileItemList& items,
++		CStdString& artistStr) {
++	if (isReady()) {
++		sp_link *spLink = sp_link_create_from_string(artistStr);
++		if (!spLink)
++			return true;
++		sp_artist *spArtist = sp_link_as_artist(spLink);
++		if (!spArtist)
++			return true;
 +
-+  Logger::printOut("get album");
-+  if (isReady()) {
-+    if (artistStr.IsEmpty()) {
-+      //load all starred albums
-+      PlaylistStore* ps = Session::getInstance()->getPlaylistStore();
-+      StarredList* sl = ps->getStarredList();
-+      if (sl == NULL
-+      ) return true;
-+      if (!sl->isLoaded()) return true;
-+      for (int i = 0; i < sl->getNumberOfAlbums(); i++) {
-+        SxAlbum* album = sl->getAlbum(i);
-+        //if its a multidisc we need to add them all
-+        int discNumber = album->getNumberOfDiscs();
-+        if (discNumber == 1)
-+          items.Add(Utils::SxAlbumToItem(sl->getAlbum(i)));
-+        else {
-+          while (discNumber > 0) {
-+            items.Add(Utils::SxAlbumToItem(sl->getAlbum(i), "", discNumber));
-+            discNumber--;
-+          }
-+        }
-+      }
-+    } else {
-+      //TODO do a small search for the artist and fetch the albums from the result
++		return getArtistAlbums(items, spArtist);
 +
-+    }
-+  }
-+  return true;
++		sp_link_release(spLink);
++		sp_artist_release(spArtist);
++	}
++	return true;
++}
++
++bool Addon_music_spotify::getAllAlbums(CFileItemList& items,
++		CStdString& artistStr) {
++
++	Logger::printOut("get album");
++	if (isReady()) {
++		if (artistStr.IsEmpty()) {
++			//load all starred albums
++			PlaylistStore* ps = Session::getInstance()->getPlaylistStore();
++			StarredList* sl = ps->getStarredList();
++			if (sl == NULL)
++				return true;
++			if (!sl->isLoaded())
++				return true;
++			for (int i = 0; i < sl->getNumberOfAlbums(); i++) {
++				SxAlbum* album = sl->getAlbum(i);
++				//if its a multidisc we need to add them all
++				int discNumber = album->getNumberOfDiscs();
++				if (discNumber == 1)
++					items.Add(Utils::SxAlbumToItem(sl->getAlbum(i)));
++				else {
++					while (discNumber > 0) {
++						items.Add(Utils::SxAlbumToItem(sl->getAlbum(i), "", discNumber));
++						discNumber--;
++					}
++				}
++			}
++		} else {
++			//TODO do a small search for the artist and fetch the albums from the result
++
++		}
++	}
++	return true;
 +
 +}
 +
-+bool Addon_music_spotify::GetTracks(CFileItemList& items, CStdString& path, CStdString artistName, int albumId) {
-+  Logger::printOut("get tracks");
-+  CURL url(path);
-+  CStdString uri = url.GetFileNameWithoutPath();
-+  //the path will look something like this "musicdb://2/spotify:artist:0LcJLqbBmaGUft1e9Mm8HV/-1/"
-+  //if we are trying to show all tracks for a spotify artist, we cant use the params becouse they are only integers.
-+  CURL url2(path.Left(path.GetLength() - 3));
-+  CStdString artist = url2.GetFileNameWithoutPath();
++bool Addon_music_spotify::GetTracks(CFileItemList& items, CStdString& path,
++		CStdString artistName, int albumId) {
++	Logger::printOut("get tracks");
++	CURL url(path);
++	CStdString uri = url.GetFileNameWithoutPath();
++	//the path will look something like this "musicdb://2/spotify:artist:0LcJLqbBmaGUft1e9Mm8HV/-1/"
++	//if we are trying to show all tracks for a spotify artist, we cant use the params becouse they are only integers.
++	CURL url2(path.Left(path.GetLength() - 3));
++	CStdString artist = url2.GetFileNameWithoutPath();
 +
-+  if (uri.Left(13).Equals("spotify:album")) {
-+    return getAlbumTracks(items, uri);
-+  } else if (artist.Left(14).Equals("spotify:artist")) {
-+    return getArtistTracks(items, artist);
-+  } else if (uri.Left(16).Equals("spotify:playlist")) {
-+    uri.Delete(0, 17);
-+    return getPlaylistTracks(items, atoi(uri));
-+  } else if (artist.Left(15).Equals("spotify:toplist")) {
-+    return g_spotify->getTopListTracks(items);
-+  } else if (uri.Left(13).Equals("spotify:radio")) {
-+    return getRadioTracks(items, atoi(uri.Right(1)));
-+  } else if (albumId == -1) {
-+    return getAllTracks(items, artistName);
-+  }
-+  return true;
++	if (uri.Left(13).Equals("spotify:album")) {
++		return getAlbumTracks(items, uri);
++	} else if (artist.Left(14).Equals("spotify:artist")) {
++		return getArtistTracks(items, artist);
++	} else if (uri.Left(16).Equals("spotify:playlist")) {
++		uri.Delete(0, 17);
++		return getPlaylistTracks(items, atoi(uri));
++	} else if (artist.Left(15).Equals("spotify:toplist")) {
++		return g_spotify->getTopListTracks(items);
++	} else if (uri.Left(13).Equals("spotify:radio")) {
++		return getRadioTracks(items, atoi(uri.Right(1)));
++	} else if (uri.Left(13).Equals("spotify:track")) {
++		return getAlbumTracksFromTrack(items, uri);
++	} else if (albumId == -1) {
++		return getAllTracks(items, artistName);
++	}
++	return true;
 +}
 +
-+bool Addon_music_spotify::getAlbumTracks(CFileItemList& items, CStdString& path) {
-+  if (isReady()) {
-+    //lets split the string to get the album uri and the disc number
-+    CStdString uri = path.Left(path.Find('#'));
-+    CStdString discStr = path.Right(path.GetLength() - path.Find('#') - 1);
-+	//Logger::printOut(discStr.c_str());
-+	int disc = atoi(discStr.c_str());
++bool Addon_music_spotify::getAlbumTracksFromTrack(CFileItemList& items,
++		CStdString& uri) {
++	if (isReady()) {
++		sp_link *spLink = sp_link_create_from_string(uri.Left(uri.Find('.')));
++		if (!spLink)
++			return false;
++		sp_track *spTrack = sp_link_as_track(spLink);
++		if (spTrack) {
++			sp_album* spAlbum = sp_track_album(spTrack);
++			if (spAlbum) {
++				// TODO find out on what disc the track is if its a multidisc
++				SxAlbum* album = AlbumStore::getInstance()->getAlbum(spAlbum, true);
 +
-+    //0 means its not a multidisc, so we need to change it to 1
-+    if (disc == 0) disc = 1;
-+    sp_link *spLink = sp_link_create_from_string(uri);
-+    sp_album *spAlbum = sp_link_as_album(spLink);
-+    SxAlbum* salbum = AlbumStore::getInstance()->getAlbum(spAlbum, true);
-+    vector<SxTrack*> tracks = salbum->getTracks();
-+    for (int i = 0; i < tracks.size(); i++) {
-+      if (disc == tracks[i]->getDisc()) items.Add(Utils::SxTrackToItem(tracks[i]));
-+    }
-+  }
-+  return true;
++				// this is NOT nice, might result in a race condition... fix later
++				while (!album->isLoaded()) {
++					Session::getInstance()->processEvents();
++				}
++				vector<SxTrack*> tracks = album->getTracks();
++				for (int i = 0; i < tracks.size(); i++) {
++					items.Add(Utils::SxTrackToItem(tracks[i]));
++				}
++			}
++			sp_track_release(spTrack);
++		}
++		sp_link_release(spLink);
++	}
 +}
 +
-+bool Addon_music_spotify::getArtistTracks(CFileItemList& items, CStdString& path) {
-+  Logger::printOut("get artist tracks");
-+  if (isReady()) {
-+    sp_link *spLink = sp_link_create_from_string(path);
-+    if (!spLink) return true;
-+    sp_artist *spArtist = sp_link_as_artist(spLink);
-+    if (!spArtist) return true;
-+    SxArtist* artist = ArtistStore::getInstance()->getArtist(spArtist, true);
-+    if (!artist) return true;
++bool Addon_music_spotify::getAlbumTracks(CFileItemList& items,
++		CStdString& path) {
++	if (isReady()) {
++		//lets split the string to get the album uri and the disc number
++		CStdString uri = path.Left(path.Find('#'));
++		CStdString discStr = path.Right(path.GetLength() - path.Find('#') - 1);
++		//Logger::printOut(discStr.c_str());
++		int disc = atoi(discStr.c_str());
 +
-+    //if its the first call the artist might not be loaded yet, the artist will update the view when its ready
-+    artist->doLoadTracksAndAlbums();
-+    while (!artist->isTracksLoaded())
-+      ;
-+    vector<SxTrack*> tracks = artist->getTracks();
-+    for (int i = 0; i < tracks.size(); i++) {
-+      items.Add(Utils::SxTrackToItem(tracks[i]));
-+    }
-+  }
-+  return true;
++		//0 means its not a multidisc, so we need to change it to 1
++		if (disc == 0)
++			disc = 1;
++		sp_link *spLink = sp_link_create_from_string(uri);
++		sp_album *spAlbum = sp_link_as_album(spLink);
++		SxAlbum* salbum = AlbumStore::getInstance()->getAlbum(spAlbum, true);
++		vector<SxTrack*> tracks = salbum->getTracks();
++		for (int i = 0; i < tracks.size(); i++) {
++			if (disc == tracks[i]->getDisc())
++				items.Add(Utils::SxTrackToItem(tracks[i]));
++		}
++	}
++	return true;
++}
++
++bool Addon_music_spotify::getArtistTracks(CFileItemList& items,
++		CStdString& path) {
++	Logger::printOut("get artist tracks");
++	if (isReady()) {
++		sp_link *spLink = sp_link_create_from_string(path);
++		if (!spLink)
++			return true;
++		sp_artist *spArtist = sp_link_as_artist(spLink);
++		if (!spArtist)
++			return true;
++		SxArtist* artist = ArtistStore::getInstance()->getArtist(spArtist, true);
++		if (!artist)
++			return true;
++
++		//if its the first call the artist might not be loaded yet, the artist will update the view when its ready
++		artist->doLoadTracksAndAlbums();
++		while (!artist->isTracksLoaded())
++			;
++		vector<SxTrack*> tracks = artist->getTracks();
++		for (int i = 0; i < tracks.size(); i++) {
++			items.Add(Utils::SxTrackToItem(tracks[i]));
++		}
++	}
++	return true;
 +}
 +
 +bool Addon_music_spotify::getAllTracks(CFileItemList& items, CStdString& path) {
-+  Logger::printOut("get tracks");
-+  Logger::printOut(path);
-+  if (isReady()) {
-+    if (path.IsEmpty()) {
-+      //load the starred tracks
-+      PlaylistStore* ps = Session::getInstance()->getPlaylistStore();
-+      StarredList* sl = ps->getStarredList();
++	Logger::printOut("get tracks");
++	Logger::printOut(path);
++	if (isReady()) {
++		if (path.IsEmpty()) {
++			//load the starred tracks
++			PlaylistStore* ps = Session::getInstance()->getPlaylistStore();
++			StarredList* sl = ps->getStarredList();
 +
-+      if (sl == NULL
-+      ) return true;
-+      if (!sl->isLoaded()) return true;
++			if (sl == NULL)
++				return true;
++			if (!sl->isLoaded())
++				return true;
 +
-+      for (int i = 0; i < sl->getNumberOfTracks(); i++) {
-+        items.Add(Utils::SxTrackToItem(sl->getTrack(i)));
-+      }
-+    }
-+  }
-+  return true;
++			for (int i = 0; i < sl->getNumberOfTracks(); i++) {
++				items.Add(Utils::SxTrackToItem(sl->getTrack(i)));
++			}
++		}
++	}
++	return true;
 +}
 +
 +bool Addon_music_spotify::getRadioTracks(CFileItemList& items, int radio) {
-+  Logger::printOut("get radio tracks");
-+  if (isReady()) {
-+    int lowestTrackNumber = RadioHandler::getInstance()->getLowestTrackNumber(radio);
-+    if (radio == 1 || radio == 2) {
-+      vector<SxTrack*> tracks = RadioHandler::getInstance()->getTracks(radio);
-+      for (int i = 0; i < tracks.size(); i++) {
-+        const CFileItemPtr pItem = Utils::SxTrackToItem(tracks[i], "", i + lowestTrackNumber + 1);
-+        CStdString path;
-+        path.Format("%s%s%i%s%i", pItem->GetPath(), "radio#", radio, "#", i + lowestTrackNumber);
-+        pItem->SetPath(path);
-+        items.Add(pItem);
-+      }
-+    }
-+    return true;
-+  }
-+  return false;
++	Logger::printOut("get radio tracks");
++	if (isReady()) {
++		int lowestTrackNumber = RadioHandler::getInstance()->getLowestTrackNumber(
++				radio);
++		if (radio == 1 || radio == 2) {
++			vector<SxTrack*> tracks = RadioHandler::getInstance()->getTracks(radio);
++			for (int i = 0; i < tracks.size(); i++) {
++				const CFileItemPtr pItem = Utils::SxTrackToItem(tracks[i], "",
++						i + lowestTrackNumber + 1);
++				CStdString path;
++				path.Format("%s%s%i%s%i", pItem->GetPath(), "radio#", radio, "#",
++						i + lowestTrackNumber);
++				pItem->SetPath(path);
++				items.Add(pItem);
++			}
++		}
++		return true;
++	}
++	return false;
 +}
 +
 +bool Addon_music_spotify::GetArtists(CFileItemList& items, CStdString& path) {
-+  CURL url(path);
-+  CStdString uri = url.GetFileNameWithoutPath();
-+  if (uri.Left(15).Equals("spotify:toplist")) {
-+    getTopListArtists(items);
-+  } else if (uri.Left(14).Equals("spotify:artist")) {
-+    getArtistSimilarArtists(items, uri);
-+  } else {
-+    getAllArtists(items);
-+  }
-+  return true;
++	CURL url(path);
++	CStdString uri = url.GetFileNameWithoutPath();
++	if (uri.Left(15).Equals("spotify:toplist")) {
++		getTopListArtists(items);
++	} else if (uri.Left(14).Equals("spotify:artist")) {
++		getArtistSimilarArtists(items, uri);
++	} else {
++		getAllArtists(items);
++	}
++	return true;
 +}
 +
 +bool Addon_music_spotify::getAllArtists(CFileItemList& items) {
-+  Logger::printOut("get starred artists");
-+  if (isReady()) {
-+    PlaylistStore* ps = Session::getInstance()->getPlaylistStore();
-+    StarredList* sl = ps->getStarredList();
++	Logger::printOut("get starred artists");
++	if (isReady()) {
++		PlaylistStore* ps = Session::getInstance()->getPlaylistStore();
++		StarredList* sl = ps->getStarredList();
 +
-+    if (sl == NULL
-+    ) return true;
-+    if (!sl->isLoaded()) return true;
++		if (sl == NULL)
++			return true;
++		if (!sl->isLoaded())
++			return true;
 +
-+    for (int i = 0; i < sl->getNumberOfArtists(); i++) {
-+      items.Add(Utils::SxArtistToItem(sl->getArtist(i)));
-+    }
-+  }
-+  return true;
++		for (int i = 0; i < sl->getNumberOfArtists(); i++) {
++			items.Add(Utils::SxArtistToItem(sl->getArtist(i)));
++		}
++	}
++	return true;
 +}
 +
-+bool Addon_music_spotify::getArtistSimilarArtists(CFileItemList& items, CStdString uri) {
-+  Logger::printOut("get similar artists");
-+  if (isReady()) {
-+    sp_link *spLink = sp_link_create_from_string(uri);
-+    if (!spLink) return true;
-+    sp_artist *spArtist = sp_link_as_artist(spLink);
-+    if (!spArtist) return true;
-+    SxArtist* artist = ArtistStore::getInstance()->getArtist(spArtist, true);
-+    if (!artist) return true;
++bool Addon_music_spotify::getArtistSimilarArtists(CFileItemList& items,
++		CStdString uri) {
++	Logger::printOut("get similar artists");
++	if (isReady()) {
++		sp_link *spLink = sp_link_create_from_string(uri);
++		if (!spLink)
++			return true;
++		sp_artist *spArtist = sp_link_as_artist(spLink);
++		if (!spArtist)
++			return true;
++		SxArtist* artist = ArtistStore::getInstance()->getArtist(spArtist, true);
++		if (!artist)
++			return true;
 +
-+    //if its the first call the artist might not be loaded yet, the artist will update the view when its ready
-+    artist->doLoadTracksAndAlbums();
-+    while (!artist->isTracksLoaded())
-+      ;
-+    vector<SxArtist*> artists = artist->getArtists();
-+    for (int i = 0; i < artists.size(); i++) {
-+      items.Add(Utils::SxArtistToItem(artists[i]));
-+    }
-+  }
-+  return true;
++		//if its the first call the artist might not be loaded yet, the artist will update the view when its ready
++		artist->doLoadTracksAndAlbums();
++		while (!artist->isTracksLoaded())
++			;
++		vector<SxArtist*> artists = artist->getArtists();
++		for (int i = 0; i < artists.size(); i++) {
++			items.Add(Utils::SxArtistToItem(artists[i]));
++		}
++	}
++	return true;
 +}
 +
 +bool Addon_music_spotify::getPlaylistTracks(CFileItemList& items, int index) {
-+  Logger::printOut("get playlist tracks");
-+  if (isReady()) {
-+    PlaylistStore* ps = Session::getInstance()->getPlaylistStore();
-+    SxPlaylist* pl = ps->getPlaylist(index);
++	Logger::printOut("get playlist tracks");
++	if (isReady()) {
++		PlaylistStore* ps = Session::getInstance()->getPlaylistStore();
++		SxPlaylist* pl = ps->getPlaylist(index);
 +
-+    for (int i = 0; i < pl->getNumberOfTracks(); i++) {
-+      items.Add(Utils::SxTrackToItem(pl->getTrack(i), "", i + 1));
-+    }
-+  }
-+  return true;
++		for (int i = 0; i < pl->getNumberOfTracks(); i++) {
++			items.Add(Utils::SxTrackToItem(pl->getTrack(i), "", i + 1));
++		}
++	}
++	return true;
 +}
 +
 +bool Addon_music_spotify::GetTopLists(CFileItemList& items) {
-+  if (isReady()) {
-+    Logger::printOut("get the toplist entry list");
-+    TopLists* topLists = Session::getInstance()->getTopLists();
++	if (isReady()) {
++		Logger::printOut("get the toplist entry list");
++		TopLists* topLists = Session::getInstance()->getTopLists();
 +
-+    if (topLists == NULL || !topLists->isLoaded()) return true;
++		if (topLists == NULL || !topLists->isLoaded())
++			return true;
 +
-+    //add the tracks entry
-+    CFileItemPtr pItem(new CFileItem(Settings::getTopListTrackString()));
-+    CStdString path;
-+    path.Format("musicdb://2/spotify:toplist/-1/");
-+    pItem->SetPath(path);
-+    pItem->m_bIsFolder = true;
-+    items.Add(pItem);
-+    pItem->SetProperty("fanart_image", Settings::getFanart());
++		//add the tracks entry
++		CFileItemPtr pItem(new CFileItem(Settings::getTopListTrackString()));
++		CStdString path;
++		path.Format("musicdb://2/spotify:toplist/-1/");
++		pItem->SetPath(path);
++		pItem->m_bIsFolder = true;
++		items.Add(pItem);
++		pItem->SetProperty("fanart_image", Settings::getFanart());
 +
-+    //add the album entry
-+    CFileItemPtr pItem2(new CFileItem(Settings::getTopListAlbumString()));
-+    path.Format("musicdb://2/spotify:toplist");
-+    pItem2->SetPath(path);
-+    pItem2->m_bIsFolder = true;
-+    items.Add(pItem2);
-+    pItem2->SetProperty("fanart_image", Settings::getFanart());
++		//add the album entry
++		CFileItemPtr pItem2(new CFileItem(Settings::getTopListAlbumString()));
++		path.Format("musicdb://2/spotify:toplist");
++		pItem2->SetPath(path);
++		pItem2->m_bIsFolder = true;
++		items.Add(pItem2);
++		pItem2->SetProperty("fanart_image", Settings::getFanart());
 +
-+    //add the artist entry
-+    CFileItemPtr pItem3(new CFileItem(Settings::getTopListArtistString()));
-+    path.Format("musicdb://1/spotify:toplist");
-+    pItem3->SetPath(path);
-+    pItem3->m_bIsFolder = true;
-+    items.Add(pItem3);
-+    pItem3->SetProperty("fanart_image", Settings::getFanart());
-+  }
-+  return true;
++		//add the artist entry
++		CFileItemPtr pItem3(new CFileItem(Settings::getTopListArtistString()));
++		path.Format("musicdb://1/spotify:toplist");
++		pItem3->SetPath(path);
++		pItem3->m_bIsFolder = true;
++		items.Add(pItem3);
++		pItem3->SetProperty("fanart_image", Settings::getFanart());
++	}
++	return true;
 +}
 +
 +bool Addon_music_spotify::GetCustomEntries(CFileItemList& items) {
-+  if (isReady()) {
-+    //add radio 1
-+    CStdString name;
-+    name.Format("%s%s", Settings::getRadioPrefixString(), Settings::getRadio1Name());
-+    CFileItemPtr pItem(new CFileItem(name));
-+    CStdString path;
-+    path.Format("musicdb://3/spotify:radio:1/");
-+    pItem->SetPath(path);
-+    pItem->m_bIsFolder = true;
-+    items.Add(pItem);
-+    pItem->SetProperty("fanart_image", Settings::getFanart());
++	if (isReady()) {
++		//add radio 1
++		CStdString name;
++		name.Format("%s%s", Settings::getRadioPrefixString(),
++				Settings::getRadio1Name());
++		CFileItemPtr pItem(new CFileItem(name));
++		CStdString path;
++		path.Format("musicdb://3/spotify:radio:1/");
++		pItem->SetPath(path);
++		pItem->m_bIsFolder = true;
++		items.Add(pItem);
++		pItem->SetProperty("fanart_image", Settings::getFanart());
 +
-+    //add radio 2
-+    name.Format("%s%s", Settings::getRadioPrefixString(), Settings::getRadio2Name());
-+    CFileItemPtr pItem2(new CFileItem(name));
-+    path.Format("musicdb://3/spotify:radio:2/");
-+    pItem2->SetPath(path);
-+    pItem2->m_bIsFolder = true;
-+    items.Add(pItem2);
-+    pItem2->SetProperty("fanart_image", Settings::getFanart());
++		//add radio 2
++		name.Format("%s%s", Settings::getRadioPrefixString(),
++				Settings::getRadio2Name());
++		CFileItemPtr pItem2(new CFileItem(name));
++		path.Format("musicdb://3/spotify:radio:2/");
++		pItem2->SetPath(path);
++		pItem2->m_bIsFolder = true;
++		items.Add(pItem2);
++		pItem2->SetProperty("fanart_image", Settings::getFanart());
 +
-+  }
-+  return true;
++	}
++	return true;
++}
++
++bool Addon_music_spotify::GetContextButtons(CFileItemPtr& item,
++		CContextButtons &buttons) {
++	if (isReady()) {
++		CURL url(item->GetPath());
++		CStdString uri = url.GetFileNameWithoutPath();
++		//the path will look something like this "musicdb://2/spotify:artist:0LcJLqbBmaGUft1e9Mm8HV/-1/"
++		//if we are trying to show all tracks for a spotify artist, we cant use the params becouse they are only integers.
++
++		if (uri.Left(13).Equals("spotify:album")) {
++			uri = uri.Left(uri.Find('#'));
++			sp_link *spLink = sp_link_create_from_string(uri);
++			sp_album *spAlbum = sp_link_as_album(spLink);
++			SxAlbum* salbum = AlbumStore::getInstance()->getAlbum(spAlbum, true);
++			if (salbum) {
++				buttons.Add(
++						CONTEXT_BUTTON_SPOTIFY_TOGGLE_STAR_ALBUM,
++						salbum->isStarred() ?
++								Settings::getUnstarAlbumString() :
++								Settings::getStarAlbumString());
++				AlbumStore::getInstance()->removeAlbum(salbum);
++				buttons.Add(CONTEXT_BUTTON_SPOTIFY_BROWSE_ARTIST,
++						Settings::getBrowseArtistString());
++			}
++			sp_link_release(spLink);
++			sp_album_release(spAlbum);
++		} else if (uri.Left(13).Equals("spotify:track")) {
++			uri = uri.Left(uri.Find('.'));
++			Logger::printOut(uri);
++			sp_link *spLink = sp_link_create_from_string(uri);
++			sp_track* spTrack = sp_link_as_track(spLink);
++			buttons.Add(
++					CONTEXT_BUTTON_SPOTIFY_TOGGLE_STAR_TRACK,
++					sp_track_is_starred(Session::getInstance()->getSpSession(), spTrack) ?
++							Settings::getUnstarTrackString() :
++							Settings::getStarTrackString());
++			buttons.Add(CONTEXT_BUTTON_SPOTIFY_BROWSE_ALBUM,
++					Settings::getBrowseAlbumString());
++			buttons.Add(CONTEXT_BUTTON_SPOTIFY_BROWSE_ARTIST,
++					Settings::getBrowseArtistString());
++
++			//this is unstable as it is now... find a solution later
++
++			SxAlbum* salbum = AlbumStore::getInstance()->getAlbum(
++					sp_track_album(spTrack), true);
++			if (salbum) {
++				while (!Session::getInstance()->lock())
++					;
++				while (!salbum->isLoaded()) {
++					Session::getInstance()->processEvents();
++				}
++				Session::getInstance()->unlock();
++				buttons.Add(
++						CONTEXT_BUTTON_SPOTIFY_TOGGLE_STAR_ALBUM,
++						salbum->isStarred() ?
++								Settings::getUnstarAlbumString() :
++								Settings::getStarAlbumString());
++				AlbumStore::getInstance()->removeAlbum(salbum);
++			}
++
++			sp_track_release(spTrack);
++			sp_link_release(spLink);
++		}
++	}
++	return true;
++}
++
++bool Addon_music_spotify::ToggleStarTrack(CFileItemPtr& item) {
++	if (isReady()) {
++		CURL url(item->GetPath());
++		CStdString uri = url.GetFileNameWithoutPath();
++		uri = uri.Left(uri.Find('.'));
++		Logger::printOut(uri);
++		sp_link *spLink = sp_link_create_from_string(uri);
++		sp_track* spTrack = sp_link_as_track(spLink);
++		sp_track_set_starred(Session::getInstance()->getSpSession(), &spTrack, 1,
++				!sp_track_is_starred(Session::getInstance()->getSpSession(), spTrack));
++		sp_link_release(spLink);
++		sp_track_release(spTrack);
++	}
++	return true;
++}
++
++bool Addon_music_spotify::ToggleStarAlbum(CFileItemPtr& item) {
++	if (isReady()) {
++		Logger::printOut("toggle album star addon");
++		CURL url(item->GetPath());
++		CStdString uri = url.GetFileNameWithoutPath();
++
++		sp_album *spAlbum = NULL;
++		if (uri.Left(13).Equals("spotify:album")) {
++			uri = uri.Left(uri.Find('#'));
++			sp_link* spLink = sp_link_create_from_string(uri);
++			spAlbum = sp_link_as_album(spLink);
++			sp_link_release(spLink);
++		} else if (uri.Left(13).Equals("spotify:track")) {
++			sp_link *spLink = sp_link_create_from_string(uri.Left(uri.Find('.')));
++			if (!spLink)
++				return true;
++			sp_track *spTrack = sp_link_as_track(spLink);
++			sp_link_release(spLink);
++			if (spTrack) {
++				spAlbum = sp_track_album(spTrack);
++			}
++			sp_track_release(spTrack);
++		} else {
++			return true;
++		}
++		SxAlbum* salbum = AlbumStore::getInstance()->getAlbum(spAlbum, true);
++		if (salbum)
++			salbum->toggleStar();
++		sp_album_release(spAlbum);
++	}
++	return true;
 +}
 +
 +bool Addon_music_spotify::getTopListArtists(CFileItemList& items) {
-+  Logger::printOut("get toplist artists");
-+  if (isReady()) {
-+    PlaylistStore* ps = Session::getInstance()->getPlaylistStore();
-+    TopLists* tl = ps->getTopLists();
++	Logger::printOut("get toplist artists");
++	if (isReady()) {
++		PlaylistStore* ps = Session::getInstance()->getPlaylistStore();
++		TopLists* tl = ps->getTopLists();
 +
-+    if (!tl->isArtistsLoaded()) tl->reLoadArtists();
++		if (!tl->isArtistsLoaded())
++			tl->reLoadArtists();
 +
-+    while (!tl->isArtistsLoaded()) {
-+      //Session::getInstance()->processEvents();
-+    }
++		while (!tl->isArtistsLoaded()) {
++			//Session::getInstance()->processEvents();
++		}
 +
-+    vector<SxArtist*> artists = tl->getArtists();
-+    for (int i = 0; i < artists.size(); i++) {
-+      items.Add(Utils::SxArtistToItem(artists[i]));
-+    }
++		vector<SxArtist*> artists = tl->getArtists();
++		for (int i = 0; i < artists.size(); i++) {
++			items.Add(Utils::SxArtistToItem(artists[i]));
++		}
 +
-+  }
-+  return true;
++	}
++	return true;
 +}
 +
 +bool Addon_music_spotify::getTopListAlbums(CFileItemList& items) {
-+  Logger::printOut("get toplist albums");
-+  if (isReady()) {
-+    PlaylistStore* ps = Session::getInstance()->getPlaylistStore();
-+    TopLists* tl = ps->getTopLists();
++	Logger::printOut("get toplist albums");
++	if (isReady()) {
++		PlaylistStore* ps = Session::getInstance()->getPlaylistStore();
++		TopLists* tl = ps->getTopLists();
 +
-+    if (!tl->isAlbumsLoaded()) tl->reLoadAlbums();
++		if (!tl->isAlbumsLoaded())
++			tl->reLoadAlbums();
 +
-+    while (!tl->isAlbumsLoaded()) {
-+      // Session::getInstance()->processEvents();
-+    }
++		while (!tl->isAlbumsLoaded()) {
++			// Session::getInstance()->processEvents();
++		}
 +
-+    vector<SxAlbum*> albums = tl->getAlbums();
-+    for (int i = 0; i < albums.size(); i++) {
-+      items.Add(Utils::SxAlbumToItem(albums[i]));
-+    }
-+  }
-+  return true;
++		vector<SxAlbum*> albums = tl->getAlbums();
++		for (int i = 0; i < albums.size(); i++) {
++			items.Add(Utils::SxAlbumToItem(albums[i]));
++		}
++	}
++	return true;
 +}
 +
 +bool Addon_music_spotify::getTopListTracks(CFileItemList& items) {
-+  Logger::printOut("get toplist tracks");
-+  if (isReady()) {
-+    PlaylistStore* ps = Session::getInstance()->getPlaylistStore();
-+    TopLists* tl = ps->getTopLists();
++	Logger::printOut("get toplist tracks");
++	if (isReady()) {
++		PlaylistStore* ps = Session::getInstance()->getPlaylistStore();
++		TopLists* tl = ps->getTopLists();
 +
-+    if (!tl->isTracksLoaded()) tl->reLoadTracks();
++		if (!tl->isTracksLoaded())
++			tl->reLoadTracks();
 +
-+    while (!tl->isTracksLoaded()) {
-+      //Session::getInstance()->processEvents();
-+    }
++		while (!tl->isTracksLoaded()) {
++			//Session::getInstance()->processEvents();
++		}
 +
-+    vector<SxTrack*> tracks = tl->getTracks();
-+    for (int i = 0; i < tracks.size(); i++) {
-+      items.Add(Utils::SxTrackToItem(tracks[i], "", i + 1));
-+    }
-+  }
-+  return true;
++		vector<SxTrack*> tracks = tl->getTracks();
++		for (int i = 0; i < tracks.size(); i++) {
++			items.Add(Utils::SxTrackToItem(tracks[i], "", i + 1));
++		}
++	}
++	return true;
 +}
 +
 +bool Addon_music_spotify::Search(CStdString query, CFileItemList& items) {
 +//do the search, if we are already searching and are to fetch results this want do anything
-+  Logger::printOut("new search");
-+  if (isReady()) {
-+    if (!SearchHandler::getInstance()->search(query)) {
-+      CStdString albumPrefix;
-+      albumPrefix.Format("[%s] ", g_localizeStrings.Get(558).c_str());
-+      Logger::printOut("search fetch albums");
-+      vector<SxAlbum*> albums = SearchHandler::getInstance()->getAlbumResults();
-+      for (int i = 0; i < albums.size(); i++) {
-+        //if its a multidisc we need to add them all
-+        int discNumber = albums[i]->getNumberOfDiscs();
-+        if (discNumber == 1) {
-+          items.Add(Utils::SxAlbumToItem(albums[i], albumPrefix));
-+        } else {
-+          while (discNumber > 0) {
-+            items.Add(Utils::SxAlbumToItem(albums[i], albumPrefix, discNumber));
-+            discNumber--;
-+          }
-+        }
-+      }
-+      Logger::printOut("search fetch tracks");
-+      vector<SxTrack*> tracks = SearchHandler::getInstance()->getTrackResults();
-+      for (int i = 0; i < tracks.size(); i++)
-+        items.Add(Utils::SxTrackToItem(tracks[i]));
++	Logger::printOut("new search");
++	if (isReady()) {
++		if (!SearchHandler::getInstance()->search(query)) {
++			CStdString albumPrefix;
++			albumPrefix.Format("[%s] ", g_localizeStrings.Get(558).c_str());
++			Logger::printOut("search fetch albums");
++			vector<SxAlbum*> albums = SearchHandler::getInstance()->getAlbumResults();
++			for (int i = 0; i < albums.size(); i++) {
++				//if its a multidisc we need to add them all
++				int discNumber = albums[i]->getNumberOfDiscs();
++				if (discNumber == 1) {
++					items.Add(Utils::SxAlbumToItem(albums[i], albumPrefix));
++				} else {
++					while (discNumber > 0) {
++						items.Add(Utils::SxAlbumToItem(albums[i], albumPrefix, discNumber));
++						discNumber--;
++					}
++				}
++			}
++			Logger::printOut("search fetch tracks");
++			vector<SxTrack*> tracks = SearchHandler::getInstance()->getTrackResults();
++			for (int i = 0; i < tracks.size(); i++)
++				items.Add(Utils::SxTrackToItem(tracks[i]));
 +
-+      CStdString artistPrefix;
-+      artistPrefix.Format("[%s] ", g_localizeStrings.Get(557).c_str());
++			CStdString artistPrefix;
++			artistPrefix.Format("[%s] ", g_localizeStrings.Get(557).c_str());
 +
-+      Logger::printOut("search fetch artists");
-+      vector<SxArtist*> artists = SearchHandler::getInstance()->getArtistResults();
-+      for (int i = 0; i < artists.size(); i++)
-+        items.Add(Utils::SxArtistToItem(artists[i], artistPrefix));
-+    }
-+  }
-+  return true;
++			Logger::printOut("search fetch artists");
++			vector<SxArtist*> artists =
++					SearchHandler::getInstance()->getArtistResults();
++			for (int i = 0; i < artists.size(); i++)
++				items.Add(Utils::SxArtistToItem(artists[i], artistPrefix));
++		}
++	}
++	return true;
 +}
 +
 +ICodec* Addon_music_spotify::GetCodec() {
-+  return (ICodec*) PlayerHandler::getInstance()->getCodec();
++	return (ICodec*) PlayerHandler::getInstance()->getCodec();
 +}
 +
 diff --git a/xbmc/music/spotyXBMC/Addon.music.spotify.h b/xbmc/music/spotyXBMC/Addon.music.spotify.h
 new file mode 100644
-index 0000000..4c2940a
+index 0000000..b3bf704
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/Addon.music.spotify.h
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,83 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -13056,6 +13305,7 @@ index 0000000..4c2940a
 +#include <string>
 +#include "FileItem.h"
 +#include "../../cores/paplayer/ICodec.h"
++#include "../../dialogs/GUIDialogContextMenu.h"
 +
 +using namespace std;
 +using namespace addon_music_spotify;
@@ -13077,12 +13327,18 @@ index 0000000..4c2940a
 +  bool GetPlaylists(CFileItemList& items);
 +  bool GetTopLists(CFileItemList& items);
 +  bool GetCustomEntries(CFileItemList& items);
++
++  // Context menu related functions
++  bool GetContextButtons(CFileItemPtr& item, CContextButtons &buttons);
++  bool ToggleStarTrack(CFileItemPtr& item);
++  bool ToggleStarAlbum(CFileItemPtr& item);
++
 +  bool Search(CStdString query, CFileItemList& items);
 +  ICodec* GetCodec();
 +
 +private:
 +  bool m_isEnabled;
-+
++  bool getAlbumTracksFromTrack(CFileItemList& items, CStdString& trackUri);
 +  bool getAlbumTracks(CFileItemList& items, CStdString& path);
 +  bool getArtistTracks(CFileItemList& items, CStdString& path);
 +  bool getAllTracks(CFileItemList& items, CStdString& path);
@@ -13092,6 +13348,7 @@ index 0000000..4c2940a
 +
 +  bool getAllAlbums(CFileItemList& items, CStdString& path);
 +  bool getArtistAlbums(CFileItemList& items, CStdString& path);
++  bool getArtistAlbums(CFileItemList& items, sp_artist* spArtist);
 +  bool getTopListAlbums(CFileItemList& items);
 +
 +  bool getAllArtists(CFileItemList& items);
@@ -13144,7 +13401,7 @@ index 0000000..29b2c14
 +
 diff --git a/xbmc/music/spotyXBMC/Logger.h b/xbmc/music/spotyXBMC/Logger.h
 new file mode 100644
-index 0000000..514e51c
+index 0000000..34495a9
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/Logger.h
 @@ -0,0 +1,57 @@
@@ -13185,7 +13442,7 @@ index 0000000..514e51c
 +    Logger();
 +    virtual ~Logger();
 +    static void printOut(char* text) {
-+    CLog::Log(LOGDEBUG, "spotifylog: %s", text);
++	  CLog::Log(LOGDEBUG, "spotifylog: %s", text);
 +      cout << text << "\n";
 +    }
 +    static void printOut(const char* text) {
@@ -13197,7 +13454,7 @@ index 0000000..514e51c
 +      cout << text << "\n";
 +    }
 +    static void printOut(string text) {
-+    CLog::Log(LOGDEBUG, "spotifylog: %s", text.c_str());
++	  CLog::Log(LOGDEBUG, "spotifylog: %s", text.c_str());
 +      cout << text << "\n";
 +    }
 +  };
@@ -13395,10 +13652,10 @@ index 0000000..bda2b2e
 +} /* namespace addon_music_spotify */
 diff --git a/xbmc/music/spotyXBMC/SxSettings.h b/xbmc/music/spotyXBMC/SxSettings.h
 new file mode 100644
-index 0000000..12c7e25
+index 0000000..cc1a6df
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/SxSettings.h
-@@ -0,0 +1,135 @@
+@@ -0,0 +1,156 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -13525,6 +13782,27 @@ index 0000000..12c7e25
 +    }
 +    static CStdString getSimilarArtistsString() {
 +      return getAddonString(30504);
++    }
++    static CStdString getInboxString() {
++      return getAddonString(30505);
++    }
++    static CStdString getStarTrackString() {
++      return getAddonString(30600);
++    }
++    static CStdString getUnstarTrackString() {
++      return getAddonString(30601);
++    }
++    static CStdString getStarAlbumString() {
++      return getAddonString(30602);
++    }
++    static CStdString getUnstarAlbumString() {
++      return getAddonString(30603);
++    }
++    static CStdString getBrowseAlbumString() {
++      return getAddonString(30604);
++    }
++    static CStdString getBrowseArtistString() {
++      return getAddonString(30605);
 +    }
 +
 +  private:
@@ -14082,10 +14360,10 @@ index 0000000..2539911
 +#endif /* ALBUMSTORE_H_ */
 diff --git a/xbmc/music/spotyXBMC/album/SxAlbum.cpp b/xbmc/music/spotyXBMC/album/SxAlbum.cpp
 new file mode 100644
-index 0000000..1f0d3a2
+index 0000000..2ae3bd1
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/album/SxAlbum.cpp
-@@ -0,0 +1,126 @@
+@@ -0,0 +1,158 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -14119,105 +14397,137 @@ index 0000000..1f0d3a2
 +
 +namespace addon_music_spotify {
 +
-+  SxAlbum::SxAlbum(sp_album *album, bool loadTracksAndDetails) {
-+    m_spAlbum = album;
-+    // Logger::printOut("creating album");
-+    while (!sp_album_is_loaded(m_spAlbum))
-+      ;
-+    m_references = 1;
-+    m_numberOfDiscs = 1;
-+    m_isLoadingTracks = false;
-+    m_hasTracksAndDetails = false;
-+    m_hasThumb = false;
-+    m_thumb = NULL;
-+    m_review = "none";
-+    m_year = sp_album_year(m_spAlbum);
-+    sp_link *link = sp_link_create_from_album(album);
-+    m_uri = new char[256];
-+    sp_link_as_string(link, m_uri, 256);
-+    sp_link_release(link);
-+    m_rating = 0;
-+    if (loadTracksAndDetails) doLoadTracksAndDetails();
-+    doLoadThumb();
-+    // Logger::printOut("creating album slut");
-+  }
++SxAlbum::SxAlbum(sp_album *album, bool loadTracksAndDetails) {
++	m_spAlbum = album;
++	// Logger::printOut("creating album");
++	while (!sp_album_is_loaded(m_spAlbum))
++		;
++	m_references = 1;
++	m_numberOfDiscs = 1;
++	m_isLoadingTracks = false;
++	m_hasTracksAndDetails = false;
++	m_hasThumb = false;
++	m_thumb = NULL;
++	m_review = "none";
++	m_year = sp_album_year(m_spAlbum);
++	sp_link *link = sp_link_create_from_album(album);
++	m_uri = new char[256];
++	sp_link_as_string(link, m_uri, 256);
++	sp_link_release(link);
++	m_rating = 0;
++	if (loadTracksAndDetails)
++		doLoadTracksAndDetails();
++	doLoadThumb();
++	// Logger::printOut("creating album slut");
++}
 +
-+  SxAlbum::~SxAlbum() {
-+    //while (!m_tracks.empty()) {
-+    //  TrackStore::getInstance()->removeTrack(m_tracks.back());
-+    //  m_tracks.pop_back();
-+    //}
-+    removeAllTracks();
++SxAlbum::~SxAlbum() {
++	//while (!m_tracks.empty()) {
++	//  TrackStore::getInstance()->removeTrack(m_tracks.back());
++	//  m_tracks.pop_back();
++	//}
++	removeAllTracks();
 +
-+    if (m_thumb) ThumbStore::getInstance()->removeThumb(m_thumb);
-+    sp_album_release(m_spAlbum);
-+    delete m_uri;
-+  }
++	if (m_thumb)
++		ThumbStore::getInstance()->removeThumb(m_thumb);
++	sp_album_release(m_spAlbum);
++	delete m_uri;
++}
 +
-+  void SxAlbum::doLoadTracksAndDetails() {
-+    if (m_hasTracksAndDetails || m_isLoadingTracks) return;
++bool SxAlbum::isStarred() {
++	for (int i = 0; i < m_tracks.size(); i++) {
++		if (!sp_track_is_starred(Session::getInstance()->getSpSession(),
++				m_tracks[i]->getSpTrack()))
++			return false;
++	}
++	return true;
++}
 +
-+    sp_albumbrowse_create(Session::getInstance()->getSpSession(), m_spAlbum, &cb_albumBrowseComplete, this);
-+    m_isLoadingTracks = true;
-+  }
++bool SxAlbum::toggleStar() {
++	Logger::printOut("toggle album star");
++	sp_track *tracks[m_tracks.size()];
++	for (int i = 0; i < m_tracks.size(); i++) {
++		tracks[i] = m_tracks[i]->getSpTrack();
++	}
++	Logger::printOut("toggle album star2");
++	bool isStarred = this->isStarred();
++	sp_track_set_starred(Session::getInstance()->getSpSession(), tracks,
++			m_tracks.size(), !isStarred);
++	Logger::printOut("toggle album star3");
++	return true;
++}
 +
-+  void SxAlbum::doLoadThumb() {
-+    if (m_hasThumb) return;
-+    //Logger::printOut("Requesting thumb for album");
-+    const byte* image = sp_album_cover(m_spAlbum);
-+    if (image) {
-+      m_thumb = ThumbStore::getInstance()->getThumb(image);
-+      if (m_thumb) m_hasThumb = true;
-+    }
-+  }
++void SxAlbum::doLoadTracksAndDetails() {
++	if (m_hasTracksAndDetails || m_isLoadingTracks)
++		return;
 +
-+  void SxAlbum::tracksLoaded(sp_albumbrowse *result) {
-+    if (sp_albumbrowse_error(result) == SP_ERROR_OK) {
-+      m_review = sp_albumbrowse_review(result);
-+      //remove the links from the review text (it contains spotify uris so maybe we can do something fun with it later)
-+      Utils::cleanTags(m_review);
++	sp_albumbrowse_create(Session::getInstance()->getSpSession(), m_spAlbum,
++			&cb_albumBrowseComplete, this);
++	m_isLoadingTracks = true;
++}
 +
-+      //get some ratings, the album dont have rating so iterate through the tracks and calculate a mean value for the album
-+      float rating = 0;
++void SxAlbum::doLoadThumb() {
++	if (m_hasThumb)
++		return;
++	//Logger::printOut("Requesting thumb for album");
++	const byte* image = sp_album_cover(m_spAlbum);
++	if (image) {
++		m_thumb = ThumbStore::getInstance()->getThumb(image);
++		if (m_thumb)
++			m_hasThumb = true;
++	}
++}
 +
-+      for (int index = 0; index < sp_albumbrowse_num_tracks(result); index++) {
-+        sp_track *track = sp_albumbrowse_track(result, index);
-+        if (m_numberOfDiscs < sp_track_disc(track)) m_numberOfDiscs = sp_track_disc(track);
-+        m_tracks.push_back(TrackStore::getInstance()->getTrack(sp_albumbrowse_track(result, index)));
++void SxAlbum::tracksLoaded(sp_albumbrowse *result) {
++	if (sp_albumbrowse_error(result) == SP_ERROR_OK) {
++		m_review = sp_albumbrowse_review(result);
++		//remove the links from the review text (it contains spotify uris so maybe we can do something fun with it later)
++		Utils::cleanTags(m_review);
 +
-+        rating += sp_track_popularity(track);
-+      }
++		//get some ratings, the album dont have rating so iterate through the tracks and calculate a mean value for the album
++		float rating = 0;
 +
-+      if (sp_albumbrowse_num_tracks(result) != 0) {
-+        m_rating = ceil(rating / (sp_albumbrowse_num_tracks(result)) / 10);
-+      }
++		for (int index = 0; index < sp_albumbrowse_num_tracks(result); index++) {
++			sp_track *track = sp_albumbrowse_track(result, index);
++			if (m_numberOfDiscs < sp_track_disc(track))
++				m_numberOfDiscs = sp_track_disc(track);
++			m_tracks.push_back(
++					TrackStore::getInstance()->getTrack(
++							sp_albumbrowse_track(result, index)));
 +
-+      m_hasTracksAndDetails = true;
-+    }
-+    m_isLoadingTracks = false;
-+    sp_albumbrowse_release(result);
-+    //Logger::printOut("album browse complete done");
-+  }
++			rating += sp_track_popularity(track);
++		}
 +
-+  void SxAlbum::cb_albumBrowseComplete(sp_albumbrowse *result, void *userdata) {
-+    //Logger::printOut("album browse complete");
-+    SxAlbum *album = (SxAlbum*) (userdata);
-+    //Logger::printOut(album->getAlbumName());
-+    album->tracksLoaded(result);
-+  }
++		if (sp_albumbrowse_num_tracks(result) != 0) {
++			m_rating = ceil(rating / (sp_albumbrowse_num_tracks(result)) / 10);
++		}
 +
-+  bool SxAlbum::getTrackItems(CFileItemList& items){
-+    return true;
-+  }
++		m_hasTracksAndDetails = true;
++	}
++	m_isLoadingTracks = false;
++	sp_albumbrowse_release(result);
++	//Logger::printOut("album browse complete done");
++}
++
++void SxAlbum::cb_albumBrowseComplete(sp_albumbrowse *result, void *userdata) {
++	//Logger::printOut("album browse complete");
++	SxAlbum *album = (SxAlbum*) (userdata);
++	//Logger::printOut(album->getAlbumName());
++	album->tracksLoaded(result);
++}
++
++bool SxAlbum::getTrackItems(CFileItemList& items) {
++	return true;
++}
 +
 +} /* namespace addon_music_spotify */
 +
 diff --git a/xbmc/music/spotyXBMC/album/SxAlbum.h b/xbmc/music/spotyXBMC/album/SxAlbum.h
 new file mode 100644
-index 0000000..c7461cc
+index 0000000..49d4010
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/album/SxAlbum.h
-@@ -0,0 +1,136 @@
+@@ -0,0 +1,139 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -14294,6 +14604,9 @@ index 0000000..c7461cc
 +    vector<SxTrack*> getTracks() {
 +      return m_tracks;
 +    }
++
++    bool isStarred();
++    bool toggleStar();
 +
 +    bool getTrackItems(CFileItemList& items);
 +
@@ -15404,10 +15717,10 @@ index 0000000..d29a0cb
 +#endif /* PLAYERHANDLER_H_ */
 diff --git a/xbmc/music/spotyXBMC/playlist/PlaylistStore.cpp b/xbmc/music/spotyXBMC/playlist/PlaylistStore.cpp
 new file mode 100644
-index 0000000..bdb8903
+index 0000000..bd8b5e7
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/playlist/PlaylistStore.cpp
-@@ -0,0 +1,181 @@
+@@ -0,0 +1,188 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -15451,11 +15764,13 @@ index 0000000..bdb8903
 +    m_topLists = NULL;
 +    m_spContainer = sp_session_playlistcontainer(Session::getInstance()->getSpSession());
 +    m_spStarredList = sp_session_starred_create(Session::getInstance()->getSpSession());
++    m_spInboxList = sp_session_inbox_create(Session::getInstance()->getSpSession());
 +
 +    for (int i = 0; i < sp_playlistcontainer_num_playlists(m_spContainer); i++) {
 +      sp_playlist_set_in_ram(Session::getInstance()->getSpSession(), sp_playlistcontainer_playlist(m_spContainer, i), true);
 +    }
 +
++    sp_playlist_set_in_ram(Session::getInstance()->getSpSession(), m_spInboxList , true);
 +    sp_playlist_set_in_ram(Session::getInstance()->getSpSession(), m_spStarredList, true);
 +
 +    m_pcCallbacks.playlist_added = &pc_playlist_added;
@@ -15517,6 +15832,11 @@ index 0000000..bdb8903
 +
 +    vector<SxPlaylist*> newPlaylists;
 +    int playlistNumber = 0;
++    //add the inbox playlist first
++    newPlaylists.push_back(new SxPlaylist(store->m_spInboxList, playlistNumber, false));
++    playlistNumber++;
++
++
 +    for (int i = 0; i < sp_playlistcontainer_num_playlists(store->getContainer()); i++) {
 +      sp_playlist_type spType = sp_playlistcontainer_playlist_type(store->m_spContainer, i);
 +      if (spType == SP_PLAYLIST_TYPE_PLAYLIST) {
@@ -15591,10 +15911,10 @@ index 0000000..bdb8903
 +} /* namespace addon_music_spotify */
 diff --git a/xbmc/music/spotyXBMC/playlist/PlaylistStore.h b/xbmc/music/spotyXBMC/playlist/PlaylistStore.h
 new file mode 100644
-index 0000000..dfc14e0
+index 0000000..457928c
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/playlist/PlaylistStore.h
-@@ -0,0 +1,84 @@
+@@ -0,0 +1,85 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -15672,6 +15992,7 @@ index 0000000..dfc14e0
 +    StarredList* m_starredList;
 +    TopLists* m_topLists;
 +    sp_playlist* m_spStarredList;
++    sp_playlist* m_spInboxList;
 +    sp_playlistcontainer_callbacks m_pcCallbacks;
 +    sp_playlistcontainer *m_spContainer;
 +
@@ -15904,7 +16225,7 @@ index 0000000..f892521
 +#endif /* STARREDBACKGROUNDLOADER_H_ */
 diff --git a/xbmc/music/spotyXBMC/playlist/StarredList.cpp b/xbmc/music/spotyXBMC/playlist/StarredList.cpp
 new file mode 100644
-index 0000000..3e5d119
+index 0000000..ddfc7d4
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/playlist/StarredList.cpp
 @@ -0,0 +1,98 @@
@@ -15962,8 +16283,8 @@ index 0000000..3e5d119
 +
 +  void StarredList::populateAlbumsAndArtists() {
 +    Logger::printOut("Populate starred albums and artists");
-+    //ok so we got the tracks list populated within the playlist, now create the albums we want
-+    //we cant do it in this thread becouse the albums will never load... create a new thread
++    //OK so we got the tracks list populated within the playlist, now create the albums we want
++    //we can't do it in this thread because the albums will never load... create a new thread
 +    m_backgroundLoader = new StarredBackgroundLoader();
 +    m_backgroundLoader->Create(true);
 +  }
@@ -16080,10 +16401,10 @@ index 0000000..e504d7a
 +#endif /* STARREDLISTS_H_ */
 diff --git a/xbmc/music/spotyXBMC/playlist/SxPlaylist.cpp b/xbmc/music/spotyXBMC/playlist/SxPlaylist.cpp
 new file mode 100644
-index 0000000..c13c771
+index 0000000..1cd4479
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/playlist/SxPlaylist.cpp
-@@ -0,0 +1,170 @@
+@@ -0,0 +1,171 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -16154,7 +16475,8 @@ index 0000000..c13c771
 +  }
 +
 +  const char* SxPlaylist::getName() {
-+    return sp_playlist_name(m_spPlaylist);
++	 //not the most elegant solution, but if the index is 0, its the inbox
++    return m_index == 0 ? Settings::getInboxString().GetBufferSetLength(Settings::getInboxString().GetLength() +1) : sp_playlist_name(m_spPlaylist);
 +  }
 +
 +  const char* SxPlaylist::getOwnerName() {
@@ -17481,10 +17803,10 @@ index 0000000..dd110f4
 +#endif /* SEARCHHANDLER_H_ */
 diff --git a/xbmc/music/spotyXBMC/search/SearchResultBackgroundLoader.cpp b/xbmc/music/spotyXBMC/search/SearchResultBackgroundLoader.cpp
 new file mode 100644
-index 0000000..36a7230
+index 0000000..a8c95eb
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/search/SearchResultBackgroundLoader.cpp
-@@ -0,0 +1,94 @@
+@@ -0,0 +1,95 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -17540,6 +17862,7 @@ index 0000000..36a7230
 +    if (m_search->m_cancelSearch) {
 +      Logger::printOut("search results arived, aborting due to request");
 +      sp_search_release(m_search->m_currentSearch);
++      Session::getInstance()->unlock();
 +      return;
 +    }
 +    Logger::printOut("search results arived");
@@ -17695,8 +18018,8 @@ index 0000000..a1a8cd8
 +        Session::getInstance()->processEvents();
 +        Session::getInstance()->unlock();
 +      }
-+      Session::getInstance()->m_nextEvent -= 1;
-+      Sleep(1);
++      Session::getInstance()->m_nextEvent -= 5;
++      Sleep(5);
 +    }
 +    Logger::printOut("exiting process thread");
 +    Session::getInstance()->disConnect();
@@ -17757,7 +18080,7 @@ index 0000000..8ed6213
 +#endif /* BACKGROUNDTHREAD_H_ */
 diff --git a/xbmc/music/spotyXBMC/session/Session.cpp b/xbmc/music/spotyXBMC/session/Session.cpp
 new file mode 100644
-index 0000000..1eb706e
+index 0000000..3d67848
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/session/Session.cpp
 @@ -0,0 +1,202 @@
@@ -18250,7 +18573,7 @@ index 0000000..fa5be46
 +#endif /* SESSIONCALLBACKS_H_ */
 diff --git a/xbmc/music/spotyXBMC/thumb/SxThumb.cpp b/xbmc/music/spotyXBMC/thumb/SxThumb.cpp
 new file mode 100644
-index 0000000..36930ae
+index 0000000..42c1f13
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/thumb/SxThumb.cpp
 @@ -0,0 +1,96 @@
@@ -18301,7 +18624,7 @@ index 0000000..36930ae
 +    CStdString pathS(m_file);
 +    CStdString cached(CTextureCache::Get().CheckCachedImage(pathS));
 +    if (!cached.IsEmpty()) {
-+      Logger::printOut("Thumb already in XBMC cache, no need to download again");
++      //Logger::printOut("Thumb already in XBMC cache, no need to download again");
 +      m_file = cached;
 +      m_imageIsFromCache = true;
 +      m_isLoaded = true;
@@ -19150,27 +19473,1549 @@ index 91b0cfc..ab08b0a 100644
      newPlaylist->SetLabel(g_localizeStrings.Get(16035));
      newPlaylist->SetLabelPreformated(true);
 diff --git a/xbmc/music/windows/GUIWindowMusicNav.cpp b/xbmc/music/windows/GUIWindowMusicNav.cpp
-index b8f1a05..20e01a0 100644
+index b8f1a05..d819f03 100644
 --- a/xbmc/music/windows/GUIWindowMusicNav.cpp
 +++ b/xbmc/music/windows/GUIWindowMusicNav.cpp
-@@ -105,6 +105,8 @@ bool CGUIWindowMusicNav::OnMessage(CGUIMessage& message)
-       if (!CGUIWindowMusicBase::OnMessage(message))
-         return false;
+@@ -19,6 +19,9 @@
+  *
+  */
  
-+      //spotify, force the library to be enabled even if there are no local songs
-+      /*
-       //  base class has opened the database, do our check
-       DisplayEmptyDatabaseMessage(m_musicdatabase.GetSongsCount() <= 0);
++//spotify include spotify hooks so that we can allow toggling of stared tracks and albums
++#include "music/spotyXBMC/Addon.music.spotify.h"
++
+ #include "GUIWindowMusicNav.h"
+ #include "utils/FileUtils.h"
+ #include "utils/URIUtils.h"
+@@ -67,795 +70,778 @@ using namespace MUSICDATABASEDIRECTORY;
+ #define CONTROL_BTN_FILTER        19
+ #define CONTROL_LABELEMPTY        18
  
-@@ -116,7 +118,7 @@ bool CGUIWindowMusicNav::OnMessage(CGUIMessage& message)
-         SetHistoryForPath("");
-         Update("");
-       }
+-CGUIWindowMusicNav::CGUIWindowMusicNav(void)
+-    : CGUIWindowMusicBase(WINDOW_MUSIC_NAV, "MyMusicNav.xml")
+-{
+-  m_vecItems->SetPath("?");
+-  m_bDisplayEmptyDatabaseMessage = false;
+-  m_thumbLoader.SetObserver(this);
+-  m_searchWithEdit = false;
++CGUIWindowMusicNav::CGUIWindowMusicNav(void) :
++		CGUIWindowMusicBase(WINDOW_MUSIC_NAV, "MyMusicNav.xml") {
++	m_vecItems->SetPath("?");
++	m_bDisplayEmptyDatabaseMessage = false;
++	m_thumbLoader.SetObserver(this);
++	m_searchWithEdit = false;
+ }
+ 
+-CGUIWindowMusicNav::~CGUIWindowMusicNav(void)
+-{
++CGUIWindowMusicNav::~CGUIWindowMusicNav(void) {
+ }
+ 
+-bool CGUIWindowMusicNav::OnMessage(CGUIMessage& message)
+-{
+-  switch (message.GetMessage())
+-  {
+-  case GUI_MSG_WINDOW_RESET:
+-    m_vecItems->SetPath("?");
+-    break;
+-  case GUI_MSG_WINDOW_DEINIT:
+-    if (m_thumbLoader.IsLoading())
+-      m_thumbLoader.StopThread();
+-    break;
+-  case GUI_MSG_WINDOW_INIT:
+-    {
+-/* We don't want to show Autosourced items (ie removable pendrives, memorycards) in Library mode */
+-      m_rootDir.AllowNonLocalSources(false);
 -
-+      */
-       return true;
-     }
-     break;
+-      // is this the first time the window is opened?
+-      if (m_vecItems->GetPath() == "?" && message.GetStringParam().IsEmpty())
+-        message.SetStringParam(g_settings.m_defaultMusicLibSource);
+-      
+-      DisplayEmptyDatabaseMessage(false); // reset message state
+-
+-      if (!CGUIWindowMusicBase::OnMessage(message))
+-        return false;
+-
+-      //  base class has opened the database, do our check
+-      DisplayEmptyDatabaseMessage(m_musicdatabase.GetSongsCount() <= 0);
+-
+-      if (m_bDisplayEmptyDatabaseMessage)
+-      {
+-        // no library - make sure we focus on a known control, and default to the root.
+-        SET_CONTROL_FOCUS(CONTROL_BTNTYPE, 0);
+-        m_vecItems->SetPath("");
+-        SetHistoryForPath("");
+-        Update("");
+-      }
+-
+-      return true;
+-    }
+-    break;
+-
+-  case GUI_MSG_CLICKED:
+-    {
+-      int iControl = message.GetSenderId();
+-      if (iControl == CONTROL_BTNPARTYMODE)
+-      {
+-        if (g_partyModeManager.IsEnabled())
+-          g_partyModeManager.Disable();
+-        else
+-        {
+-          if (!g_partyModeManager.Enable())
+-          {
+-            SET_CONTROL_SELECTED(GetID(),CONTROL_BTNPARTYMODE,false);
+-            return false;
+-          }
+-
+-          // Playlist directory is the root of the playlist window
+-          if (m_guiState.get()) m_guiState->SetPlaylistDirectory("playlistmusic://");
+-
+-          return true;
+-        }
+-        UpdateButtons();
+-      }
+-      else if (iControl == CONTROL_BTNMANUALINFO)
+-      {
+-        OnManualAlbumInfo();
+-        return true;
+-      }
+-      else if (iControl == CONTROL_SEARCH)
+-      {
+-        if (m_searchWithEdit)
+-        {
+-          // search updated - reset timer
+-          m_searchTimer.StartZero();
+-          // grab our search string
+-          CGUIMessage selected(GUI_MSG_ITEM_SELECTED, GetID(), CONTROL_SEARCH);
+-          OnMessage(selected);
+-          SetProperty("search", selected.GetLabel());
+-          return true;
+-        }
+-        CStdString search(GetProperty("search").asString());
+-        CGUIDialogKeyboard::ShowAndGetFilter(search, true);
+-        SetProperty("search", search);
+-        return true;
+-      }
+-    }
+-    break;
+-  case GUI_MSG_PLAYBACK_STOPPED:
+-  case GUI_MSG_PLAYBACK_ENDED:
+-  case GUI_MSG_PLAYLISTPLAYER_STOPPED:
+-  case GUI_MSG_PLAYBACK_STARTED:
+-    {
+-      SET_CONTROL_SELECTED(GetID(),CONTROL_BTNPARTYMODE, g_partyModeManager.IsEnabled());
+-    }
+-    break;
+-  case GUI_MSG_NOTIFY_ALL:
+-    {
+-      if (message.GetParam1() == GUI_MSG_SEARCH_UPDATE && IsActive())
+-      {
+-        // search updated - reset timer
+-        m_searchTimer.StartZero();
+-        SetProperty("search", message.GetStringParam());
+-      }
+-    }
+-  }
+-  return CGUIWindowMusicBase::OnMessage(message);
++bool CGUIWindowMusicNav::OnMessage(CGUIMessage& message) {
++	switch (message.GetMessage()) {
++	case GUI_MSG_WINDOW_RESET:
++		m_vecItems->SetPath("?");
++		break;
++	case GUI_MSG_WINDOW_DEINIT:
++		if (m_thumbLoader.IsLoading())
++			m_thumbLoader.StopThread();
++		break;
++	case GUI_MSG_WINDOW_INIT: {
++		/* We don't want to show Autosourced items (ie removable pendrives, memorycards) in Library mode */
++		m_rootDir.AllowNonLocalSources(false);
++
++		// is this the first time the window is opened?
++		if (m_vecItems->GetPath() == "?" && message.GetStringParam().IsEmpty())
++			message.SetStringParam(g_settings.m_defaultMusicLibSource);
++
++		DisplayEmptyDatabaseMessage(false); // reset message state
++
++		if (!CGUIWindowMusicBase::OnMessage(message))
++			return false;
++
++		//spotify, force the library to be enabled even if there are no local songs
++		/*
++		 //  base class has opened the database, do our check
++		 DisplayEmptyDatabaseMessage(m_musicdatabase.GetSongsCount() <= 0);
++
++		 if (m_bDisplayEmptyDatabaseMessage)
++		 {
++		 // no library - make sure we focus on a known control, and default to the root.
++		 SET_CONTROL_FOCUS(CONTROL_BTNTYPE, 0);
++		 m_vecItems->SetPath("");
++		 SetHistoryForPath("");
++		 Update("");
++		 }
++		 */
++		return true;
++	}
++		break;
++
++	case GUI_MSG_CLICKED: {
++		int iControl = message.GetSenderId();
++		if (iControl == CONTROL_BTNPARTYMODE) {
++			if (g_partyModeManager.IsEnabled())
++				g_partyModeManager.Disable();
++			else {
++				if (!g_partyModeManager.Enable()) {
++					SET_CONTROL_SELECTED(GetID(), CONTROL_BTNPARTYMODE, false);
++					return false;
++				}
++
++				// Playlist directory is the root of the playlist window
++				if (m_guiState.get())
++					m_guiState->SetPlaylistDirectory("playlistmusic://");
++
++				return true;
++			}
++			UpdateButtons();
++		} else if (iControl == CONTROL_BTNMANUALINFO) {
++			OnManualAlbumInfo();
++			return true;
++		} else if (iControl == CONTROL_SEARCH) {
++			if (m_searchWithEdit) {
++				// search updated - reset timer
++				m_searchTimer.StartZero();
++				// grab our search string
++				CGUIMessage selected(GUI_MSG_ITEM_SELECTED, GetID(), CONTROL_SEARCH);
++				OnMessage(selected);
++				SetProperty("search", selected.GetLabel());
++				return true;
++			}
++			CStdString search(GetProperty("search").asString());
++			CGUIDialogKeyboard::ShowAndGetFilter(search, true);
++			SetProperty("search", search);
++			return true;
++		}
++	}
++		break;
++	case GUI_MSG_PLAYBACK_STOPPED:
++	case GUI_MSG_PLAYBACK_ENDED:
++	case GUI_MSG_PLAYLISTPLAYER_STOPPED:
++	case GUI_MSG_PLAYBACK_STARTED: {
++		SET_CONTROL_SELECTED(GetID(), CONTROL_BTNPARTYMODE,
++				g_partyModeManager.IsEnabled());
++	}
++		break;
++	case GUI_MSG_NOTIFY_ALL: {
++		if (message.GetParam1() == GUI_MSG_SEARCH_UPDATE && IsActive()) {
++			// search updated - reset timer
++			m_searchTimer.StartZero();
++			SetProperty("search", message.GetStringParam());
++		}
++	}
++	}
++	return CGUIWindowMusicBase::OnMessage(message);
+ }
+ 
+-bool CGUIWindowMusicNav::OnAction(const CAction& action)
+-{
+-  if (action.GetID() == ACTION_SCAN_ITEM)
+-  {
+-    int item = m_viewControl.GetSelectedItem();
+-    CMusicDatabaseDirectory dir;
+-    if (item > -1 && m_vecItems->Get(item)->m_bIsFolder
+-                  && (dir.HasAlbumInfo(m_vecItems->Get(item)->GetPath())||
+-                      dir.IsArtistDir(m_vecItems->Get(item)->GetPath())))
+-      OnContextButton(item,CONTEXT_BUTTON_INFO);
+-
+-    return true;
+-  }
+-
+-  return CGUIWindowMusicBase::OnAction(action);
++bool CGUIWindowMusicNav::OnAction(const CAction& action) {
++	if (action.GetID() == ACTION_SCAN_ITEM) {
++		int item = m_viewControl.GetSelectedItem();
++		CMusicDatabaseDirectory dir;
++		if (item > -1 && m_vecItems->Get(item)->m_bIsFolder
++				&& (dir.HasAlbumInfo(m_vecItems->Get(item)->GetPath())
++						|| dir.IsArtistDir(m_vecItems->Get(item)->GetPath())))
++			OnContextButton(item, CONTEXT_BUTTON_INFO);
++
++		return true;
++	}
++
++	return CGUIWindowMusicBase::OnAction(action);
+ }
+ 
+-CStdString CGUIWindowMusicNav::GetQuickpathName(const CStdString& strPath) const
+-{
+-  if (strPath.Equals("musicdb://1/"))
+-    return "Genres";
+-  else if (strPath.Equals("musicdb://2/"))
+-    return "Artists";
+-  else if (strPath.Equals("musicdb://3/"))
+-    return "Albums";
+-  else if (strPath.Equals("musicdb://4/"))
+-    return "Songs";
+-  else if (strPath.Equals("musicdb://5/"))
+-    return "Top100";
+-  else if (strPath.Equals("musicdb://5/2/"))
+-    return "Top100Songs";
+-  else if (strPath.Equals("musicdb://5/1/"))
+-    return "Top100Albums";
+-  else if (strPath.Equals("musicdb://6/"))
+-    return "RecentlyAddedAlbums";
+-  else if (strPath.Equals("musicdb://7/"))
+-    return "RecentlyPlayedAlbums";
+-  else if (strPath.Equals("musicdb://8/"))
+-    return "Compilations";
+-  else if (strPath.Equals("musicdb://9/"))
+-    return "Years";
+-  else if (strPath.Equals("musicdb://10/"))
+-    return "Singles";
+-  else if (strPath.Equals("special://musicplaylists/"))
+-    return "Playlists";
+-  else
+-  {
+-    CLog::Log(LOGERROR, "  CGUIWindowMusicNav::GetQuickpathName: Unknown parameter (%s)", strPath.c_str());
+-    return strPath;
+-  }
++CStdString CGUIWindowMusicNav::GetQuickpathName(
++		const CStdString& strPath) const {
++	if (strPath.Equals("musicdb://1/"))
++		return "Genres";
++	else if (strPath.Equals("musicdb://2/"))
++		return "Artists";
++	else if (strPath.Equals("musicdb://3/"))
++		return "Albums";
++	else if (strPath.Equals("musicdb://4/"))
++		return "Songs";
++	else if (strPath.Equals("musicdb://5/"))
++		return "Top100";
++	else if (strPath.Equals("musicdb://5/2/"))
++		return "Top100Songs";
++	else if (strPath.Equals("musicdb://5/1/"))
++		return "Top100Albums";
++	else if (strPath.Equals("musicdb://6/"))
++		return "RecentlyAddedAlbums";
++	else if (strPath.Equals("musicdb://7/"))
++		return "RecentlyPlayedAlbums";
++	else if (strPath.Equals("musicdb://8/"))
++		return "Compilations";
++	else if (strPath.Equals("musicdb://9/"))
++		return "Years";
++	else if (strPath.Equals("musicdb://10/"))
++		return "Singles";
++	else if (strPath.Equals("special://musicplaylists/"))
++		return "Playlists";
++	else {
++		CLog::Log(LOGERROR,
++				"  CGUIWindowMusicNav::GetQuickpathName: Unknown parameter (%s)",
++				strPath.c_str());
++		return strPath;
++	}
+ }
+ 
+-bool CGUIWindowMusicNav::OnClick(int iItem)
+-{
+-  if (iItem < 0 || iItem >= m_vecItems->Size()) return false;
+-
+-  CFileItemPtr item = m_vecItems->Get(iItem);
+-  if (item->GetPath().Left(14) == "musicsearch://")
+-  {
+-    if (m_searchWithEdit)
+-      OnSearchUpdate();
+-    else
+-    {
+-      CStdString search(GetProperty("search").asString());
+-      CGUIDialogKeyboard::ShowAndGetFilter(search, true);
+-      SetProperty("search", search);
+-    }
+-    return true;
+-  }
+-  if (item->IsMusicDb() && !item->m_bIsFolder)
+-    m_musicdatabase.SetPropertiesForFileItem(*item);
+-    
+-  return CGUIWindowMusicBase::OnClick(iItem);
++bool CGUIWindowMusicNav::OnClick(int iItem) {
++	if (iItem < 0 || iItem >= m_vecItems->Size())
++		return false;
++
++	CFileItemPtr item = m_vecItems->Get(iItem);
++	if (item->GetPath().Left(14) == "musicsearch://") {
++		if (m_searchWithEdit)
++			OnSearchUpdate();
++		else {
++			CStdString search(GetProperty("search").asString());
++			CGUIDialogKeyboard::ShowAndGetFilter(search, true);
++			SetProperty("search", search);
++		}
++		return true;
++	}
++	if (item->IsMusicDb() && !item->m_bIsFolder)
++		m_musicdatabase.SetPropertiesForFileItem(*item);
++
++	return CGUIWindowMusicBase::OnClick(iItem);
+ }
+ 
+-bool CGUIWindowMusicNav::GetDirectory(const CStdString &strDirectory, CFileItemList &items)
+-{
+-  if (m_bDisplayEmptyDatabaseMessage)
+-    return true;
+-
+-  if (strDirectory.IsEmpty())
+-    AddSearchFolder();
+-
+-  if (m_thumbLoader.IsLoading())
+-    m_thumbLoader.StopThread();
+-
+-  bool bResult = CGUIWindowMusicBase::GetDirectory(strDirectory, items);
+-  if (bResult)
+-  {
+-    if (items.IsPlayList())
+-      OnRetrieveMusicInfo(items);
+-    if (!items.IsMusicDb())
+-    {
+-      items.SetCachedMusicThumbs();
+-      m_thumbLoader.Load(*m_vecItems);
+-    }
+-  }
+-
+-  // update our content in the info manager
+-  if (strDirectory.Left(10).Equals("videodb://"))
+-  {
+-    CVideoDatabaseDirectory dir;
+-    VIDEODATABASEDIRECTORY::NODE_TYPE node = dir.GetDirectoryChildType(strDirectory);
+-    if (node == VIDEODATABASEDIRECTORY::NODE_TYPE_TITLE_MUSICVIDEOS)
+-      items.SetContent("musicvideos");
+-  }
+-  else if (strDirectory.Left(10).Equals("musicdb://"))
+-  {
+-    CMusicDatabaseDirectory dir;
+-    NODE_TYPE node = dir.GetDirectoryChildType(strDirectory);
+-    if (node == NODE_TYPE_ALBUM ||
+-        node == NODE_TYPE_ALBUM_RECENTLY_ADDED ||
+-        node == NODE_TYPE_ALBUM_RECENTLY_PLAYED ||
+-        node == NODE_TYPE_ALBUM_TOP100 ||
+-        node == NODE_TYPE_ALBUM_COMPILATIONS ||
+-        node == NODE_TYPE_YEAR_ALBUM)
+-      items.SetContent("albums");
+-    else if (node == NODE_TYPE_ARTIST)
+-      items.SetContent("artists");
+-    else if (node == NODE_TYPE_SONG ||
+-             node == NODE_TYPE_SONG_TOP100 ||
+-             node == NODE_TYPE_SINGLES)
+-      items.SetContent("songs");
+-    else if (node == NODE_TYPE_GENRE)
+-      items.SetContent("genres");
+-    else if (node == NODE_TYPE_YEAR)
+-      items.SetContent("years");
+-  }
+-  else if (strDirectory.Equals("special://musicplaylists"))
+-    items.SetContent("playlists");
+-  else if (strDirectory.Equals("plugin://music/"))
+-    items.SetContent("plugins");
+-  else if (items.IsPlayList())
+-    items.SetContent("songs");
+-
+-  return bResult;
++bool CGUIWindowMusicNav::GetDirectory(const CStdString &strDirectory,
++		CFileItemList &items) {
++	if (m_bDisplayEmptyDatabaseMessage)
++		return true;
++
++	if (strDirectory.IsEmpty())
++		AddSearchFolder();
++
++	if (m_thumbLoader.IsLoading())
++		m_thumbLoader.StopThread();
++
++	bool bResult = CGUIWindowMusicBase::GetDirectory(strDirectory, items);
++	if (bResult) {
++		if (items.IsPlayList())
++			OnRetrieveMusicInfo(items);
++		if (!items.IsMusicDb()) {
++			items.SetCachedMusicThumbs();
++			m_thumbLoader.Load(*m_vecItems);
++		}
++	}
++
++	// update our content in the info manager
++	if (strDirectory.Left(10).Equals("videodb://")) {
++		CVideoDatabaseDirectory dir;
++		VIDEODATABASEDIRECTORY::NODE_TYPE node = dir.GetDirectoryChildType(
++				strDirectory);
++		if (node == VIDEODATABASEDIRECTORY::NODE_TYPE_TITLE_MUSICVIDEOS)
++			items.SetContent("musicvideos");
++	} else if (strDirectory.Left(10).Equals("musicdb://")) {
++		CMusicDatabaseDirectory dir;
++		NODE_TYPE node = dir.GetDirectoryChildType(strDirectory);
++		if (node == NODE_TYPE_ALBUM || node == NODE_TYPE_ALBUM_RECENTLY_ADDED
++				|| node == NODE_TYPE_ALBUM_RECENTLY_PLAYED
++				|| node == NODE_TYPE_ALBUM_TOP100
++				|| node == NODE_TYPE_ALBUM_COMPILATIONS || node == NODE_TYPE_YEAR_ALBUM)
++			items.SetContent("albums");
++		else if (node == NODE_TYPE_ARTIST)
++			items.SetContent("artists");
++		else if (node == NODE_TYPE_SONG || node == NODE_TYPE_SONG_TOP100
++				|| node == NODE_TYPE_SINGLES)
++			items.SetContent("songs");
++		else if (node == NODE_TYPE_GENRE)
++			items.SetContent("genres");
++		else if (node == NODE_TYPE_YEAR)
++			items.SetContent("years");
++	} else if (strDirectory.Equals("special://musicplaylists"))
++		items.SetContent("playlists");
++	else if (strDirectory.Equals("plugin://music/"))
++		items.SetContent("plugins");
++	else if (items.IsPlayList())
++		items.SetContent("songs");
++
++	return bResult;
+ }
+ 
+-void CGUIWindowMusicNav::UpdateButtons()
+-{
+-  CGUIWindowMusicBase::UpdateButtons();
+-
+-  // Update object count
+-  int iItems = m_vecItems->Size();
+-  if (iItems)
+-  {
+-    // check for parent dir and "all" items
+-    // should always be the first two items
+-    for (int i = 0; i <= (iItems>=2 ? 1 : 0); i++)
+-    {
+-      CFileItemPtr pItem = m_vecItems->Get(i);
+-      if (pItem->IsParentFolder()) iItems--;
+-      if (pItem->GetPath().Left(4).Equals("/-1/")) iItems--;
+-    }
+-    // or the last item
+-    if (m_vecItems->Size() > 2 &&
+-      m_vecItems->Get(m_vecItems->Size()-1)->GetPath().Left(4).Equals("/-1/"))
+-      iItems--;
+-  }
+-  CStdString items;
+-  items.Format("%i %s", iItems, g_localizeStrings.Get(127).c_str());
+-  SET_CONTROL_LABEL(CONTROL_LABELFILES, items);
+-
+-  // set the filter label
+-  CStdString strLabel;
+-
+-  // "Playlists"
+-  if (m_vecItems->GetPath().Equals("special://musicplaylists/"))
+-    strLabel = g_localizeStrings.Get(136);
+-  // "{Playlist Name}"
+-  else if (m_vecItems->IsPlayList())
+-  {
+-    // get playlist name from path
+-    CStdString strDummy;
+-    URIUtils::Split(m_vecItems->GetPath(), strDummy, strLabel);
+-  }
+-  // everything else is from a musicdb:// path
+-  else
+-  {
+-    CMusicDatabaseDirectory dir;
+-    dir.GetLabel(m_vecItems->GetPath(), strLabel);
+-  }
+-
+-  SET_CONTROL_LABEL(CONTROL_FILTER, strLabel);
+-
+-  SET_CONTROL_SELECTED(GetID(),CONTROL_BTNPARTYMODE, g_partyModeManager.IsEnabled());
++void CGUIWindowMusicNav::UpdateButtons() {
++	CGUIWindowMusicBase::UpdateButtons();
++
++	// Update object count
++	int iItems = m_vecItems->Size();
++	if (iItems) {
++		// check for parent dir and "all" items
++		// should always be the first two items
++		for (int i = 0; i <= (iItems >= 2 ? 1 : 0); i++) {
++			CFileItemPtr pItem = m_vecItems->Get(i);
++			if (pItem->IsParentFolder())
++				iItems--;
++			if (pItem->GetPath().Left(4).Equals("/-1/"))
++				iItems--;
++		}
++		// or the last item
++		if (m_vecItems->Size() > 2
++				&& m_vecItems->Get(m_vecItems->Size() - 1)->GetPath().Left(4).Equals(
++						"/-1/"))
++			iItems--;
++	}
++	CStdString items;
++	items.Format("%i %s", iItems, g_localizeStrings.Get(127).c_str());
++	SET_CONTROL_LABEL(CONTROL_LABELFILES, items);
++
++	// set the filter label
++	CStdString strLabel;
++
++	// "Playlists"
++	if (m_vecItems->GetPath().Equals("special://musicplaylists/"))
++		strLabel = g_localizeStrings.Get(136);
++	// "{Playlist Name}"
++	else if (m_vecItems->IsPlayList()) {
++		// get playlist name from path
++		CStdString strDummy;
++		URIUtils::Split(m_vecItems->GetPath(), strDummy, strLabel);
++	}
++	// everything else is from a musicdb:// path
++	else {
++		CMusicDatabaseDirectory dir;
++		dir.GetLabel(m_vecItems->GetPath(), strLabel);
++	}
++
++	SET_CONTROL_LABEL(CONTROL_FILTER, strLabel);
++
++	SET_CONTROL_SELECTED(GetID(), CONTROL_BTNPARTYMODE,
++			g_partyModeManager.IsEnabled());
+ }
+ 
+-void CGUIWindowMusicNav::PlayItem(int iItem)
+-{
+-  // unlike additemtoplaylist, we need to check the items here
+-  // before calling it since the current playlist will be stopped
+-  // and cleared!
++void CGUIWindowMusicNav::PlayItem(int iItem) {
++	// unlike additemtoplaylist, we need to check the items here
++	// before calling it since the current playlist will be stopped
++	// and cleared!
+ 
+-  // root is not allowed
+-  if (m_vecItems->IsVirtualDirectoryRoot())
+-    return;
++	// root is not allowed
++	if (m_vecItems->IsVirtualDirectoryRoot())
++		return;
+ 
+-  CGUIWindowMusicBase::PlayItem(iItem);
++	CGUIWindowMusicBase::PlayItem(iItem);
+ }
+ 
+-void CGUIWindowMusicNav::OnWindowLoaded()
+-{
+-  const CGUIControl *control = GetControl(CONTROL_SEARCH);
+-  m_searchWithEdit = (control && control->GetControlType() == CGUIControl::GUICONTROL_EDIT);
++void CGUIWindowMusicNav::OnWindowLoaded() {
++	const CGUIControl *control = GetControl(CONTROL_SEARCH);
++	m_searchWithEdit = (control
++			&& control->GetControlType() == CGUIControl::GUICONTROL_EDIT);
+ 
+-  CGUIWindowMusicBase::OnWindowLoaded();
++	CGUIWindowMusicBase::OnWindowLoaded();
+ 
+-  if (m_searchWithEdit)
+-  {
+-    SendMessage(GUI_MSG_SET_TYPE, CONTROL_SEARCH, CGUIEditControl::INPUT_TYPE_SEARCH);
+-    SET_CONTROL_LABEL2(CONTROL_SEARCH, GetProperty("search").asString());
+-  }
++	if (m_searchWithEdit) {
++		SendMessage(GUI_MSG_SET_TYPE, CONTROL_SEARCH,
++				CGUIEditControl::INPUT_TYPE_SEARCH);
++		SET_CONTROL_LABEL2(CONTROL_SEARCH, GetProperty("search").asString());
++	}
+ }
+ 
+-void CGUIWindowMusicNav::GetContextButtons(int itemNumber, CContextButtons &buttons)
+-{
+-  CGUIWindowMusicBase::GetContextButtons(itemNumber, buttons);
+-
+-  CGUIDialogMusicScan *musicScan = (CGUIDialogMusicScan *)g_windowManager.GetWindow(WINDOW_DIALOG_MUSIC_SCAN);
+-  CFileItemPtr item;
+-  if (itemNumber >= 0 && itemNumber < m_vecItems->Size())
+-    item = m_vecItems->Get(itemNumber);
+-  if (item && (item->GetExtraInfo().Find("lastfm") < 0))
+-  {
+-    // are we in the playlists location?
+-    bool inPlaylists = m_vecItems->GetPath().Equals(CUtil::MusicPlaylistsLocation()) ||
+-                       m_vecItems->GetPath().Equals("special://musicplaylists/");
+-
+-    CMusicDatabaseDirectory dir;
+-    // enable music info button on an album or on a song.
+-    if (item->IsAudio() && !item->IsPlayList() && !item->IsSmartPlayList() &&
+-       !item->IsLastFM() && !item->m_bIsFolder)
+-    {
+-      buttons.Add(CONTEXT_BUTTON_SONG_INFO, 658);
+-    }
+-    else if (item->IsVideoDb())
+-    {
+-      if (!item->m_bIsFolder) // music video
+-       buttons.Add(CONTEXT_BUTTON_INFO, 20393);
+-      if (item->GetPath().Left(14).Equals("videodb://3/4/") &&
+-          item->GetPath().size() > 14 && item->m_bIsFolder)
+-      {
+-        long idArtist = m_musicdatabase.GetArtistByName(m_vecItems->Get(itemNumber)->GetLabel());
+-        if (idArtist > - 1)
+-          buttons.Add(CONTEXT_BUTTON_INFO,21891);
+-      }
+-    }
+-    else if (!inPlaylists && (dir.HasAlbumInfo(item->GetPath())||
+-                              dir.IsArtistDir(item->GetPath())   )      &&
+-             !dir.IsAllItem(item->GetPath()) && !item->IsParentFolder() &&
+-             !item->IsLastFM() && !item->IsPlugin() && !item->IsScript() &&
+-             !item->GetPath().Left(14).Equals("musicsearch://"))
+-    {
+-      if (dir.IsArtistDir(item->GetPath()))
+-        buttons.Add(CONTEXT_BUTTON_INFO, 21891);
+-      else
+-        buttons.Add(CONTEXT_BUTTON_INFO, 13351);
+-    }
+-
+-    // enable query all albums button only in album view
+-    if (dir.HasAlbumInfo(item->GetPath()) && !dir.IsAllItem(item->GetPath()) &&
+-        item->m_bIsFolder && !item->IsVideoDb() && !item->IsParentFolder()   &&
+-       !item->IsLastFM()                                                     &&
+-       !item->IsPlugin() && !item->GetPath().Left(14).Equals("musicsearch://"))
+-    {
+-      buttons.Add(CONTEXT_BUTTON_INFO_ALL, 20059);
+-    }
+-
+-    // enable query all artist button only in album view
+-    if (dir.IsArtistDir(item->GetPath()) && !dir.IsAllItem(item->GetPath()) &&
+-      item->m_bIsFolder && !item->IsVideoDb())
+-    {
+-      ADDON::ScraperPtr info;
+-      m_musicdatabase.GetScraperForPath(item->GetPath(), info, ADDON::ADDON_SCRAPER_ARTISTS);
+-      if (info && info->Supports(CONTENT_ARTISTS))
+-        buttons.Add(CONTEXT_BUTTON_INFO_ALL, 21884);
+-    }
+-
+-    //Set default or clear default
+-    NODE_TYPE nodetype = dir.GetDirectoryType(item->GetPath());
+-    if (!item->IsParentFolder() && !inPlaylists &&
+-        (nodetype == NODE_TYPE_ROOT     ||
+-         nodetype == NODE_TYPE_OVERVIEW ||
+-         nodetype == NODE_TYPE_TOP100))
+-    {
+-      if (!item->GetPath().Equals(g_settings.m_defaultMusicLibSource))
+-        buttons.Add(CONTEXT_BUTTON_SET_DEFAULT, 13335); // set default
+-      if (strcmp(g_settings.m_defaultMusicLibSource, ""))
+-        buttons.Add(CONTEXT_BUTTON_CLEAR_DEFAULT, 13403); // clear default
+-    }
+-    NODE_TYPE childtype = dir.GetDirectoryChildType(item->GetPath());
+-    if (childtype == NODE_TYPE_ALBUM               ||
+-        childtype == NODE_TYPE_ARTIST              ||
+-        nodetype == NODE_TYPE_GENRE                ||
+-        nodetype == NODE_TYPE_ALBUM                ||
+-        nodetype == NODE_TYPE_ALBUM_RECENTLY_ADDED ||
+-        nodetype == NODE_TYPE_ALBUM_COMPILATIONS)
+-    {
+-      // we allow the user to set content for
+-      // 1. general artist and album nodes
+-      // 2. specific per genre
+-      // 3. specific per artist
+-      // 4. specific per album
+-      buttons.Add(CONTEXT_BUTTON_SET_CONTENT,20195);
+-    }
+-    if (item->HasMusicInfoTag() && item->GetMusicInfoTag()->GetArtist().size() > 0)
+-    {
+-      CVideoDatabase database;
+-      database.Open();
+-      if (database.GetMatchingMusicVideo(item->GetMusicInfoTag()->GetArtist()) > -1)
+-        buttons.Add(CONTEXT_BUTTON_GO_TO_ARTIST, 20400);
+-    }
+-    if (item->HasMusicInfoTag() && item->GetMusicInfoTag()->GetArtist().size() > 0 &&
+-        item->GetMusicInfoTag()->GetAlbum().size() > 0 &&
+-        item->GetMusicInfoTag()->GetTitle().size() > 0)
+-    {
+-      CVideoDatabase database;
+-      database.Open();
+-      if (database.GetMatchingMusicVideo(item->GetMusicInfoTag()->GetArtist(),item->GetMusicInfoTag()->GetAlbum(),item->GetMusicInfoTag()->GetTitle()) > -1)
+-        buttons.Add(CONTEXT_BUTTON_PLAY_OTHER, 20401);
+-    }
+-    if (item->HasVideoInfoTag() && !item->m_bIsFolder)
+-    {
+-      if (item->GetVideoInfoTag()->m_playCount > 0)
+-        buttons.Add(CONTEXT_BUTTON_MARK_UNWATCHED, 16104); //Mark as UnWatched
+-      else
+-        buttons.Add(CONTEXT_BUTTON_MARK_WATCHED, 16103);   //Mark as Watched
+-      if ((g_settings.GetCurrentProfile().canWriteDatabases() || g_passwordManager.bMasterUser) && !item->IsPlugin())
+-      {
+-        buttons.Add(CONTEXT_BUTTON_RENAME, 16105);
+-        buttons.Add(CONTEXT_BUTTON_DELETE, 646);
+-      }
+-    }
+-    if (inPlaylists && !URIUtils::GetFileName(item->GetPath()).Equals("PartyMode.xsp")
+-                    && (item->IsPlayList() || item->IsSmartPlayList()))
+-      buttons.Add(CONTEXT_BUTTON_DELETE, 117);
+-
+-    if (item->IsPlugin() || item->IsScript() || m_vecItems->IsPlugin())
+-      buttons.Add(CONTEXT_BUTTON_PLUGIN_SETTINGS, 1045);
+-  }
+-  // noncontextual buttons
+-
+-  if (musicScan && musicScan->IsScanning())
+-    buttons.Add(CONTEXT_BUTTON_STOP_SCANNING, 13353);     // Stop Scanning
+-  else if (musicScan)
+-    buttons.Add(CONTEXT_BUTTON_UPDATE_LIBRARY, 653);
+-
+-  CGUIWindowMusicBase::GetNonContextButtons(buttons);
++void CGUIWindowMusicNav::GetContextButtons(int itemNumber,
++		CContextButtons &buttons) {
++	CGUIWindowMusicBase::GetContextButtons(itemNumber, buttons);
++
++	CGUIDialogMusicScan *musicScan =
++			(CGUIDialogMusicScan *) g_windowManager.GetWindow(
++					WINDOW_DIALOG_MUSIC_SCAN);
++	CFileItemPtr item;
++	if (itemNumber >= 0 && itemNumber < m_vecItems->Size())
++		item = m_vecItems->Get(itemNumber);
++	if (item && (item->GetExtraInfo().Find("lastfm") < 0)) {
++		// are we in the playlists location?
++		bool inPlaylists = m_vecItems->GetPath().Equals(
++				CUtil::MusicPlaylistsLocation())
++				|| m_vecItems->GetPath().Equals("special://musicplaylists/");
++
++		CMusicDatabaseDirectory dir;
++		// enable music info button on an album or on a song.
++		if (item->IsAudio() && !item->IsPlayList() && !item->IsSmartPlayList()
++				&& !item->IsLastFM() && !item->m_bIsFolder) {
++			buttons.Add(CONTEXT_BUTTON_SONG_INFO, 658);
++
++			//Spotify allow spotyxbmc to add contextbuttons to songs and albums, for now its the star/unstar capability
++			g_spotify->GetContextButtons(item, buttons);
++
++		} else if (item->IsVideoDb()) {
++			if (!item->m_bIsFolder) // music video
++				buttons.Add(CONTEXT_BUTTON_INFO, 20393);
++			if (item->GetPath().Left(14).Equals("videodb://3/4/")
++					&& item->GetPath().size() > 14 && item->m_bIsFolder) {
++				long idArtist = m_musicdatabase.GetArtistByName(
++						m_vecItems->Get(itemNumber)->GetLabel());
++				if (idArtist > -1)
++					buttons.Add(CONTEXT_BUTTON_INFO, 21891);
++			}
++		} else if (!inPlaylists
++				&& (dir.HasAlbumInfo(item->GetPath())
++						|| dir.IsArtistDir(item->GetPath()))
++				&& !dir.IsAllItem(item->GetPath()) && !item->IsParentFolder()
++				&& !item->IsLastFM() && !item->IsPlugin() && !item->IsScript()
++				&& !item->GetPath().Left(14).Equals("musicsearch://")) {
++			if (dir.IsArtistDir(item->GetPath()))
++				buttons.Add(CONTEXT_BUTTON_INFO, 21891);
++			else
++				buttons.Add(CONTEXT_BUTTON_INFO, 13351);
++		}
++
++		// enable query all albums button only in album view
++		if (dir.HasAlbumInfo(item->GetPath()) && !dir.IsAllItem(item->GetPath())
++				&& item->m_bIsFolder && !item->IsVideoDb() && !item->IsParentFolder()
++				&& !item->IsLastFM() && !item->IsPlugin()
++				&& !item->GetPath().Left(14).Equals("musicsearch://")) {
++			buttons.Add(CONTEXT_BUTTON_INFO_ALL, 20059);
++			//Spotify allow spotyxbmc to add contextbuttons to songs and albums, for now its the star/unstar capability
++			g_spotify->GetContextButtons(item, buttons);
++		}
++
++		// enable query all artist button only in album view
++		if (dir.IsArtistDir(item->GetPath()) && !dir.IsAllItem(item->GetPath())
++				&& item->m_bIsFolder && !item->IsVideoDb()) {
++			ADDON::ScraperPtr info;
++			m_musicdatabase.GetScraperForPath(item->GetPath(), info,
++					ADDON::ADDON_SCRAPER_ARTISTS);
++			if (info && info->Supports(CONTENT_ARTISTS))
++				buttons.Add(CONTEXT_BUTTON_INFO_ALL, 21884);
++		}
++
++		//Set default or clear default
++		NODE_TYPE nodetype = dir.GetDirectoryType(item->GetPath());
++		if (!item->IsParentFolder() && !inPlaylists
++				&& (nodetype == NODE_TYPE_ROOT || nodetype == NODE_TYPE_OVERVIEW
++						|| nodetype == NODE_TYPE_TOP100)) {
++			if (!item->GetPath().Equals(g_settings.m_defaultMusicLibSource))
++				buttons.Add(CONTEXT_BUTTON_SET_DEFAULT, 13335); // set default
++			if (strcmp(g_settings.m_defaultMusicLibSource, ""))
++				buttons.Add(CONTEXT_BUTTON_CLEAR_DEFAULT, 13403); // clear default
++		}
++		NODE_TYPE childtype = dir.GetDirectoryChildType(item->GetPath());
++		if (childtype == NODE_TYPE_ALBUM || childtype == NODE_TYPE_ARTIST
++				|| nodetype == NODE_TYPE_GENRE || nodetype == NODE_TYPE_ALBUM
++				|| nodetype == NODE_TYPE_ALBUM_RECENTLY_ADDED
++				|| nodetype == NODE_TYPE_ALBUM_COMPILATIONS) {
++			// we allow the user to set content for
++			// 1. general artist and album nodes
++			// 2. specific per genre
++			// 3. specific per artist
++			// 4. specific per album
++			buttons.Add(CONTEXT_BUTTON_SET_CONTENT, 20195);
++		}
++		if (item->HasMusicInfoTag()
++				&& item->GetMusicInfoTag()->GetArtist().size() > 0) {
++			CVideoDatabase database;
++			database.Open();
++			if (database.GetMatchingMusicVideo(item->GetMusicInfoTag()->GetArtist())
++					> -1)
++				buttons.Add(CONTEXT_BUTTON_GO_TO_ARTIST, 20400);
++		}
++		if (item->HasMusicInfoTag()
++				&& item->GetMusicInfoTag()->GetArtist().size() > 0
++				&& item->GetMusicInfoTag()->GetAlbum().size() > 0
++				&& item->GetMusicInfoTag()->GetTitle().size() > 0) {
++			CVideoDatabase database;
++			database.Open();
++			if (database.GetMatchingMusicVideo(item->GetMusicInfoTag()->GetArtist(),
++					item->GetMusicInfoTag()->GetAlbum(),
++					item->GetMusicInfoTag()->GetTitle()) > -1)
++				buttons.Add(CONTEXT_BUTTON_PLAY_OTHER, 20401);
++		}
++		if (item->HasVideoInfoTag() && !item->m_bIsFolder) {
++			if (item->GetVideoInfoTag()->m_playCount > 0)
++				buttons.Add(CONTEXT_BUTTON_MARK_UNWATCHED, 16104); //Mark as UnWatched
++			else
++				buttons.Add(CONTEXT_BUTTON_MARK_WATCHED, 16103); //Mark as Watched
++			if ((g_settings.GetCurrentProfile().canWriteDatabases()
++					|| g_passwordManager.bMasterUser) && !item->IsPlugin()) {
++				buttons.Add(CONTEXT_BUTTON_RENAME, 16105);
++				buttons.Add(CONTEXT_BUTTON_DELETE, 646);
++			}
++		}
++		if (inPlaylists
++				&& !URIUtils::GetFileName(item->GetPath()).Equals("PartyMode.xsp")
++				&& (item->IsPlayList() || item->IsSmartPlayList()))
++			buttons.Add(CONTEXT_BUTTON_DELETE, 117);
++
++		if (item->IsPlugin() || item->IsScript() || m_vecItems->IsPlugin())
++			buttons.Add(CONTEXT_BUTTON_PLUGIN_SETTINGS, 1045);
++	}
++	// noncontextual buttons
++
++	if (musicScan && musicScan->IsScanning())
++		buttons.Add(CONTEXT_BUTTON_STOP_SCANNING, 13353); // Stop Scanning
++	else if (musicScan)
++		buttons.Add(CONTEXT_BUTTON_UPDATE_LIBRARY, 653);
++
++	CGUIWindowMusicBase::GetNonContextButtons(buttons);
+ }
+ 
+-bool CGUIWindowMusicNav::OnContextButton(int itemNumber, CONTEXT_BUTTON button)
+-{
+-  CFileItemPtr item;
+-  if (itemNumber >= 0 && itemNumber < m_vecItems->Size())
+-    item = m_vecItems->Get(itemNumber);
+-
+-  switch (button)
+-  {
+-  case CONTEXT_BUTTON_INFO:
+-    {
+-      if (!item->IsVideoDb())
+-        return CGUIWindowMusicBase::OnContextButton(itemNumber,button);
+-
+-      // music videos - artists
+-      if (item->GetPath().Left(14).Equals("videodb://3/4/"))
+-      {
+-        long idArtist = m_musicdatabase.GetArtistByName(item->GetLabel());
+-        if (idArtist == -1)
+-          return false;
+-        CStdString path; path.Format("musicdb://2/%ld/", idArtist);
+-        item->SetPath(path);
+-        CGUIWindowMusicBase::OnContextButton(itemNumber,button);
+-        Update(m_vecItems->GetPath());
+-        m_viewControl.SetSelectedItem(itemNumber);
+-        return true;
+-      }
+-
+-      // music videos - albums
+-      if (item->GetPath().Left(14).Equals("videodb://3/5/"))
+-      {
+-        long idAlbum = m_musicdatabase.GetAlbumByName(item->GetLabel());
+-        if (idAlbum == -1)
+-          return false;
+-        CStdString path; path.Format("musicdb://3/%ld/", idAlbum);
+-        item->SetPath(path);
+-        CGUIWindowMusicBase::OnContextButton(itemNumber,button);
+-        Update(m_vecItems->GetPath());
+-        m_viewControl.SetSelectedItem(itemNumber);
+-        return true;
+-      }
+-
+-      if (item->HasVideoInfoTag() && !item->GetVideoInfoTag()->m_strTitle.IsEmpty())
+-      {
+-        CGUIWindowVideoNav* pWindow = (CGUIWindowVideoNav*)g_windowManager.GetWindow(WINDOW_VIDEO_NAV);
+-        if (pWindow)
+-        {
+-          ADDON::ScraperPtr info;
+-          pWindow->OnInfo(item.get(),info);
+-          Update(m_vecItems->GetPath());
+-        }
+-      }
+-      return true;
+-    }
+-
+-  case CONTEXT_BUTTON_INFO_ALL:
+-    OnInfoAll(itemNumber);
+-    return true;
+-
+-  case CONTEXT_BUTTON_UPDATE_LIBRARY:
+-    {
+-      CGUIDialogMusicScan *scanner = (CGUIDialogMusicScan *)g_windowManager.GetWindow(WINDOW_DIALOG_MUSIC_SCAN);
+-      if (scanner)
+-        scanner->StartScanning("");
+-      return true;
+-    }
+-
+-  case CONTEXT_BUTTON_SET_DEFAULT:
+-    g_settings.m_defaultMusicLibSource = GetQuickpathName(item->GetPath());
+-    g_settings.Save();
+-    return true;
+-
+-  case CONTEXT_BUTTON_CLEAR_DEFAULT:
+-    g_settings.m_defaultMusicLibSource.Empty();
+-    g_settings.Save();
+-    return true;
+-
+-  case CONTEXT_BUTTON_GO_TO_ARTIST:
+-    {
+-      CStdString strPath;
+-      CVideoDatabase database;
+-      database.Open();
+-      strPath.Format("videodb://3/4/%ld/",database.GetMatchingMusicVideo(item->GetMusicInfoTag()->GetArtist()));
+-      g_windowManager.ActivateWindow(WINDOW_VIDEO_NAV,strPath);
+-      return true;
+-    }
+-
+-  case CONTEXT_BUTTON_PLAY_OTHER:
+-    {
+-      CVideoDatabase database;
+-      database.Open();
+-      CVideoInfoTag details;
+-      database.GetMusicVideoInfo("",details,database.GetMatchingMusicVideo(item->GetMusicInfoTag()->GetArtist(),item->GetMusicInfoTag()->GetAlbum(),item->GetMusicInfoTag()->GetTitle()));
+-      g_application.getApplicationMessenger().PlayFile(CFileItem(details));
+-      return true;
+-    }
+-
+-  case CONTEXT_BUTTON_MARK_WATCHED:
+-    CGUIWindowVideoBase::MarkWatched(item,true);
+-    CUtil::DeleteVideoDatabaseDirectoryCache();
+-    Update(m_vecItems->GetPath());
+-    return true;
+-
+-  case CONTEXT_BUTTON_MARK_UNWATCHED:
+-    CGUIWindowVideoBase::MarkWatched(item,false);
+-    CUtil::DeleteVideoDatabaseDirectoryCache();
+-    Update(m_vecItems->GetPath());
+-    return true;
+-
+-  case CONTEXT_BUTTON_RENAME:
+-    CGUIWindowVideoBase::UpdateVideoTitle(item.get());
+-    CUtil::DeleteVideoDatabaseDirectoryCache();
+-    Update(m_vecItems->GetPath());
+-    return true;
+-
+-  case CONTEXT_BUTTON_DELETE:
+-    if (item->IsPlayList() || item->IsSmartPlayList())
+-    {
+-      item->m_bIsFolder = false;
+-      CFileUtils::DeleteItem(item);
+-    }
+-    else
+-    {
+-      CGUIWindowVideoNav::DeleteItem(item.get());
+-      CUtil::DeleteVideoDatabaseDirectoryCache();
+-    }
+-    Update(m_vecItems->GetPath());
+-    return true;
+-
+-  case CONTEXT_BUTTON_SET_CONTENT:
+-    {
+-      bool bScan=false;
+-      ADDON::ScraperPtr scraper;
+-      CStdString path(item->GetPath());
+-      CQueryParams params;
+-      CDirectoryNode::GetDatabaseInfo(item->GetPath(), params);
+-      CONTENT_TYPE content = CONTENT_ALBUMS;
+-      if (params.GetAlbumId() != -1)
+-        path.Format("musicdb://3/%i/",params.GetAlbumId());
+-      else if (params.GetArtistId() != -1)
+-      {
+-        path.Format("musicdb://2/%i/",params.GetArtistId());
+-        content = CONTENT_ARTISTS;
+-      }
+-
+-      if (m_vecItems->GetPath().Equals("musicdb://1/") || item->GetPath().Equals("musicdb://2/"))
+-      {
+-        content = CONTENT_ARTISTS;
+-      }
+-
+-      if (!m_musicdatabase.GetScraperForPath(path, scraper, ADDON::ScraperTypeFromContent(content)))
+-      {
+-        ADDON::AddonPtr defaultScraper;
+-        if (ADDON::CAddonMgr::Get().GetDefault(ADDON::ScraperTypeFromContent(content), defaultScraper))
+-        {
+-          scraper = boost::dynamic_pointer_cast<ADDON::CScraper>(defaultScraper->Clone(defaultScraper));
+-        }
+-      }
+-
+-      if (CGUIDialogContentSettings::Show(scraper, bScan, content))
+-      {
+-        m_musicdatabase.SetScraperForPath(path,scraper);
+-        if (bScan)
+-          OnInfoAll(itemNumber,true);
+-      }
+-      return true;
+-    }
+-
+-  default:
+-    break;
+-  }
+-
+-  return CGUIWindowMusicBase::OnContextButton(itemNumber, button);
++bool CGUIWindowMusicNav::OnContextButton(int itemNumber,
++		CONTEXT_BUTTON button) {
++	CFileItemPtr item;
++	if (itemNumber >= 0 && itemNumber < m_vecItems->Size())
++		item = m_vecItems->Get(itemNumber);
++
++	switch (button) {
++	//spotify toggle star for track
++
++	case CONTEXT_BUTTON_SPOTIFY_TOGGLE_STAR_TRACK: {
++		g_spotify->ToggleStarTrack(item);
++		return true;
++	}
++	case CONTEXT_BUTTON_SPOTIFY_TOGGLE_STAR_ALBUM: {
++		g_spotify->ToggleStarAlbum(item);
++		return true;
++	}
++	case CONTEXT_BUTTON_SPOTIFY_BROWSE_ALBUM: {
++		CURL url(item->GetPath());
++		CStdString uri = url.GetFileNameWithoutPath();
++		CStdString path;
++		path.Format("musicdb://3/%s/", uri);
++		Update(path);
++		return true;
++	}
++	case CONTEXT_BUTTON_SPOTIFY_BROWSE_ARTIST: {
++		CURL url(item->GetPath());
++		CStdString uri = url.GetFileNameWithoutPath();
++		CStdString path;
++		path.Format("musicdb://2/%s/", uri);
++		Update(path);
++		return true;
++	}
++	case CONTEXT_BUTTON_INFO: {
++		if (!item->IsVideoDb())
++			return CGUIWindowMusicBase::OnContextButton(itemNumber, button);
++
++		// music videos - artists
++		if (item->GetPath().Left(14).Equals("videodb://3/4/")) {
++			long idArtist = m_musicdatabase.GetArtistByName(item->GetLabel());
++			if (idArtist == -1)
++				return false;
++			CStdString path;
++			path.Format("musicdb://2/%ld/", idArtist);
++			item->SetPath(path);
++			CGUIWindowMusicBase::OnContextButton(itemNumber, button);
++			Update(m_vecItems->GetPath());
++			m_viewControl.SetSelectedItem(itemNumber);
++			return true;
++		}
++
++		// music videos - albums
++		if (item->GetPath().Left(14).Equals("videodb://3/5/")) {
++			long idAlbum = m_musicdatabase.GetAlbumByName(item->GetLabel());
++			if (idAlbum == -1)
++				return false;
++			CStdString path;
++			path.Format("musicdb://3/%ld/", idAlbum);
++			item->SetPath(path);
++			CGUIWindowMusicBase::OnContextButton(itemNumber, button);
++			Update(m_vecItems->GetPath());
++			m_viewControl.SetSelectedItem(itemNumber);
++			return true;
++		}
++
++		if (item->HasVideoInfoTag()
++				&& !item->GetVideoInfoTag()->m_strTitle.IsEmpty()) {
++			CGUIWindowVideoNav* pWindow =
++					(CGUIWindowVideoNav*) g_windowManager.GetWindow(WINDOW_VIDEO_NAV);
++			if (pWindow) {
++				ADDON::ScraperPtr info;
++				pWindow->OnInfo(item.get(), info);
++				Update(m_vecItems->GetPath());
++			}
++		}
++		return true;
++	}
++
++	case CONTEXT_BUTTON_INFO_ALL:
++		OnInfoAll(itemNumber);
++		return true;
++
++	case CONTEXT_BUTTON_UPDATE_LIBRARY: {
++		CGUIDialogMusicScan *scanner =
++				(CGUIDialogMusicScan *) g_windowManager.GetWindow(
++						WINDOW_DIALOG_MUSIC_SCAN);
++		if (scanner)
++			scanner->StartScanning("");
++		return true;
++	}
++
++	case CONTEXT_BUTTON_SET_DEFAULT:
++		g_settings.m_defaultMusicLibSource = GetQuickpathName(item->GetPath());
++		g_settings.Save();
++		return true;
++
++	case CONTEXT_BUTTON_CLEAR_DEFAULT:
++		g_settings.m_defaultMusicLibSource.Empty();
++		g_settings.Save();
++		return true;
++
++	case CONTEXT_BUTTON_GO_TO_ARTIST: {
++		CStdString strPath;
++		CVideoDatabase database;
++		database.Open();
++		strPath.Format("videodb://3/4/%ld/",
++				database.GetMatchingMusicVideo(item->GetMusicInfoTag()->GetArtist()));
++		g_windowManager.ActivateWindow(WINDOW_VIDEO_NAV, strPath);
++		return true;
++	}
++
++	case CONTEXT_BUTTON_PLAY_OTHER: {
++		CVideoDatabase database;
++		database.Open();
++		CVideoInfoTag details;
++		database.GetMusicVideoInfo(
++				"",
++				details,
++				database.GetMatchingMusicVideo(item->GetMusicInfoTag()->GetArtist(),
++						item->GetMusicInfoTag()->GetAlbum(),
++						item->GetMusicInfoTag()->GetTitle()));
++		g_application.getApplicationMessenger().PlayFile(CFileItem(details));
++		return true;
++	}
++
++	case CONTEXT_BUTTON_MARK_WATCHED:
++		CGUIWindowVideoBase::MarkWatched(item, true);
++		CUtil::DeleteVideoDatabaseDirectoryCache();
++		Update(m_vecItems->GetPath());
++		return true;
++
++	case CONTEXT_BUTTON_MARK_UNWATCHED:
++		CGUIWindowVideoBase::MarkWatched(item, false);
++		CUtil::DeleteVideoDatabaseDirectoryCache();
++		Update(m_vecItems->GetPath());
++		return true;
++
++	case CONTEXT_BUTTON_RENAME:
++		CGUIWindowVideoBase::UpdateVideoTitle(item.get());
++		CUtil::DeleteVideoDatabaseDirectoryCache();
++		Update(m_vecItems->GetPath());
++		return true;
++
++	case CONTEXT_BUTTON_DELETE:
++		if (item->IsPlayList() || item->IsSmartPlayList()) {
++			item->m_bIsFolder = false;
++			CFileUtils::DeleteItem(item);
++		} else {
++			CGUIWindowVideoNav::DeleteItem(item.get());
++			CUtil::DeleteVideoDatabaseDirectoryCache();
++		}
++		Update(m_vecItems->GetPath());
++		return true;
++
++	case CONTEXT_BUTTON_SET_CONTENT: {
++		bool bScan = false;
++		ADDON::ScraperPtr scraper;
++		CStdString path(item->GetPath());
++		CQueryParams params;
++		CDirectoryNode::GetDatabaseInfo(item->GetPath(), params);
++		CONTENT_TYPE content = CONTENT_ALBUMS;
++		if (params.GetAlbumId() != -1)
++			path.Format("musicdb://3/%i/", params.GetAlbumId());
++		else if (params.GetArtistId() != -1) {
++			path.Format("musicdb://2/%i/", params.GetArtistId());
++			content = CONTENT_ARTISTS;
++		}
++
++		if (m_vecItems->GetPath().Equals("musicdb://1/")
++				|| item->GetPath().Equals("musicdb://2/")) {
++			content = CONTENT_ARTISTS;
++		}
++
++		if (!m_musicdatabase.GetScraperForPath(path, scraper,
++				ADDON::ScraperTypeFromContent(content))) {
++			ADDON::AddonPtr defaultScraper;
++			if (ADDON::CAddonMgr::Get().GetDefault(
++					ADDON::ScraperTypeFromContent(content), defaultScraper)) {
++				scraper = boost::dynamic_pointer_cast < ADDON::CScraper
++						> (defaultScraper->Clone(defaultScraper));
++			}
++		}
++
++		if (CGUIDialogContentSettings::Show(scraper, bScan, content)) {
++			m_musicdatabase.SetScraperForPath(path, scraper);
++			if (bScan)
++				OnInfoAll(itemNumber, true);
++		}
++		return true;
++	}
++
++	default:
++		break;
++	}
++
++	return CGUIWindowMusicBase::OnContextButton(itemNumber, button);
+ }
+ 
+-bool CGUIWindowMusicNav::GetSongsFromPlayList(const CStdString& strPlayList, CFileItemList &items)
+-{
+-  CStdString strParentPath=m_history.GetParentPath();
+-
+-  if (m_guiState.get() && !m_guiState->HideParentDirItems())
+-  {
+-    CFileItemPtr pItem(new CFileItem(".."));
+-    pItem->SetPath(strParentPath);
+-    items.Add(pItem);
+-  }
+-
+-  items.SetPath(strPlayList);
+-  CLog::Log(LOGDEBUG,"CGUIWindowMusicNav, opening playlist [%s]", strPlayList.c_str());
+-
+-  auto_ptr<CPlayList> pPlayList (CPlayListFactory::Create(strPlayList));
+-  if ( NULL != pPlayList.get())
+-  {
+-    // load it
+-    if (!pPlayList->Load(strPlayList))
+-    {
+-      CGUIDialogOK::ShowAndGetInput(6, 0, 477, 0);
+-      return false; //hmmm unable to load playlist?
+-    }
+-    CPlayList playlist = *pPlayList;
+-    // convert playlist items to songs
+-    for (int i = 0; i < (int)playlist.size(); ++i)
+-    {
+-      items.Add(playlist[i]);
+-    }
+-  }
+-
+-  return true;
++bool CGUIWindowMusicNav::GetSongsFromPlayList(const CStdString& strPlayList,
++		CFileItemList &items) {
++	CStdString strParentPath = m_history.GetParentPath();
++
++	if (m_guiState.get() && !m_guiState->HideParentDirItems()) {
++		CFileItemPtr pItem(new CFileItem(".."));
++		pItem->SetPath(strParentPath);
++		items.Add(pItem);
++	}
++
++	items.SetPath(strPlayList);
++	CLog::Log(LOGDEBUG, "CGUIWindowMusicNav, opening playlist [%s]",
++			strPlayList.c_str());
++
++	auto_ptr<CPlayList> pPlayList(CPlayListFactory::Create(strPlayList));
++	if (NULL != pPlayList.get()) {
++		// load it
++		if (!pPlayList->Load(strPlayList)) {
++			CGUIDialogOK::ShowAndGetInput(6, 0, 477, 0);
++			return false; //hmmm unable to load playlist?
++		}
++		CPlayList playlist = *pPlayList;
++		// convert playlist items to songs
++		for (int i = 0; i < (int) playlist.size(); ++i) {
++			items.Add(playlist[i]);
++		}
++	}
++
++	return true;
+ }
+ 
+-void CGUIWindowMusicNav::DisplayEmptyDatabaseMessage(bool bDisplay)
+-{
+-  m_bDisplayEmptyDatabaseMessage = bDisplay;
++void CGUIWindowMusicNav::DisplayEmptyDatabaseMessage(bool bDisplay) {
++	m_bDisplayEmptyDatabaseMessage = bDisplay;
+ }
+ 
+-void CGUIWindowMusicNav::OnSearchUpdate()
+-{
+-  CStdString search(GetProperty("search").asString());
+-  CURL::Encode(search);
+-  if (!search.IsEmpty())
+-  {
+-    CStdString path = "musicsearch://" + search + "/";
+-    m_history.ClearPathHistory();
+-    Update(path);
+-  }
+-  else if (m_vecItems->IsVirtualDirectoryRoot())
+-  {
+-    Update("");
+-  }
++void CGUIWindowMusicNav::OnSearchUpdate() {
++	CStdString search(GetProperty("search").asString());
++	CURL::Encode(search);
++	if (!search.IsEmpty()) {
++		CStdString path = "musicsearch://" + search + "/";
++		m_history.ClearPathHistory();
++		Update(path);
++	} else if (m_vecItems->IsVirtualDirectoryRoot()) {
++		Update("");
++	}
+ }
+ 
+-void CGUIWindowMusicNav::FrameMove()
+-{
+-  static const int search_timeout = 2000;
+-  // update our searching
+-  if (m_searchTimer.IsRunning() && m_searchTimer.GetElapsedMilliseconds() > search_timeout)
+-  {
+-    OnSearchUpdate();
+-    m_searchTimer.Stop();
+-  }
+-  if (m_bDisplayEmptyDatabaseMessage)
+-    SET_CONTROL_LABEL(CONTROL_LABELEMPTY,g_localizeStrings.Get(745)+'\n'+g_localizeStrings.Get(746));
+-  else
+-    SET_CONTROL_LABEL(CONTROL_LABELEMPTY,"");
+-  CGUIWindowMusicBase::FrameMove();
++void CGUIWindowMusicNav::FrameMove() {
++	static const int search_timeout = 2000;
++	// update our searching
++	if (m_searchTimer.IsRunning()
++			&& m_searchTimer.GetElapsedMilliseconds() > search_timeout) {
++		OnSearchUpdate();
++		m_searchTimer.Stop();
++	}
++	if (m_bDisplayEmptyDatabaseMessage)
++		SET_CONTROL_LABEL(CONTROL_LABELEMPTY,
++				g_localizeStrings.Get(745)+'\n'+g_localizeStrings.Get(746));
++	else
++		SET_CONTROL_LABEL(CONTROL_LABELEMPTY, "");
++	CGUIWindowMusicBase::FrameMove();
+ }
+ 
+-void CGUIWindowMusicNav::OnPrepareFileItems(CFileItemList &items)
+-{
+-  CGUIWindowMusicBase::OnPrepareFileItems(items);
+-  // set fanart
+-  SetupFanart(items);
++void CGUIWindowMusicNav::OnPrepareFileItems(CFileItemList &items) {
++	CGUIWindowMusicBase::OnPrepareFileItems(items);
++	// set fanart
++	SetupFanart(items);
+ }
+ 
+-void CGUIWindowMusicNav::AddSearchFolder()
+-{
+-  // we use a general viewstate (and not our member) here as our
+-  // current viewstate may be specific to some other folder, and
+-  // we know we're in the root here
+-  CFileItemList items;
+-  CGUIViewState* viewState = CGUIViewState::GetViewState(GetID(), items);
+-  if (viewState)
+-  {
+-    // add our remove the musicsearch source
+-    VECSOURCES &sources = viewState->GetSources();
+-    bool haveSearchSource = false;
+-    bool needSearchSource = !GetProperty("search").empty() || !m_searchWithEdit; // we always need it if we don't have the edit control
+-    for (IVECSOURCES it = sources.begin(); it != sources.end(); ++it)
+-    {
+-      CMediaSource& share = *it;
+-      if (share.strPath == "musicsearch://")
+-      {
+-        haveSearchSource = true;
+-        if (!needSearchSource)
+-        { // remove it
+-          sources.erase(it);
+-          break;
+-        }
+-      }
+-    }
+-    if (!haveSearchSource && needSearchSource)
+-    {
+-      // add earch share
+-      CMediaSource share;
+-      share.strName=g_localizeStrings.Get(137); // Search
+-      share.strPath = "musicsearch://";
+-      share.m_iDriveType = CMediaSource::SOURCE_TYPE_LOCAL;
+-      sources.push_back(share);
+-    }
+-    m_rootDir.SetSources(sources);
+-    delete viewState;
+-  }
++void CGUIWindowMusicNav::AddSearchFolder() {
++	// we use a general viewstate (and not our member) here as our
++	// current viewstate may be specific to some other folder, and
++	// we know we're in the root here
++	CFileItemList items;
++	CGUIViewState* viewState = CGUIViewState::GetViewState(GetID(), items);
++	if (viewState) {
++		// add our remove the musicsearch source
++		VECSOURCES &sources = viewState->GetSources();
++		bool haveSearchSource = false;
++		bool needSearchSource = !GetProperty("search").empty() || !m_searchWithEdit; // we always need it if we don't have the edit control
++		for (IVECSOURCES it = sources.begin(); it != sources.end(); ++it) {
++			CMediaSource& share = *it;
++			if (share.strPath == "musicsearch://") {
++				haveSearchSource = true;
++				if (!needSearchSource) { // remove it
++					sources.erase(it);
++					break;
++				}
++			}
++		}
++		if (!haveSearchSource && needSearchSource) {
++			// add earch share
++			CMediaSource share;
++			share.strName = g_localizeStrings.Get(137); // Search
++			share.strPath = "musicsearch://";
++			share.m_iDriveType = CMediaSource::SOURCE_TYPE_LOCAL;
++			sources.push_back(share);
++		}
++		m_rootDir.SetSources(sources);
++		delete viewState;
++	}
+ }
+ 
+-CStdString CGUIWindowMusicNav::GetStartFolder(const CStdString &dir)
+-{
+-  if (dir.Equals("Genres"))
+-    return "musicdb://1/";
+-  else if (dir.Equals("Artists"))
+-    return "musicdb://2/";
+-  else if (dir.Equals("Albums"))
+-    return "musicdb://3/";
+-  else if (dir.Equals("Singles"))
+-    return "musicdb://10/";
+-  else if (dir.Equals("Songs"))
+-    return "musicdb://4/";
+-  else if (dir.Equals("Top100"))
+-    return "musicdb://5/";
+-  else if (dir.Equals("Top100Songs"))
+-    return "musicdb://5/1/";
+-  else if (dir.Equals("Top100Albums"))
+-    return "musicdb://5/2/";
+-  else if (dir.Equals("RecentlyAddedAlbums"))
+-    return "musicdb://6/";
+-  else if (dir.Equals("RecentlyPlayedAlbums"))
+-   return "musicdb://7/";
+-  else if (dir.Equals("Compilations"))
+-    return "musicdb://8/";
+-  else if (dir.Equals("Years"))
+-    return "musicdb://9/";
+-  return CGUIWindowMusicBase::GetStartFolder(dir);
++CStdString CGUIWindowMusicNav::GetStartFolder(const CStdString &dir) {
++	if (dir.Equals("Genres"))
++		return "musicdb://1/";
++	else if (dir.Equals("Artists"))
++		return "musicdb://2/";
++	else if (dir.Equals("Albums"))
++		return "musicdb://3/";
++	else if (dir.Equals("Singles"))
++		return "musicdb://10/";
++	else if (dir.Equals("Songs"))
++		return "musicdb://4/";
++	else if (dir.Equals("Top100"))
++		return "musicdb://5/";
++	else if (dir.Equals("Top100Songs"))
++		return "musicdb://5/1/";
++	else if (dir.Equals("Top100Albums"))
++		return "musicdb://5/2/";
++	else if (dir.Equals("RecentlyAddedAlbums"))
++		return "musicdb://6/";
++	else if (dir.Equals("RecentlyPlayedAlbums"))
++		return "musicdb://7/";
++	else if (dir.Equals("Compilations"))
++		return "musicdb://8/";
++	else if (dir.Equals("Years"))
++		return "musicdb://9/";
++	return CGUIWindowMusicBase::GetStartFolder(dir);
+ }
 diff --git a/xbmc/music/windows/GUIWindowMusicPlaylist.cpp b/xbmc/music/windows/GUIWindowMusicPlaylist.cpp
 index a472469..9b7c695 100644
 --- a/xbmc/music/windows/GUIWindowMusicPlaylist.cpp
@@ -19187,7 +21032,7 @@ index a472469..9b7c695 100644
      m_vecItems->Get(i)->Select(false);
  
 diff --git a/xbmc/settings/Settings.cpp b/xbmc/settings/Settings.cpp
-index 2702f30..4897bbf 100644
+index ca56955..3448c94 100644
 --- a/xbmc/settings/Settings.cpp
 +++ b/xbmc/settings/Settings.cpp
 @@ -103,7 +103,8 @@ void CSettings::Initialize()
@@ -19201,5 +21046,5 @@ index 2702f30..4897bbf 100644
    m_discStubExtensions = ".disc";
    // internal music extensions
 -- 
-1.7.2.5
+1.7.7.1
 
