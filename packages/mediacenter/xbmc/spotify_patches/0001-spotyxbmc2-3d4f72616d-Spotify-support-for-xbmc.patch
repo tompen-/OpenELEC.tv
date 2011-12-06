@@ -1,11 +1,11 @@
-From 84903e6ae5dbe07d54f31ba7c0087d9855e9bbbe Mon Sep 17 00:00:00 2001
+From 4706d9cecd39c5487c6fcc0b83031907bb566f76 Mon Sep 17 00:00:00 2001
 From: root <root@OpenELEC-dev.(none)>
-Date: Fri, 2 Dec 2011 15:25:43 +0000
-Subject: [PATCH] spotyxbmc2-4328ad44ac-Spotify-support-for-xbmc
+Date: Tue, 6 Dec 2011 22:04:15 +0000
+Subject: [PATCH] spotyxbmc2-3d4f72616d-Spotify-support-for-xbmc
 
 ---
  .gitignore                                         |    2 +-
- Readme.md                                          |  238 ++
+ Readme.md                                          |  243 ++
  addons/plugin.music.spotyXBMC/addon.xml            |   19 +
  addons/plugin.music.spotyXBMC/changelog.txt        |    2 +
  addons/plugin.music.spotyXBMC/default.py           |   20 +
@@ -35,7 +35,7 @@ Subject: [PATCH] spotyxbmc2-4328ad44ac-Spotify-support-for-xbmc
  xbmc/interfaces/json-rpc/methods.json              |    1 +
  xbmc/interfaces/json-rpc/types.json                |    3 +
  xbmc/music/Makefile                                |   32 +
- xbmc/music/spotyXBMC/Addon.music.spotify.cpp       |  745 ++++
+ xbmc/music/spotyXBMC/Addon.music.spotify.cpp       |  744 ++++
  xbmc/music/spotyXBMC/Addon.music.spotify.h         |   83 +
  xbmc/music/spotyXBMC/Logger.cpp                    |   36 +
  xbmc/music/spotyXBMC/Logger.h                      |   57 +
@@ -47,13 +47,13 @@ Subject: [PATCH] spotyxbmc2-4328ad44ac-Spotify-support-for-xbmc
  xbmc/music/spotyXBMC/album/AlbumContainer.h        |   29 +
  xbmc/music/spotyXBMC/album/AlbumStore.cpp          |   91 +
  xbmc/music/spotyXBMC/album/AlbumStore.h            |   57 +
- xbmc/music/spotyXBMC/album/SxAlbum.cpp             |  158 +
+ xbmc/music/spotyXBMC/album/SxAlbum.cpp             |  156 +
  xbmc/music/spotyXBMC/album/SxAlbum.h               |  139 +
  xbmc/music/spotyXBMC/artist/ArtistContainer.cpp    |   51 +
  xbmc/music/spotyXBMC/artist/ArtistContainer.h      |   49 +
- xbmc/music/spotyXBMC/artist/ArtistStore.cpp        |   92 +
+ xbmc/music/spotyXBMC/artist/ArtistStore.cpp        |   94 +
  xbmc/music/spotyXBMC/artist/ArtistStore.h          |   57 +
- xbmc/music/spotyXBMC/artist/SxArtist.cpp           |  189 +
+ xbmc/music/spotyXBMC/artist/SxArtist.cpp           |  232 ++
  xbmc/music/spotyXBMC/artist/SxArtist.h             |  149 +
  xbmc/music/spotyXBMC/player/Codec.cpp              |  198 ++
  xbmc/music/spotyXBMC/player/Codec.h                |   62 +
@@ -61,13 +61,13 @@ Subject: [PATCH] spotyxbmc2-4328ad44ac-Spotify-support-for-xbmc
  xbmc/music/spotyXBMC/player/PlayerHandler.h        |   60 +
  xbmc/music/spotyXBMC/playlist/PlaylistStore.cpp    |  188 +
  xbmc/music/spotyXBMC/playlist/PlaylistStore.h      |   85 +
- .../spotyXBMC/playlist/StarredBackgroundLoader.cpp |  167 +
+ .../spotyXBMC/playlist/StarredBackgroundLoader.cpp |  179 +
  .../spotyXBMC/playlist/StarredBackgroundLoader.h   |   44 +
  xbmc/music/spotyXBMC/playlist/StarredList.cpp      |   98 +
  xbmc/music/spotyXBMC/playlist/StarredList.h        |   66 +
  xbmc/music/spotyXBMC/playlist/SxPlaylist.cpp       |  171 +
  xbmc/music/spotyXBMC/playlist/SxPlaylist.h         |   90 +
- xbmc/music/spotyXBMC/playlist/TopLists.cpp         |  186 +
+ xbmc/music/spotyXBMC/playlist/TopLists.cpp         |  220 ++
  xbmc/music/spotyXBMC/playlist/TopLists.h           |  108 +
  .../spotyXBMC/radio/RadioBackgroundLoader.cpp      |   85 +
  xbmc/music/spotyXBMC/radio/RadioBackgroundLoader.h |   48 +
@@ -102,7 +102,7 @@ Subject: [PATCH] spotyxbmc2-4328ad44ac-Spotify-support-for-xbmc
  xbmc/music/windows/GUIWindowMusicNav.cpp           |   52 +-
  xbmc/music/windows/GUIWindowMusicPlaylist.cpp      |    4 +-
  xbmc/settings/Settings.cpp                         |    3 +-
- 98 files changed, 12683 insertions(+), 62 deletions(-)
+ 98 files changed, 12776 insertions(+), 62 deletions(-)
  create mode 100644 Readme.md
  create mode 100644 addons/plugin.music.spotyXBMC/addon.xml
  create mode 100644 addons/plugin.music.spotyXBMC/changelog.txt
@@ -199,10 +199,10 @@ index ac7432a..baac064 100644
  /project/BuildDependencies/downloads
 diff --git a/Readme.md b/Readme.md
 new file mode 100644
-index 0000000..438485d
+index 0000000..79c6eb2
 --- /dev/null
 +++ b/Readme.md
-@@ -0,0 +1,238 @@
+@@ -0,0 +1,243 @@
 +SPOTYXBMC2
 +==========
 +This is a rewrite of the s potyxbmc project, the code is cleaner and better encapsulated from XBMC. It is now being prepared to be lifted out to a binary addon.
@@ -247,8 +247,6 @@ index 0000000..438485d
 +
 +Known issues
 +------------
-+Exiting XBMC will result in a crash, will be fixed soon I hope.
-+
 +Enable preloading of artists together with preloading of top 100 lists and/or a massive collection of starred tracks will result in a short freeze of XBMC during start (about 5-10 seconds depending on your Internet speed, computer...).
 +
 +Memory leaks do exist, beware.
@@ -260,6 +258,13 @@ index 0000000..438485d
 +Right now the there is a lot of trace prints, they are printed out straight to the console so be sure that you start XBMC from a console in order to fetch the traces and create a bug report.
 +
 +Please submit a report to the github issues and provide all relevant data like logs, OS info, what track, playlist or album you have problems with. Or even better, fix it yourself and send me a pull request or an e-mail.
++
++SpotyXBMC2 for OpenElec
++-----------------------------------------------
++Thanks to Tompen a version of OpenElec with spotyXBMC2 integration is available.
++
++Read about it [here](http://openelec.tv/forum/13-general-discussion/7010-spotify).
++
 +
 +Installation instructions for Microsoft Windows
 +-----------------------------------------------
@@ -282,17 +287,17 @@ index 0000000..438485d
 +10. Restart XBMC
 +
 +11. Enable the music library and enjoy spotify music inside xbmc
-+    The spotify music is located inside the normal music categories, do not try to start the spotyXBMC addon!
++		The spotify music is located inside the normal music categories, do not try to start the spotyXBMC addon!
 +
 +
 +Installation instructions for Ubuntu Linux 32/64
 +------------------------------------------------
 +1. Download libSpotify
 +
-+   For 32 bit:
-+   `$ wget http://developer.spotify.com/download/libspotify/libspotify-10.1.16-Linux-i686-release.tar.gz`
++	For 32 bit:
++	`$ wget http://developer.spotify.com/download/libspotify/libspotify-10.1.16-Linux-i686-release.tar.gz`
 +
-+   64 bit OS:
++	64 bit OS:
 +   `$ wget http://developer.spotify.com/download/libspotify/libspotify-10.1.16-Linux-x86_64-release.tar.gz`
 +
 +2. Untar:
@@ -12529,10 +12534,10 @@ index 32b722a..87f0a56 100644
  
 diff --git a/xbmc/music/spotyXBMC/Addon.music.spotify.cpp b/xbmc/music/spotyXBMC/Addon.music.spotify.cpp
 new file mode 100644
-index 0000000..7f097c3
+index 0000000..e9042e8
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/Addon.music.spotify.cpp
-@@ -0,0 +1,745 @@
+@@ -0,0 +1,744 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -12665,25 +12670,24 @@ index 0000000..7f097c3
 +
 +bool Addon_music_spotify::getArtistAlbums(CFileItemList& items,
 +		sp_artist* spArtist) {
-+	SxArtist* artist = ArtistStore::getInstance()->getArtist(spArtist, false);
++	SxArtist* artist = ArtistStore::getInstance()->getArtist(spArtist, true);
 +	if (!artist)
 +		return true;
 +
 +	// Not pretty but we need to advance libspotify if we are loading the artist for the first time here (clicking "browse artist" from the context menu)
++
 +	while (!Session::getInstance()->lock())
 +		;
-+	while (!artist->isLoaded()) {
++	while (!artist->isAlbumsLoaded()) {
 +		Session::getInstance()->processEvents();
 +	}
 +	Session::getInstance()->unlock();
 +
-+	//if its the first call the artist might not be loaded yet
-+	artist->doLoadTracksAndAlbums();
 +	Logger::printOut(
 +			"get artist albums, done browsing, waiting for all albums to load");
 +
-+	while (!artist->isAlbumsLoaded()) {
-+	}
++//	while (!artist->isAlbumsLoaded()) {
++//	}
 +
 +	//add the similar artists item
 +	if (artist->getArtists().size() > 0) {
@@ -14370,10 +14374,10 @@ index 0000000..2539911
 +#endif /* ALBUMSTORE_H_ */
 diff --git a/xbmc/music/spotyXBMC/album/SxAlbum.cpp b/xbmc/music/spotyXBMC/album/SxAlbum.cpp
 new file mode 100644
-index 0000000..2ae3bd1
+index 0000000..d259981
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/album/SxAlbum.cpp
-@@ -0,0 +1,158 @@
+@@ -0,0 +1,156 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -14432,10 +14436,6 @@ index 0000000..2ae3bd1
 +}
 +
 +SxAlbum::~SxAlbum() {
-+	//while (!m_tracks.empty()) {
-+	//  TrackStore::getInstance()->removeTrack(m_tracks.back());
-+	//  m_tracks.pop_back();
-+	//}
 +	removeAllTracks();
 +
 +	if (m_thumb)
@@ -14455,15 +14455,17 @@ index 0000000..2ae3bd1
 +
 +bool SxAlbum::toggleStar() {
 +	Logger::printOut("toggle album star");
-+	sp_track *tracks[m_tracks.size()];
++	sp_track **tracks = new sp_track*[m_tracks.size()]();
++
 +	for (int i = 0; i < m_tracks.size(); i++) {
 +		tracks[i] = m_tracks[i]->getSpTrack();
 +	}
-+	Logger::printOut("toggle album star2");
++
 +	bool isStarred = this->isStarred();
 +	sp_track_set_starred(Session::getInstance()->getSpSession(), tracks,
 +			m_tracks.size(), !isStarred);
-+	Logger::printOut("toggle album star3");
++
++	delete tracks;
 +	return true;
 +}
 +
@@ -14791,10 +14793,10 @@ index 0000000..bd2fb8e
 +#endif /* ARTISTCONTAINER_H_ */
 diff --git a/xbmc/music/spotyXBMC/artist/ArtistStore.cpp b/xbmc/music/spotyXBMC/artist/ArtistStore.cpp
 new file mode 100644
-index 0000000..142be56
+index 0000000..9754abc
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/artist/ArtistStore.cpp
-@@ -0,0 +1,92 @@
+@@ -0,0 +1,94 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -14822,69 +14824,71 @@ index 0000000..142be56
 +
 +namespace addon_music_spotify {
 +
-+  ArtistStore::ArtistStore() {
-+  }
++ArtistStore::ArtistStore() {
++}
 +
-+  void ArtistStore::deInit() {
-+    delete m_instance;
-+  }
++void ArtistStore::deInit() {
++	delete m_instance;
++}
 +
-+  ArtistStore::~ArtistStore() {
-+    Logger::printOut("deleting artistStore");
-+    for (artistMap::iterator it = m_artists.begin(); it != m_artists.end(); ++it) {
-+      delete it->second;
-+    }
-+  }
++ArtistStore::~ArtistStore() {
++	Logger::printOut("deleting artistStore");
++	for (artistMap::iterator it = m_artists.begin(); it != m_artists.end();
++			++it) {
++		delete it->second;
++	}
++}
 +
-+  ArtistStore* ArtistStore::m_instance = 0;
-+  ArtistStore *ArtistStore::getInstance() {
-+    return m_instance ? m_instance : (m_instance = new ArtistStore);
-+  }
++ArtistStore* ArtistStore::m_instance = 0;
++ArtistStore *ArtistStore::getInstance() {
++	return m_instance ? m_instance : (m_instance = new ArtistStore);
++}
 +
-+  SxArtist* ArtistStore::getArtist(sp_artist *spArtist, bool loadDetails) {
-+    Logger::printOut("loading spArtist");
-+    sp_artist_add_ref(spArtist);
-+    while (!sp_artist_is_loaded(spArtist))
-+      ;
++SxArtist* ArtistStore::getArtist(sp_artist *spArtist,
++		bool loadAlbumsAndTracks) {
++	Logger::printOut("loading spArtist");
++	sp_artist_add_ref(spArtist);
++	while (!sp_artist_is_loaded(spArtist))
++		;
 +
-+    artistMap::iterator it = m_artists.find(spArtist);
-+    SxArtist *artist;
++	artistMap::iterator it = m_artists.find(spArtist);
++	SxArtist *artist;
 +
-+    if (it == m_artists.end()) {
-+      //we need to create it
-+      artist = new SxArtist(spArtist, loadDetails);
-+      m_artists.insert(artistMap::value_type(spArtist, artist));
-+    } else {
-+      //Logger::printOut("loading artist from store");
-+      artist = it->second;
++	if (it == m_artists.end()) {
++		//we need to create it
++		artist = new SxArtist(spArtist, loadAlbumsAndTracks);
++		m_artists.insert(artistMap::value_type(spArtist, artist));
++	} else {
++		//Logger::printOut("loading artist from store");
++		artist = it->second;
++		if (loadAlbumsAndTracks)
++			artist->doLoadTracksAndAlbums();
 +
-+      if (loadDetails) artist->doLoadDetails();
++		artist->addRef();
++	}
 +
-+      artist->addRef();
-+    }
++	return artist;
++}
 +
-+    return artist;
-+  }
++void ArtistStore::removeArtist(sp_artist *spArtist) {
++	artistMap::iterator it = m_artists.find(spArtist);
++	SxArtist *artist;
++	if (it != m_artists.end()) {
++		artist = it->second;
++		if (artist->getReferencesCount() <= 1) {
++			m_artists.erase(spArtist);
++			Logger::printOut("deleting artist");
++			delete artist;
++		} else {
++			artist->rmRef();
++			Logger::printOut("lower artist ref");
++		}
++	}
++}
 +
-+  void ArtistStore::removeArtist(sp_artist *spArtist) {
-+    artistMap::iterator it = m_artists.find(spArtist);
-+    SxArtist *artist;
-+    if (it != m_artists.end()) {
-+      artist = it->second;
-+      if (artist->getReferencesCount() <= 1) {
-+        m_artists.erase(spArtist);
-+        Logger::printOut("deleting artist");
-+        delete artist;
-+      } else {
-+        artist->rmRef();
-+        Logger::printOut("lower artist ref");
-+      }
-+    }
-+  }
-+
-+  void ArtistStore::removeArtist(SxArtist* artist) {
-+    removeArtist(artist->getSpArtist());
-+  }
++void ArtistStore::removeArtist(SxArtist* artist) {
++	removeArtist(artist->getSpArtist());
++}
 +
 +} /* namespace addon_music_spotify */
 diff --git a/xbmc/music/spotyXBMC/artist/ArtistStore.h b/xbmc/music/spotyXBMC/artist/ArtistStore.h
@@ -14952,10 +14956,10 @@ index 0000000..7ddfd2e
 +#endif /* ARTISTSTORE_H_ */
 diff --git a/xbmc/music/spotyXBMC/artist/SxArtist.cpp b/xbmc/music/spotyXBMC/artist/SxArtist.cpp
 new file mode 100644
-index 0000000..37d299e
+index 0000000..92a4742
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/artist/SxArtist.cpp
-@@ -0,0 +1,189 @@
+@@ -0,0 +1,232 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -14995,153 +14999,196 @@ index 0000000..37d299e
 +
 +namespace addon_music_spotify {
 +
-+  SxArtist::SxArtist(sp_artist *artist, bool loadTracksAndAlbums) {
-+    m_spArtist = artist;
-+    Logger::printOut("creating artist");
-+    while (!sp_artist_is_loaded(m_spArtist))
-+      ;
-+    m_references = 1;
-+    m_browse = NULL;
-+    m_isLoadingDetails = false;
-+    m_hasDetails = false;
-+    m_hasTracksAndAlbums = false;
-+    m_thumb = NULL;
-+    m_hasThumb = false;
-+    m_bio = "";
-+    sp_link *link = sp_link_create_from_artist(artist);
-+    m_uri = new char[256];
-+    sp_link_as_string(link, m_uri, 256);
-+    sp_link_release(link);
-+    m_loadTrackAndAlbums = loadTracksAndAlbums;
-+    if (Settings::getPreloadArtistDetails())
-+    	doLoadTracksAndAlbums();
-+    else
-+    	doLoadDetails();
++SxArtist::SxArtist(sp_artist *artist, bool loadTracksAndAlbums) {
++	m_spArtist = artist;
++	Logger::printOut("creating artist");
++	//while (!sp_artist_is_loaded(m_spArtist))
++	//	;
++	m_references = 1;
++	m_browse = NULL;
++	m_isLoadingDetails = false;
++	m_hasDetails = false;
++	m_hasTracksAndAlbums = false;
++	m_thumb = NULL;
++	m_hasThumb = false;
++	m_bio = "";
++	sp_link *link = sp_link_create_from_artist(artist);
++	m_uri = new char[256];
++	sp_link_as_string(link, m_uri, 256);
++	sp_link_release(link);
 +
-+    Logger::printOut("creating artist done");
-+  }
++	//check if there is a thumb
++	const byte* image = sp_artist_portrait(artist);
++	if (image) {
++		m_thumb = ThumbStore::getInstance()->getThumb(image);
++		if (m_thumb)
++			m_hasThumb = true;
++	}
++	m_loadTrackAndAlbums = loadTracksAndAlbums;
++	if (loadTracksAndAlbums)
++		doLoadTracksAndAlbums();
++	//sometimes the thumb is not loaded correct here, do a small artist browse and try again!
++	else if (Settings::getPreloadArtistDetails() || !m_hasThumb)
++		doLoadDetails();
++	else
++		m_hasDetails = true;
++	Logger::printOut("creating artist done");
++}
 +
-+  SxArtist::~SxArtist() {
-+    while (m_isLoadingDetails) {
-+      //Session::getInstance()->processEvents();
-+      Logger::printOut("waiting for artist to die");
-+    }
++SxArtist::~SxArtist() {
++	while (m_isLoadingDetails) {
++		//Session::getInstance()->processEvents();
++		Logger::printOut("waiting for artist to die");
++	}
 +
-+    removeAllTracks();
-+    removeAllAlbums();
-+    removeAllArtists();
++	removeAllTracks();
++	removeAllAlbums();
++	removeAllArtists();
 +
-+    if (m_thumb) ThumbStore::getInstance()->removeThumb(m_thumb);
-+    delete m_uri;
-+    if (hasDetails() && m_browse != NULL ) sp_artistbrowse_release(m_browse);
-+    sp_artist_release(m_spArtist);
-+  }
++	if (m_thumb)
++		ThumbStore::getInstance()->removeThumb(m_thumb);
++	delete m_uri;
++	if (hasDetails() && m_browse != NULL)
++		sp_artistbrowse_release(m_browse);
++	sp_artist_release(m_spArtist);
++}
 +
-+  bool SxArtist::isAlbumsLoaded() {
-+    if (!m_hasTracksAndAlbums) return false;
-+    return albumsLoaded();
-+  }
++bool SxArtist::isAlbumsLoaded() {
++	if (!m_hasTracksAndAlbums)
++		return false;
++	return albumsLoaded();
++}
 +
-+  bool SxArtist::isTracksLoaded() {
-+    if (!m_hasTracksAndAlbums) return false;
-+    return tracksLoaded();
-+  }
++bool SxArtist::isTracksLoaded() {
++	if (!m_hasTracksAndAlbums)
++		return false;
++	return tracksLoaded();
++}
 +
-+  bool SxArtist::isArtistsLoaded() {
-+    if (!m_hasTracksAndAlbums) return false;
-+    return artistsLoaded();
-+  }
++bool SxArtist::isArtistsLoaded() {
++	if (!m_hasTracksAndAlbums)
++		return false;
++	return artistsLoaded();
++}
 +
-+  void SxArtist::doLoadTracksAndAlbums() {
-+    Logger::printOut("loading artist tracks and albums");
-+    m_loadTrackAndAlbums = true;
-+    //if we allready have it all..
-+    if (m_hasTracksAndAlbums) return;
++void SxArtist::doLoadTracksAndAlbums() {
++	Logger::printOut("loading artist tracks and albums");
++	m_loadTrackAndAlbums = true;
++	//if we allready have it all..
++	if (m_hasTracksAndAlbums)
++		return;
 +
-+    m_isLoadingDetails = true;
-+    m_browse = sp_artistbrowse_create(Session::getInstance()->getSpSession(), m_spArtist, SP_ARTISTBROWSE_FULL,&cb_artistBrowseComplete, this);
-+  }
++	m_isLoadingDetails = true;
++	m_browse = sp_artistbrowse_create(Session::getInstance()->getSpSession(),
++			m_spArtist, SP_ARTISTBROWSE_FULL, &cb_artistBrowseComplete, this);
++}
 +
-+  void SxArtist::doLoadDetails() {
-+    if (m_hasDetails || m_isLoadingDetails) return;
++void SxArtist::doLoadDetails() {
++	if (m_hasDetails || m_isLoadingDetails)
++		return;
 +
-+    m_isLoadingDetails = true;
-+    m_browse = sp_artistbrowse_create(Session::getInstance()->getSpSession(), m_spArtist, SP_ARTISTBROWSE_NO_ALBUMS,&cb_artistBrowseComplete, this);
-+  }
++	m_isLoadingDetails = true;
++	m_browse = sp_artistbrowse_create(Session::getInstance()->getSpSession(),
++			m_spArtist, SP_ARTISTBROWSE_NO_ALBUMS, &cb_artistBrowseComplete, this);
++}
 +
-+  void SxArtist::detailsLoaded(sp_artistbrowse *result) {
-+    if (sp_artistbrowse_error(result) == SP_ERROR_OK) {
-+      //check if there is a thumb
-+      if (sp_artistbrowse_num_portraits > 0) {
-+        const byte* image = sp_artistbrowse_portrait(result, 0);
-+        if (image) {
-+          m_thumb = ThumbStore::getInstance()->getThumb(image);
-+        }
-+      }
-+      if (m_thumb != NULL ) m_hasThumb = true;
++void SxArtist::detailsLoaded(sp_artistbrowse *result) {
++	if (sp_artistbrowse_error(result) == SP_ERROR_OK) {
++		//check if there is a thumb
++		if (!m_hasThumb && sp_artistbrowse_num_portraits > 0) {
++			const byte* image = sp_artistbrowse_portrait(result, 0);
++			if (image) {
++				m_thumb = ThumbStore::getInstance()->getThumb(image);
++			}
++		}
++		if (m_thumb != NULL)
++			m_hasThumb = true;
 +
-+      m_bio = sp_artistbrowse_biography(result);
-+      //remove the links from the bio text (it contains spotify uris so maybe we can do something fun with it later)
-+      Utils::cleanTags(m_bio);
++		m_bio = sp_artistbrowse_biography(result);
++		//remove the links from the bio text (it contains spotify uris so maybe we can do something fun with it later)
++		Utils::cleanTags(m_bio);
 +
-+      if (m_loadTrackAndAlbums) {
-+        //add the albums
-+        int maxAlbums = Settings::getArtistNumberAlbums() == -1 ? sp_artistbrowse_num_albums(m_browse) : Settings::getArtistNumberAlbums();
++		if (m_loadTrackAndAlbums) {
++			//add the albums
++			int maxAlbums =
++					Settings::getArtistNumberAlbums() == -1 ?
++							sp_artistbrowse_num_albums(m_browse) :
++							Settings::getArtistNumberAlbums();
 +
-+        int addedAlbums = 0;
-+        for (int index = 0; index < sp_artistbrowse_num_albums(m_browse) && addedAlbums < maxAlbums; index++) {
-+          if (sp_album_is_available(sp_artistbrowse_album(m_browse, index))) {
-+            m_albums.push_back(AlbumStore::getInstance()->getAlbum(sp_artistbrowse_album(m_browse, index), true));
-+            addedAlbums++;
-+          }
-+        }
++			int addedAlbums = 0;
++			for (int index = 0;
++					index < sp_artistbrowse_num_albums(m_browse)
++							&& addedAlbums < maxAlbums; index++) {
++				if (sp_album_is_available(sp_artistbrowse_album(m_browse, index))) {
++					m_albums.push_back(
++							AlbumStore::getInstance()->getAlbum(
++									sp_artistbrowse_album(m_browse, index), true));
++					addedAlbums++;
++				}
++			}
 +
-+        //add the tracks
-+        int maxTracks = Settings::getArtistNumberTracks() == -1 ? sp_artistbrowse_num_tracks(m_browse) : Settings::getArtistNumberTracks();
++			//add the tracks
++			int maxTracks =
++					Settings::getArtistNumberTracks() == -1 ?
++							sp_artistbrowse_num_tracks(m_browse) :
++							Settings::getArtistNumberTracks();
 +
-+        int addedTracks = 0;
-+        for (int index = 0; index < sp_artistbrowse_num_tracks(m_browse) && addedTracks < maxTracks; index++) {
-+          if (sp_track_get_availability(Session::getInstance()->getSpSession(), sp_artistbrowse_track(m_browse, index))) {
-+            m_tracks.push_back(TrackStore::getInstance()->getTrack(sp_artistbrowse_track(m_browse, index)));
-+            addedTracks++;
-+          }
-+        }
++			int addedTracks = 0;
++			for (int index = 0;
++					index < sp_artistbrowse_num_tracks(m_browse)
++							&& addedTracks < maxTracks; index++) {
++				if (sp_track_get_availability(Session::getInstance()->getSpSession(),
++						sp_artistbrowse_track(m_browse, index))) {
++					m_tracks.push_back(
++							TrackStore::getInstance()->getTrack(
++									sp_artistbrowse_track(m_browse, index)));
++					addedTracks++;
++				}
++			}
 +
-+        //add the artists
-+        int maxArtists = Settings::getArtistNumberArtists() == -1 ? sp_artistbrowse_num_similar_artists(m_browse) : Settings::getArtistNumberArtists();
++			//add the artists
++			int maxArtists =
++					Settings::getArtistNumberArtists() == -1 ?
++							sp_artistbrowse_num_similar_artists(m_browse) :
++							Settings::getArtistNumberArtists();
 +
-+        int addedArtists = 0;
-+        for (int index = 0; index < sp_artistbrowse_num_similar_artists(m_browse) && addedArtists < maxArtists; index++) {
-+          m_artists.push_back(ArtistStore::getInstance()->getArtist(sp_artistbrowse_similar_artist(m_browse, index), false));
-+          addedArtists++;
-+        }
++			int addedArtists = 0;
++			for (int index = 0;
++					index < sp_artistbrowse_num_similar_artists(m_browse)
++							&& addedArtists < maxArtists; index++) {
++				m_artists.push_back(
++						ArtistStore::getInstance()->getArtist(
++								sp_artistbrowse_similar_artist(m_browse, index), false));
++				addedArtists++;
++			}
 +
-+        m_hasTracksAndAlbums = true;
-+      }
-+    }
-+    m_isLoadingDetails = false;
-+    m_hasDetails = true;
-+    Logger::printOut("artist browse complete done");
-+  }
++			m_hasTracksAndAlbums = true;
++		}
++	}
++	m_isLoadingDetails = false;
++	m_hasDetails = true;
++	Logger::printOut("artist browse complete done");
++}
 +
-+  void SxArtist::cb_artistBrowseComplete(sp_artistbrowse *result, void *userdata) {
-+    Logger::printOut("artist browse complete");
-+    SxArtist *artist = (SxArtist*) (userdata);
-+    Logger::printOut(artist->getArtistName());
-+    artist->detailsLoaded(result);
-+  }
++void SxArtist::cb_artistBrowseComplete(sp_artistbrowse *result,
++		void *userdata) {
++	Logger::printOut("artist browse complete");
++	SxArtist *artist = (SxArtist*) (userdata);
++	Logger::printOut(artist->getArtistName());
++	artist->detailsLoaded(result);
++}
 +
-+  bool SxArtist::getTrackItems(CFileItemList& items) {
-+    return true;
-+  }
++bool SxArtist::getTrackItems(CFileItemList& items) {
++	return true;
++}
 +
-+  bool SxArtist::getAlbumItems(CFileItemList& items) {
-+    return true;
-+  }
++bool SxArtist::getAlbumItems(CFileItemList& items) {
++	return true;
++}
 +
-+  bool SxArtist::getArtistItems(CFileItemList& items) {
-+    return true;
-+  }
++bool SxArtist::getArtistItems(CFileItemList& items) {
++	return true;
++}
 +
 +} /* namespace addon_music_spotify */
 +
@@ -16012,10 +16059,10 @@ index 0000000..457928c
 +#endif /* PLAYLISTCONTAINER_H_ */
 diff --git a/xbmc/music/spotyXBMC/playlist/StarredBackgroundLoader.cpp b/xbmc/music/spotyXBMC/playlist/StarredBackgroundLoader.cpp
 new file mode 100644
-index 0000000..894add9
+index 0000000..5c12470
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/playlist/StarredBackgroundLoader.cpp
-@@ -0,0 +1,167 @@
+@@ -0,0 +1,179 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -16051,137 +16098,149 @@ index 0000000..894add9
 +
 +namespace addon_music_spotify {
 +
-+  StarredBackgroundLoader::StarredBackgroundLoader() {
-+  }
++StarredBackgroundLoader::StarredBackgroundLoader() {
++}
 +
-+  StarredBackgroundLoader::~StarredBackgroundLoader() {
-+  }
++StarredBackgroundLoader::~StarredBackgroundLoader() {
++}
 +
-+  void StarredBackgroundLoader::OnStartup() {
-+  }
++void StarredBackgroundLoader::OnStartup() {
++}
 +
-+  void StarredBackgroundLoader::OnExit() {
-+  }
++void StarredBackgroundLoader::OnExit() {
++}
 +
-+  void StarredBackgroundLoader::OnException() {
-+  }
++void StarredBackgroundLoader::OnException() {
++}
 +
-+  void StarredBackgroundLoader::Process() {
-+    StarredList* ls = Session::getInstance()->getPlaylistStore()->getStarredList();
-+    ls->m_isBackgroundLoading = true;
++void StarredBackgroundLoader::Process() {
++	StarredList* ls =
++			Session::getInstance()->getPlaylistStore()->getStarredList();
++	ls->m_isBackgroundLoading = true;
 +
-+    while (ls->m_reload) {
-+      Logger::printOut("Populate starred albums and artists thread start");
-+      //we need the session lock so that we can run processevents and wait for albums etc
-+      while (!Session::getInstance()->lock()) {
-+        SleepMs(1);
-+      }
-+      ls->m_reload = false;
++	while (ls->m_reload) {
++		Logger::printOut("Populate starred albums and artists thread start");
++		//we need the session lock so that we can run processevents and wait for albums etc
++		while (!Session::getInstance()->lock()) {
++			SleepMs(1);
++		}
++		ls->m_reload = false;
 +
-+      vector<SxTrack*> newTracks;
-+      for (int index = 0; index < sp_playlist_num_tracks(ls->m_spPlaylist); index++) {
-+        if (!sp_track_get_availability(Session::getInstance()->getSpSession(), sp_playlist_track(ls->m_spPlaylist, index))) continue;
-+        SxTrack* track = TrackStore::getInstance()->getTrack(sp_playlist_track(ls->m_spPlaylist, index));
-+        if (track) {
-+          newTracks.push_back(track);
-+        }
-+      }
++		vector<SxTrack*> newTracks;
++		for (int index = 0; index < sp_playlist_num_tracks(ls->m_spPlaylist);
++				index++) {
++			if (!sp_track_get_availability(Session::getInstance()->getSpSession(),
++					sp_playlist_track(ls->m_spPlaylist, index)))
++				continue;
++			SxTrack* track = TrackStore::getInstance()->getTrack(
++					sp_playlist_track(ls->m_spPlaylist, index));
++			if (track) {
++				newTracks.push_back(track);
++			}
++		}
 +
-+      ls->removeAllTracks();
++		ls->removeAllTracks();
 +
-+      ls->m_tracks = newTracks;
++		ls->m_tracks = newTracks;
 +
-+      set<sp_album*> tempAlbums;
-+      set<sp_artist*> tempArtists;
-+      for (int i = 0; i < ls->getNumberOfTracks(); i++) {
++		set<sp_album*> tempAlbums;
++		set<sp_artist*> tempArtists;
++		for (int i = 0; i < ls->getNumberOfTracks(); i++) {
 +
-+        sp_album* tempAlbum = sp_track_album(ls->m_tracks[i]->getSpTrack());
-+        if (tempAlbum != NULL
-+        ) tempAlbums.insert(tempAlbum);
++			sp_album* tempAlbum = sp_track_album(ls->m_tracks[i]->getSpTrack());
++			if (tempAlbum != NULL)
++				tempAlbums.insert(tempAlbum);
 +
-+        sp_artist* tempArtist = sp_track_artist(ls->m_tracks[i]->getSpTrack(), 0);
-+        if (tempArtist != NULL
-+        ) tempArtists.insert(tempArtist);
-+      }
++			sp_artist* tempArtist = sp_track_artist(ls->m_tracks[i]->getSpTrack(), 0);
++			if (tempArtist != NULL)
++				tempArtists.insert(tempArtist);
++		}
 +
-+      //now we have a set with unique sp_albums, lets load them and see if they have all tracks starred or not
++		//now we have a set with unique sp_albums, lets load them and see if they have all tracks starred or not
 +
-+      vector<SxAlbum*> newAlbums;
-+      //find out witch albums that has complete set of starred tracks
-+      for (set<sp_album*>::const_iterator albumIt = tempAlbums.begin(); albumIt != tempAlbums.end(); ++albumIt) {
-+        sp_album* tempalbum = (sp_album*) *albumIt;
-+        if (tempalbum == NULL
-+        ) continue;
-+        while (!sp_album_is_loaded(tempalbum))
-+          SleepMs(1);
++		vector<SxAlbum*> newAlbums;
++		//find out witch albums that has complete set of starred tracks
++		for (set<sp_album*>::const_iterator albumIt = tempAlbums.begin();
++				albumIt != tempAlbums.end(); ++albumIt) {
++			sp_album* tempalbum = (sp_album*) *albumIt;
++			if (tempalbum == NULL)
++				continue;
++			while (!sp_album_is_loaded(tempalbum))
++				SleepMs(1);
 +
-+        SxAlbum* album = AlbumStore::getInstance()->getAlbum(tempalbum, true);
-+        Logger::printOut(album->getAlbumName());
++			SxAlbum* album = AlbumStore::getInstance()->getAlbum(tempalbum, true);
++			Logger::printOut(album->getAlbumName());
 +
-+        Session::getInstance()->unlock();
-+        while (!album->isLoaded()) {
-+          SleepMs(1);
-+        }
-+        while (!Session::getInstance()->lock()) {
-+          SleepMs(1);
-+        }
++			Session::getInstance()->unlock();
++			while (!album->isLoaded()) {
++				SleepMs(1);
++			}
++			while (!Session::getInstance()->lock()) {
++				SleepMs(1);
++			}
 +
-+        if (!album->hasTracksAndDetails() || album->getTracks().size() == 0 || !sp_album_is_available(album->getSpAlbum())) {
-+          AlbumStore::getInstance()->removeAlbum(album);
-+          continue;
-+        }
-+        bool albumIsStarred = true;
-+        vector<SxTrack*> tracks = album->getTracks();
-+        for (int i = 0; i < tracks.size(); i++) {
-+          if (!sp_track_is_starred(Session::getInstance()->getSpSession(), tracks[i]->getSpTrack())) {
-+            albumIsStarred = false;
-+            break;
-+          }
-+        }
++			if (!album->hasTracksAndDetails() || album->getTracks().size() == 0
++					|| !sp_album_is_available(album->getSpAlbum())) {
++				AlbumStore::getInstance()->removeAlbum(album);
++				continue;
++			}
++			bool albumIsStarred = true;
++			vector<SxTrack*> tracks = album->getTracks();
++			for (int i = 0; i < tracks.size(); i++) {
++				if (!sp_track_is_starred(Session::getInstance()->getSpSession(),
++						tracks[i]->getSpTrack())) {
++					albumIsStarred = false;
++					break;
++				}
++			}
 +
-+        if (albumIsStarred) newAlbums.push_back(AlbumStore::getInstance()->getAlbum(album->getSpAlbum(), true));
-+      }
++			if (albumIsStarred)
++				newAlbums.push_back(
++						AlbumStore::getInstance()->getAlbum(album->getSpAlbum(), true));
++		}
 +
-+      ls->removeAllAlbums();
++		ls->removeAllAlbums();
 +
-+      //add all artists that we have collected
++		//add all artists that we have collected
 +
-+      vector<SxArtist*> newArtists;
-+      for (set<sp_artist*>::const_iterator artistIt = tempArtists.begin(); artistIt != tempArtists.end(); ++artistIt) {
-+        sp_artist* tempartist = (sp_artist*) *artistIt;
-+        if (tempartist == NULL
-+        ) continue;
-+        while (!sp_artist_is_loaded(tempartist))
-+          SleepMs(1);
++		vector<SxArtist*> newArtists;
++		for (set<sp_artist*>::const_iterator artistIt = tempArtists.begin();
++				artistIt != tempArtists.end(); ++artistIt) {
++			sp_artist* tempartist = (sp_artist*) *artistIt;
++			if (tempartist == NULL)
++				continue;
++			//while (!sp_artist_is_loaded(tempartist))
++			//	SleepMs(1);
 +
-+        SxArtist* artist = ArtistStore::getInstance()->getArtist(tempartist, false);
++			SxArtist* artist = ArtistStore::getInstance()->getArtist(tempartist,
++					false);
 +
-+        if (artist != NULL
-+        ) newArtists.push_back(artist);
-+      }
++			if (artist != NULL)
++				newArtists.push_back(artist);
++		}
 +
-+      while (!ls->m_artists.empty()) {
-+        ArtistStore::getInstance()->removeArtist(ls->m_artists.back());
-+        ls->m_artists.pop_back();
-+      }
++		while (!ls->m_artists.empty()) {
++			ArtistStore::getInstance()->removeArtist(ls->m_artists.back());
++			ls->m_artists.pop_back();
++		}
 +
-+      ls->m_artists = newArtists;
-+      ls->m_albums = newAlbums;
++		ls->m_artists = newArtists;
++		ls->m_albums = newAlbums;
 +
-+      //wait for all info to finish loading before updating the lists (or reloading it all)
-+      Session::getInstance()->unlock();
-+      while (!ls->isLoaded()) {
-+        SleepMs(1);
-+      }
-+    }
++		//wait for all info to finish loading before updating the lists (or reloading it all)
++		Session::getInstance()->unlock();
++		while (!ls->isLoaded()) {
++			SleepMs(1);
++		}
++	}
 +
-+    ls->m_isBackgroundLoading = false;
++	ls->m_isBackgroundLoading = false;
 +
-+    Utils::updateAllTracks();
-+    Utils::updateAllAlbums();
-+    Utils::updateAllArtists();
-+    Logger::printOut("Populate starred albums and artists thread done");
-+  }
++	Utils::updateAllTracks();
++	Utils::updateAllAlbums();
++	Utils::updateAllArtists();
++	Logger::printOut("Populate starred albums and artists thread done");
++}
 +} /* namespace addon_music_spotify */
 diff --git a/xbmc/music/spotyXBMC/playlist/StarredBackgroundLoader.h b/xbmc/music/spotyXBMC/playlist/StarredBackgroundLoader.h
 new file mode 100644
@@ -16684,10 +16743,10 @@ index 0000000..b617419
 +#endif /* SXPLAYLIST_H_ */
 diff --git a/xbmc/music/spotyXBMC/playlist/TopLists.cpp b/xbmc/music/spotyXBMC/playlist/TopLists.cpp
 new file mode 100644
-index 0000000..145e6fa
+index 0000000..b4e65aa
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/playlist/TopLists.cpp
-@@ -0,0 +1,186 @@
+@@ -0,0 +1,220 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -16716,162 +16775,196 @@ index 0000000..145e6fa
 +
 +namespace addon_music_spotify {
 +
-+  TopLists::TopLists() {
-+    m_albumsNextReload.SetExpired();
-+    m_artistsNextReload.SetExpired();
-+    m_tracksNextReload.SetExpired();
-+    m_waitingForAlbums = false;
-+    m_waitingForArtists = false;
-+    m_waitingForTracks = false;
-+    m_albumsLoaded = false;
-+    m_artistsLoaded = false;
-+    m_tracksLoaded = false;
-+    Logger::printOut("creating toplists");
-+    if (Settings::getPreloadTopLists()) {
-+      reLoadArtists();
-+      reLoadAlbums();
-+      reLoadTracks();
-+    }
-+  }
++TopLists::TopLists() {
++	m_albumsNextReload.SetExpired();
++	m_artistsNextReload.SetExpired();
++	m_tracksNextReload.SetExpired();
++	m_waitingForAlbums = false;
++	m_waitingForArtists = false;
++	m_waitingForTracks = false;
++	m_albumsLoaded = false;
++	m_artistsLoaded = false;
++	m_tracksLoaded = false;
++	Logger::printOut("creating toplists");
++	if (Settings::getPreloadTopLists()) {
++		reLoadArtists();
++		reLoadAlbums();
++		reLoadTracks();
++	}
++}
 +
-+  TopLists::~TopLists() {
-+    unloadLists();
-+  }
++TopLists::~TopLists() {
++	unloadLists();
++}
 +
-+  void TopLists::unloadLists() {
-+    m_albumsLoaded = false;
-+    m_artistsLoaded = false;
-+    m_tracksLoaded = false;
++void TopLists::unloadLists() {
++	m_albumsLoaded = false;
++	m_artistsLoaded = false;
++	m_tracksLoaded = false;
 +
-+    removeAllTracks();
-+    removeAllAlbums();
-+    removeAllArtists();
-+  }
++	removeAllTracks();
++	removeAllAlbums();
++	removeAllArtists();
++}
 +
-+  void TopLists::reLoadArtists() {
-+    if (m_waitingForArtists) return;
-+    m_waitingForArtists = true;
-+    sp_toplistregion region = Settings::toplistRegionEverywhere() ? SP_TOPLIST_REGION_EVERYWHERE : (sp_toplistregion) sp_session_user_country(Session::getInstance()->getSpSession());
-+    sp_toplistbrowse_create(Session::getInstance()->getSpSession(), SP_TOPLIST_TYPE_ARTISTS, region, Settings::getUserName(), &cb_toplistArtistsComplete, this);
-+  }
++void TopLists::reLoadArtists() {
++	if (m_waitingForArtists)
++		return;
++	m_waitingForArtists = true;
++	sp_toplistregion region =
++			Settings::toplistRegionEverywhere() ?
++					SP_TOPLIST_REGION_EVERYWHERE :
++					(sp_toplistregion) sp_session_user_country(
++							Session::getInstance()->getSpSession());
++	sp_toplistbrowse_create(Session::getInstance()->getSpSession(),
++			SP_TOPLIST_TYPE_ARTISTS, region, Settings::getUserName(),
++			&cb_toplistArtistsComplete, this);
++}
 +
-+  void TopLists::reLoadAlbums() {
-+    if (m_waitingForAlbums) return;
-+    m_waitingForAlbums = true;
-+    sp_toplistregion region = Settings::toplistRegionEverywhere() ? SP_TOPLIST_REGION_EVERYWHERE : (sp_toplistregion) sp_session_user_country(Session::getInstance()->getSpSession());
-+    sp_toplistbrowse_create(Session::getInstance()->getSpSession(), SP_TOPLIST_TYPE_ALBUMS, region, Settings::getUserName(), &cb_toplistAlbumsComplete, this);
-+  }
++void TopLists::reLoadAlbums() {
++	if (m_waitingForAlbums)
++		return;
++	m_waitingForAlbums = true;
++	sp_toplistregion region =
++			Settings::toplistRegionEverywhere() ?
++					SP_TOPLIST_REGION_EVERYWHERE :
++					(sp_toplistregion) sp_session_user_country(
++							Session::getInstance()->getSpSession());
++	sp_toplistbrowse_create(Session::getInstance()->getSpSession(),
++			SP_TOPLIST_TYPE_ALBUMS, region, Settings::getUserName(),
++			&cb_toplistAlbumsComplete, this);
++}
 +
-+  void TopLists::reLoadTracks() {
-+    if (m_waitingForTracks) return;
-+    m_waitingForTracks = true;
-+    sp_toplistregion region = Settings::toplistRegionEverywhere() ? SP_TOPLIST_REGION_EVERYWHERE : (sp_toplistregion) sp_session_user_country(Session::getInstance()->getSpSession());
-+    sp_toplistbrowse_create(Session::getInstance()->getSpSession(), SP_TOPLIST_TYPE_TRACKS, region, Settings::getUserName(), &cb_toplistTracksComplete, this);
-+  }
++void TopLists::reLoadTracks() {
++	if (m_waitingForTracks)
++		return;
++	m_waitingForTracks = true;
++	sp_toplistregion region =
++			Settings::toplistRegionEverywhere() ?
++					SP_TOPLIST_REGION_EVERYWHERE :
++					(sp_toplistregion) sp_session_user_country(
++							Session::getInstance()->getSpSession());
++	sp_toplistbrowse_create(Session::getInstance()->getSpSession(),
++			SP_TOPLIST_TYPE_TRACKS, region, Settings::getUserName(),
++			&cb_toplistTracksComplete, this);
++}
 +
-+  bool TopLists::isArtistsLoaded() {
-+    if (!m_artistsLoaded || m_artistsNextReload.IsTimePast()) return false;
-+    return artistsLoaded();
-+  }
++bool TopLists::isArtistsLoaded() {
++	if (!m_artistsLoaded || m_artistsNextReload.IsTimePast())
++		return false;
++	return artistsLoaded();
++}
 +
-+  bool TopLists::isAlbumsLoaded() {
-+    if (!m_albumsLoaded || m_albumsNextReload.IsTimePast()) return false;
-+    return albumsLoaded();
-+  }
++bool TopLists::isAlbumsLoaded() {
++	if (!m_albumsLoaded || m_albumsNextReload.IsTimePast())
++		return false;
++	return albumsLoaded();
++}
 +
-+  bool TopLists::isTracksLoaded() {
-+    if (!m_tracksLoaded || m_tracksNextReload.IsTimePast()) return false;
-+    return tracksLoaded();
-+  }
++bool TopLists::isTracksLoaded() {
++	if (!m_tracksLoaded || m_tracksNextReload.IsTimePast())
++		return false;
++	return tracksLoaded();
++}
 +
-+  bool TopLists::getArtistItems(CFileItemList& items) {
-+    return true;
-+  }
++bool TopLists::getArtistItems(CFileItemList& items) {
++	return true;
++}
 +
-+  bool TopLists::getAlbumItems(CFileItemList& items) {
-+    return true;
-+  }
++bool TopLists::getAlbumItems(CFileItemList& items) {
++	return true;
++}
 +
-+  bool TopLists::getTrackItems(CFileItemList& items) {
-+    return true;
-+  }
++bool TopLists::getTrackItems(CFileItemList& items) {
++	return true;
++}
 +
-+  void TopLists::cb_toplistArtistsComplete(sp_toplistbrowse *result, void *userdata) {
-+    Logger::printOut("toplist artists callback");
-+    TopLists *lists = (TopLists*) (userdata);
++void TopLists::cb_toplistArtistsComplete(sp_toplistbrowse *result,
++		void *userdata) {
++	Logger::printOut("toplist artists callback");
++	TopLists *lists = (TopLists*) (userdata);
 +
-+    vector<SxArtist*> newArtists;
++	vector<SxArtist*> newArtists;
 +
-+    for (int index = 0; index < sp_toplistbrowse_num_artists(result); index++) {
-+      //dont load the albums and tracks for all artists here, it takes forever
-+      SxArtist* artist = ArtistStore::getInstance()->getArtist(sp_toplistbrowse_artist(result, index), false);
-+      if (artist != NULL) newArtists.push_back(artist);
-+    }
++	for (int index = 0; index < sp_toplistbrowse_num_artists(result); index++) {
++		//dont load the albums and tracks for all artists here, it takes forever
++		SxArtist* artist = ArtistStore::getInstance()->getArtist(
++				sp_toplistbrowse_artist(result, index), false);
++		if (artist != NULL)
++			newArtists.push_back(artist);
++	}
 +
-+    lists->removeAllArtists();
-+    lists->m_artists = newArtists;
++	lists->removeAllArtists();
++	lists->m_artists = newArtists;
 +
-+    struct timeb tmb;
-+    ftime(&tmb);
-+    lists->m_artistsNextReload.Set(1000 * 60 * 60 * 24);
-+    lists->m_waitingForArtists = false;
-+    lists->m_artistsLoaded = true;
-+    Logger::printOut("Toplist artists loaded");
-+  }
++	struct timeb tmb;
++	ftime(&tmb);
++	lists->m_artistsNextReload.Set(1000 * 60 * 60 * 24);
++	lists->m_waitingForArtists = false;
++	lists->m_artistsLoaded = true;
++	Logger::printOut("Toplist artists loaded");
++}
 +
-+  void TopLists::cb_toplistAlbumsComplete(sp_toplistbrowse *result, void *userdata) {
-+    Logger::printOut("toplist albums callback");
-+    TopLists *lists = (TopLists*) (userdata);
++void TopLists::cb_toplistAlbumsComplete(sp_toplistbrowse *result,
++		void *userdata) {
++	Logger::printOut("toplist albums callback");
++	TopLists *lists = (TopLists*) (userdata);
 +
-+    vector<SxAlbum*> newAlbums;
++	vector<SxAlbum*> newAlbums;
 +
-+    for (int index = 0; index < sp_toplistbrowse_num_albums(result); index++) {
-+      sp_album* tempalbum = sp_toplistbrowse_album(result, index);
-+      if (tempalbum == NULL) continue;
-+      while (!sp_album_is_loaded(tempalbum))
-+        ;
++	for (int index = 0; index < sp_toplistbrowse_num_albums(result); index++) {
++		sp_album* tempalbum = sp_toplistbrowse_album(result, index);
++		if (tempalbum == NULL)
++			continue;
++		while (!sp_album_is_loaded(tempalbum))
++			;
 +
-+      if (sp_album_is_available(tempalbum)) {
-+        SxAlbum* album = AlbumStore::getInstance()->getAlbum(tempalbum, true);
-+        if (album != NULL) newAlbums.push_back(album);
-+      }
-+    }
++		if (sp_album_is_available(tempalbum)) {
++			SxAlbum* album = AlbumStore::getInstance()->getAlbum(tempalbum, true);
++			if (album != NULL)
++				newAlbums.push_back(album);
++		}
++	}
 +
-+    lists->removeAllAlbums();
-+    lists->m_albums = newAlbums;
++	lists->removeAllAlbums();
++	lists->m_albums = newAlbums;
 +
-+    struct timeb tmb;
-+    ftime(&tmb);
-+    lists->m_albumsNextReload.Set(1000 * 60 * 60 * 24);
-+    lists->m_waitingForAlbums = false;
-+    lists->m_albumsLoaded = true;
-+    Logger::printOut("Toplist albums loaded");
-+  }
++	struct timeb tmb;
++	ftime(&tmb);
++	lists->m_albumsNextReload.Set(1000 * 60 * 60 * 24);
++	lists->m_waitingForAlbums = false;
++	lists->m_albumsLoaded = true;
++	Logger::printOut("Toplist albums loaded");
++}
 +
-+  void TopLists::cb_toplistTracksComplete(sp_toplistbrowse *result, void *userdata) {
-+    Logger::printOut("toplist tracks callback");
-+    TopLists *lists = (TopLists*) (userdata);
-+    //add the tracks
++void TopLists::cb_toplistTracksComplete(sp_toplistbrowse *result,
++		void *userdata) {
++	Logger::printOut("toplist tracks callback");
++	TopLists *lists = (TopLists*) (userdata);
++	//add the tracks
 +
-+    vector<SxTrack*> newTracks;
++	vector<SxTrack*> newTracks;
 +
-+    for (int index = 0; index < sp_toplistbrowse_num_tracks(result); index++) {
-+      if (sp_track_get_availability(Session::getInstance()->getSpSession(), sp_toplistbrowse_track(result, index))) {
-+        SxTrack* track = TrackStore::getInstance()->getTrack(sp_toplistbrowse_track(result, index));
-+        if (track != NULL) newTracks.push_back(track);
-+      }
-+    }
++	for (int index = 0; index < sp_toplistbrowse_num_tracks(result); index++) {
++		if (sp_track_get_availability(Session::getInstance()->getSpSession(),
++				sp_toplistbrowse_track(result, index))) {
++			SxTrack* track = TrackStore::getInstance()->getTrack(
++					sp_toplistbrowse_track(result, index));
++			if (track != NULL)
++				newTracks.push_back(track);
++		}
++	}
 +
-+    lists->removeAllTracks();
-+    lists->m_tracks = newTracks;
++	lists->removeAllTracks();
++	lists->m_tracks = newTracks;
 +
-+    struct timeb tmb;
-+    ftime(&tmb);
-+    lists->m_tracksNextReload.Set(1000 * 60 * 60 * 24);
-+    lists->m_waitingForTracks = false;
-+    lists->m_tracksLoaded = true;
-+    Logger::printOut("Toplist tracks loaded");
-+  }
++	struct timeb tmb;
++	ftime(&tmb);
++	lists->m_tracksNextReload.Set(1000 * 60 * 60 * 24);
++	lists->m_waitingForTracks = false;
++	lists->m_tracksLoaded = true;
++	Logger::printOut("Toplist tracks loaded");
++}
 +
 +} /* namespace addon_music_spotify */
 diff --git a/xbmc/music/spotyXBMC/playlist/TopLists.h b/xbmc/music/spotyXBMC/playlist/TopLists.h
