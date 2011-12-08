@@ -1,7 +1,7 @@
-From 4706d9cecd39c5487c6fcc0b83031907bb566f76 Mon Sep 17 00:00:00 2001
+From 514a4f7235fa67586ab4155891b2a63d4438aca6 Mon Sep 17 00:00:00 2001
 From: root <root@OpenELEC-dev.(none)>
-Date: Tue, 6 Dec 2011 22:04:15 +0000
-Subject: [PATCH] spotyxbmc2-3d4f72616d-Spotify-support-for-xbmc
+Date: Thu, 8 Dec 2011 22:22:23 +0000
+Subject: [PATCH] spotyxbmc2-a756029beb-Spotify-support-for-xbmc
 
 ---
  .gitignore                                         |    2 +-
@@ -55,7 +55,7 @@ Subject: [PATCH] spotyxbmc2-3d4f72616d-Spotify-support-for-xbmc
  xbmc/music/spotyXBMC/artist/ArtistStore.h          |   57 +
  xbmc/music/spotyXBMC/artist/SxArtist.cpp           |  232 ++
  xbmc/music/spotyXBMC/artist/SxArtist.h             |  149 +
- xbmc/music/spotyXBMC/player/Codec.cpp              |  198 ++
+ xbmc/music/spotyXBMC/player/Codec.cpp              |  202 ++
  xbmc/music/spotyXBMC/player/Codec.h                |   62 +
  xbmc/music/spotyXBMC/player/PlayerHandler.cpp      |   81 +
  xbmc/music/spotyXBMC/player/PlayerHandler.h        |   60 +
@@ -102,7 +102,7 @@ Subject: [PATCH] spotyxbmc2-3d4f72616d-Spotify-support-for-xbmc
  xbmc/music/windows/GUIWindowMusicNav.cpp           |   52 +-
  xbmc/music/windows/GUIWindowMusicPlaylist.cpp      |    4 +-
  xbmc/settings/Settings.cpp                         |    3 +-
- 98 files changed, 12776 insertions(+), 62 deletions(-)
+ 98 files changed, 12780 insertions(+), 62 deletions(-)
  create mode 100644 Readme.md
  create mode 100644 addons/plugin.music.spotyXBMC/addon.xml
  create mode 100644 addons/plugin.music.spotyXBMC/changelog.txt
@@ -12363,7 +12363,7 @@ index fa2e17c..2b737b5
      if (songID != -1)
      {
 diff --git a/xbmc/interfaces/json-rpc/FileItemHandler.cpp b/xbmc/interfaces/json-rpc/FileItemHandler.cpp
-index 576df43..7d4aac6 100644
+index 79abe44..de7d1be 100644
 --- a/xbmc/interfaces/json-rpc/FileItemHandler.cpp
 +++ b/xbmc/interfaces/json-rpc/FileItemHandler.cpp
 @@ -20,6 +20,7 @@
@@ -12374,15 +12374,15 @@ index 576df43..7d4aac6 100644
  #include "FileItemHandler.h"
  #include "PlaylistOperations.h"
  #include "AudioLibrary.h"
-@@ -35,6 +36,7 @@
- #include "filesystem/Directory.h"
+@@ -36,6 +37,7 @@
  #include "filesystem/File.h"
+ #include "TextureCache.h"
  
 +
  using namespace MUSIC_INFO;
  using namespace JSONRPC;
  using namespace XFILE;
-@@ -95,7 +97,6 @@ void CFileItemHandler::HandleFileItemList(const char *ID, bool allowFile, const
+@@ -98,7 +100,6 @@ void CFileItemHandler::HandleFileItemList(const char *ID, bool allowFile, const
    int end   = (int)parameterObject["limits"]["end"].asInteger();
    end = (end <= 0 || end > size) ? size : end;
    start = start > end ? end : start;
@@ -12390,7 +12390,7 @@ index 576df43..7d4aac6 100644
    Sort(items, parameterObject["sort"]);
  
    result["limits"]["start"] = start;
-@@ -115,9 +116,9 @@ void CFileItemHandler::HandleFileItem(const char *ID, bool allowFile, const char
+@@ -118,9 +119,9 @@ void CFileItemHandler::HandleFileItem(const char *ID, bool allowFile, const char
    CVariant object;
    bool hasFileField = false;
    bool hasThumbnailField = false;
@@ -12401,7 +12401,7 @@ index 576df43..7d4aac6 100644
      for (unsigned int i = 0; i < validFields.size(); i++)
      {
        CStdString field = validFields[i].asString();
-@@ -141,6 +142,11 @@ void CFileItemHandler::HandleFileItem(const char *ID, bool allowFile, const char
+@@ -144,6 +145,11 @@ void CFileItemHandler::HandleFileItem(const char *ID, bool allowFile, const char
  
      if (ID)
      {
@@ -15349,10 +15349,10 @@ index 0000000..8d91f2c
 +#endif /* SXARTIST_H_ */
 diff --git a/xbmc/music/spotyXBMC/player/Codec.cpp b/xbmc/music/spotyXBMC/player/Codec.cpp
 new file mode 100644
-index 0000000..0eb6b7d
+index 0000000..77439c3
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/player/Codec.cpp
-@@ -0,0 +1,198 @@
+@@ -0,0 +1,202 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -15406,7 +15406,7 @@ index 0000000..0eb6b7d
 +  }
 +
 +  bool Codec::Init(const CStdString & strFile, unsigned int filecache) {
-+    m_bufferSize = 2048 * sizeof(int16_t) * 2 * 10;
++    m_bufferSize = 2048 * sizeof(int16_t) * 50;
 +    m_buffer = new char[m_bufferSize];
 +    CStdString uri = URIUtils::GetFileName(strFile);
 +    CStdString extension = uri.Right(uri.GetLength() - uri.Find('.') - 1);
@@ -15431,6 +15431,7 @@ index 0000000..0eb6b7d
 +    sp_link *spLink = sp_link_create_from_string(uri);
 +    m_currentTrack = sp_link_as_track(spLink);
 +    sp_track_add_ref(m_currentTrack);
++    sp_session_player_prefetch(getSession(), m_currentTrack);
 +    sp_link_release(spLink);
 +    m_endOfTrack = false;
 +    m_bufferPos = 0;
@@ -15535,12 +15536,15 @@ index 0000000..0eb6b7d
 +
 +    if ((m_bufferPos + amountToMove) >= m_bufferSize) {
 +      amountToMove = m_bufferSize - m_bufferPos;
-+      //now the buffer is full, start playing
-+      m_startStream = true;
 +    }
 +
 +    memcpy(m_buffer + m_bufferPos, frames, amountToMove);
 +    m_bufferPos += amountToMove;
++
++    if (!m_startStream && m_bufferPos == m_bufferSize) {
++      //now the buffer is full, start playing
++      m_startStream = true;
++    }
 +
 +    return amountToMove / ((int) sizeof(int16_t) * channels);
 +  }
