@@ -24,3 +24,8 @@
 
 mkdir -p $INSTALL/usr/share/xbmc/addons/skin.confluence
   cp -R $PKG_BUILD/* $INSTALL/usr/share/xbmc/addons/skin.confluence
+
+if [ "$SPOTIFY_SUPPORT" = yes ]; then
+  cp $PKG_DIR/spotify/spotify.png \
+  $INSTALL/usr/share/xbmc/addons/skin.confluence/media/flagging/audio/spotify.png
+fi
