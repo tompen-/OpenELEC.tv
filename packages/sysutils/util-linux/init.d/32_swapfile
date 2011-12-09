@@ -52,10 +52,7 @@
     sysctl -w vm.dirty_background_ratio=40
     sysctl -w vm.dirty_expire_centisecs=18000
     if [ -w /sys/block/`mount | grep "/storage" | cut -c 6-8`/queue/nr_requests ]; then
-      echo 16384 > /sys/block/`mount | grep "/storage" | cut -c 6-8`/queue/nr_requests
-    fi
-    if [ -w /sys/block/`mount | grep "/storage" | cut -c 6-8`/queue/writes_starved ]; then
-      echo 4 > /sys/block/`mount | grep "/storage" | cut -c 6-8`/queue/writes_starved
+      echo 16 > /sys/block/`mount | grep "/storage" | cut -c 6-8`/queue/nr_requests
     fi
   fi
 )&
