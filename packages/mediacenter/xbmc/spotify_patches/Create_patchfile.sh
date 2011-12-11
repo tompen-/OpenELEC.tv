@@ -57,6 +57,9 @@ else
   git remote add spotyxbmc2 git://github.com/akezeke/spotyxbmc2.git
 fi
 
+# Create a branch for official xbmc Eden.
+git checkout -b eden origin/Eden
+
 # Update with the latest source code from the remote spotyxbmc2 repository.
 git fetch spotyxbmc2
 
@@ -74,6 +77,9 @@ SPOTYXBMC2_LAST_COMMIT=$(git log | head -n 1 | cut -c 8-17)
 
 # Create a branch at the last xbmc commit that is also included in spotyxbmc2 fork.
 git checkout -b last_common $(git merge-base master spotyxbmc2)
+
+# Need to merge also the Eden branch changes that akezeke have merged to spotyxbmc2 master.
+git merge $(git merge-base eden spotyxbmc2)
 
 # We need a temporary branch that we will use for the spotyxbmc2 patch creation.
 git checkout -b tmpsquash
@@ -96,7 +102,7 @@ mv $HOME/patchcreate_xbmc_source/00*.patch .
 # Cleanup, here we prepare so we can run this script again.
 cd $HOME/patchcreate_xbmc_source
 git checkout master
-git branch -D spotyxbmc2 tmpsquash last_common
+git branch -D spotyxbmc2 tmpsquash last_common eden
 cd -
 
 echo
