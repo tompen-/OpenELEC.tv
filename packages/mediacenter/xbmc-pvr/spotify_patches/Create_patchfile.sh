@@ -18,6 +18,27 @@
 #  http://www.gnu.org/copyleft/gpl.html
 ################################################################################
 
+if [ -z "$1" ]; then
+  echo
+  echo "This script converts the spotyxbmc2 source code changes for xbmc into a"
+  echo "patchfile that is suitable for use when compiling xbmc on OpenELEC."
+  echo
+  echo "Usage: $0 commit=<SHA>"
+  echo "This creates a patchfile based on your specified commit SHA that must be"
+  echo "a valid commit in the spotyxbmc2 github repository."
+  echo
+  echo "or"
+  echo
+  echo "Usage: $0 branch=<name>"
+  echo "This creates a patchfile based on the most recent commit in your specified"
+  echo "branch that must be a valid branch that exist in the spotyxbmc2 github repository."
+  echo
+  echo "Example:"
+  echo "$0 branch=master"
+  echo
+  exit 1
+fi
+
 echo Please wait..
 echo
 
@@ -26,7 +47,7 @@ if [ -e /$HOME/patchcreate_xbmc_source ]
 then
   # This script have been run before, we only need to pull the latest xbmc source code from repository.
   cd $HOME/patchcreate_xbmc_source
-  git pull
+  git fetch origin
 else
   # First time we run this script, we need to clone the complete xbmc source code repository.
   git clone git://github.com/xbmc/xbmc.git $HOME/patchcreate_xbmc_source
@@ -36,17 +57,32 @@ else
   git remote add spotyxbmc2 git://github.com/akezeke/spotyxbmc2.git
 fi
 
+# Create a branch for official xbmc master.
+git checkout -b xbmc_master origin/master
+
+# Create a branch for official xbmc Eden.
+git checkout -b eden origin/Eden
+
 # Update with the latest source code from the remote spotyxbmc2 repository.
 git fetch spotyxbmc2
 
-# Create a branch with the latest spotyxbmc2 source code.
-git checkout --track -b spotyxbmc2 spotyxbmc2/master
+# Create a branch with the selected spotyxbmc2 source code.
+if [ `echo $1 | cut -c -6` = commit ]; then
+  git checkout -b spotyxbmc2 `echo $1 | cut -c 8-`
+fi
 
-# Need to remember the last commit in spotyxbmc2 source for our patch filename.
+if [ `echo $1 | cut -c -6` = branch ]; then
+  git checkout -b spotyxbmc2 spotyxbmc2/`echo $1 | cut -c 8-`
+fi
+
+# Need to remember the last commit in the selected spotyxbmc2 source for our patch filename.
 SPOTYXBMC2_LAST_COMMIT=$(git log | head -n 1 | cut -c 8-17)
 
 # Create a branch at the last xbmc commit that is also included in spotyxbmc2 fork.
-git checkout -b last_common $(git merge-base master spotyxbmc2)
+git checkout -b last_common $(git merge-base xbmc_master spotyxbmc2)
+
+# Need to merge also the Eden branch changes that akezeke have merged to spotyxbmc2 master.
+git merge $(git merge-base eden spotyxbmc2)
 
 # We need a temporary branch that we will use for the spotyxbmc2 patch creation.
 git checkout -b tmpsquash
@@ -69,7 +105,7 @@ mv $HOME/patchcreate_xbmc_source/00*.patch .
 # Cleanup, here we prepare so we can run this script again.
 cd $HOME/patchcreate_xbmc_source
 git checkout master
-git branch -D spotyxbmc2 tmpsquash last_common
+git branch -D spotyxbmc2 tmpsquash last_common eden xbmc_master
 cd -
 
 echo
