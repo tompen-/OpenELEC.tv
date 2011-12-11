@@ -47,7 +47,7 @@ if [ -e /$HOME/patchcreate_xbmc_source ]
 then
   # This script have been run before, we only need to pull the latest xbmc source code from repository.
   cd $HOME/patchcreate_xbmc_source
-  git pull
+  git fetch origin
 else
   # First time we run this script, we need to clone the complete xbmc source code repository.
   git clone git://github.com/xbmc/xbmc.git $HOME/patchcreate_xbmc_source
@@ -56,6 +56,9 @@ else
   # Add spotyxbmc2 remote repository to our local repository:
   git remote add spotyxbmc2 git://github.com/akezeke/spotyxbmc2.git
 fi
+
+# Create a branch for official xbmc master.
+git checkout -b xbmc_master origin/master
 
 # Create a branch for official xbmc Eden.
 git checkout -b eden origin/Eden
@@ -76,7 +79,7 @@ fi
 SPOTYXBMC2_LAST_COMMIT=$(git log | head -n 1 | cut -c 8-17)
 
 # Create a branch at the last xbmc commit that is also included in spotyxbmc2 fork.
-git checkout -b last_common $(git merge-base master spotyxbmc2)
+git checkout -b last_common $(git merge-base xbmc_master spotyxbmc2)
 
 # Need to merge also the Eden branch changes that akezeke have merged to spotyxbmc2 master.
 git merge $(git merge-base eden spotyxbmc2)
@@ -102,7 +105,7 @@ mv $HOME/patchcreate_xbmc_source/00*.patch .
 # Cleanup, here we prepare so we can run this script again.
 cd $HOME/patchcreate_xbmc_source
 git checkout master
-git branch -D spotyxbmc2 tmpsquash last_common eden
+git branch -D spotyxbmc2 tmpsquash last_common eden xbmc_master
 cd -
 
 echo
