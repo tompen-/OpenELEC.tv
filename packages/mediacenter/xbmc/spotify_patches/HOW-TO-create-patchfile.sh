@@ -18,6 +18,27 @@
 #  http://www.gnu.org/copyleft/gpl.html
 ################################################################################
 
+if [ -z "$1" ]; then
+  echo
+  echo "This script converts the spotyxbmc2 source code changes for xbmc into a"
+  echo "patchfile that is suitable for use when compiling xbmc on OpenELEC."
+  echo
+  echo "Usage: $0 commit=<SHA>"
+  echo "This creates a patchfile based on your specified commit SHA that must be"
+  echo "a valid commit in the spotyxbmc2 github repository."
+  echo
+  echo "or"
+  echo
+  echo "Usage: $0 branch=<name>"
+  echo "This creates a patchfile based on the most recent commit in your specified"
+  echo "branch that must be a valid branch that exist in the spotyxbmc2 github repository."
+  echo
+  echo "Example:"
+  echo "$0 branch=master"
+  echo
+  exit 1
+fi
+
 echo Please wait..
 echo
 
@@ -39,10 +60,16 @@ fi
 # Update with the latest source code from the remote spotyxbmc2 repository.
 git fetch spotyxbmc2
 
-# Create a branch with the latest spotyxbmc2 source code.
-git checkout --track -b spotyxbmc2 spotyxbmc2/master
+# Create a branch with the selected spotyxbmc2 source code.
+if [ `echo $1 | cut -c -6` = commit ]; then
+  git checkout -b spotyxbmc2 `echo $1 | cut -c 8-`
+fi
 
-# Need to remember the last commit in spotyxbmc2 source for our patch filename.
+if [ `echo $1 | cut -c -6` = branch ]; then
+  git checkout -b spotyxbmc2 spotyxbmc2/`echo $1 | cut -c 8-`
+fi
+
+# Need to remember the last commit in the selected spotyxbmc2 source for our patch filename.
 SPOTYXBMC2_LAST_COMMIT=$(git log | head -n 1 | cut -c 8-17)
 
 # Create a branch at the last xbmc commit that is also included in spotyxbmc2 fork.
