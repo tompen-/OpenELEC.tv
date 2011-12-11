@@ -1,7 +1,7 @@
-From 514a4f7235fa67586ab4155891b2a63d4438aca6 Mon Sep 17 00:00:00 2001
+From 34aaf8c525b7a9ac1808a8ebbc18faf8baa29f25 Mon Sep 17 00:00:00 2001
 From: root <root@OpenELEC-dev.(none)>
-Date: Thu, 8 Dec 2011 22:22:23 +0000
-Subject: [PATCH] spotyxbmc2-a756029beb-Spotify-support-for-xbmc
+Date: Sun, 11 Dec 2011 18:16:19 +0000
+Subject: [PATCH] spotyxbmc2-a651fabf54-Spotify-support-for-xbmc
 
 ---
  .gitignore                                         |    2 +-
@@ -55,7 +55,7 @@ Subject: [PATCH] spotyxbmc2-a756029beb-Spotify-support-for-xbmc
  xbmc/music/spotyXBMC/artist/ArtistStore.h          |   57 +
  xbmc/music/spotyXBMC/artist/SxArtist.cpp           |  232 ++
  xbmc/music/spotyXBMC/artist/SxArtist.h             |  149 +
- xbmc/music/spotyXBMC/player/Codec.cpp              |  202 ++
+ xbmc/music/spotyXBMC/player/Codec.cpp              |  224 ++
  xbmc/music/spotyXBMC/player/Codec.h                |   62 +
  xbmc/music/spotyXBMC/player/PlayerHandler.cpp      |   81 +
  xbmc/music/spotyXBMC/player/PlayerHandler.h        |   60 +
@@ -102,7 +102,7 @@ Subject: [PATCH] spotyxbmc2-a756029beb-Spotify-support-for-xbmc
  xbmc/music/windows/GUIWindowMusicNav.cpp           |   52 +-
  xbmc/music/windows/GUIWindowMusicPlaylist.cpp      |    4 +-
  xbmc/settings/Settings.cpp                         |    3 +-
- 98 files changed, 12780 insertions(+), 62 deletions(-)
+ 98 files changed, 12802 insertions(+), 62 deletions(-)
  create mode 100644 Readme.md
  create mode 100644 addons/plugin.music.spotyXBMC/addon.xml
  create mode 100644 addons/plugin.music.spotyXBMC/changelog.txt
@@ -10162,7 +10162,7 @@ index 36eb715..bb69447 100644
      g_windowManager.Delete(WINDOW_MUSIC_PLAYLIST_EDITOR);
      g_windowManager.Delete(WINDOW_MUSIC_FILES);
 diff --git a/xbmc/GUIInfoManager.cpp b/xbmc/GUIInfoManager.cpp
-index b566a3d..0870b71 100644
+index 570c6e7..8fb19df 100644
 --- a/xbmc/GUIInfoManager.cpp
 +++ b/xbmc/GUIInfoManager.cpp
 @@ -4468,7 +4468,9 @@ bool CGUIInfoManager::GetLibraryBool(int condition)
@@ -15349,10 +15349,10 @@ index 0000000..8d91f2c
 +#endif /* SXARTIST_H_ */
 diff --git a/xbmc/music/spotyXBMC/player/Codec.cpp b/xbmc/music/spotyXBMC/player/Codec.cpp
 new file mode 100644
-index 0000000..77439c3
+index 0000000..cc09789
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/player/Codec.cpp
-@@ -0,0 +1,202 @@
+@@ -0,0 +1,224 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -15382,8 +15382,11 @@ index 0000000..77439c3
 +#include "PlayerHandler.h"
 +#include "../radio/RadioHandler.h"
 +#include "../SxSettings.h"
++#include "../../PlayListPlayer.h"
++#include "../../../playlists/PlayList.h"
 +
 +using namespace std;
++using namespace PLAYLIST;
 +
 +namespace addon_music_spotify {
 +
@@ -15431,13 +15434,32 @@ index 0000000..77439c3
 +    sp_link *spLink = sp_link_create_from_string(uri);
 +    m_currentTrack = sp_link_as_track(spLink);
 +    sp_track_add_ref(m_currentTrack);
-+    sp_session_player_prefetch(getSession(), m_currentTrack);
 +    sp_link_release(spLink);
 +    m_endOfTrack = false;
 +    m_bufferPos = 0;
 +    m_startStream = false;
 +    m_isPlayerLoaded = false;
 +    m_TotalTime = sp_track_duration(m_currentTrack);
++
++    //prefetch the next track!
++
++	  CPlayList& playlist = g_playlistPlayer.GetPlaylist(PLAYLIST_MUSIC);
++	  int nextSong = g_playlistPlayer.GetNextSong();
++	  if (nextSong != -1){
++	  	CFileItemPtr song = playlist[nextSong];
++	  	if (song != NULL){
++	  		CStdString uri = song->GetPath();
++	  		if (uri.Left(7).Equals("spotify")){
++	  			uri = uri.Left(uri.Find('.'));
++	  	    Logger::printOut("prefetching track:");
++	  	    Logger::printOut(uri);
++	  	    sp_link *spLink = sp_link_create_from_string(uri);
++	  	    sp_track* track = sp_link_as_track(spLink);
++	  	    sp_session_player_prefetch(getSession(), track);
++	  	    sp_link_release(spLink);
++	  		}
++	  	}
++	  }
 +
 +    return true;
 +  }
@@ -19554,7 +19576,7 @@ index ced5d2d..3ff30c8 100644
      if (tag.GetGenre().IsEmpty())
        tag.SetGenre(strValue);
 diff --git a/xbmc/music/windows/GUIWindowMusicBase.cpp b/xbmc/music/windows/GUIWindowMusicBase.cpp
-index 91b0cfc..ab08b0a 100644
+index ec23334..c2242df 100644
 --- a/xbmc/music/windows/GUIWindowMusicBase.cpp
 +++ b/xbmc/music/windows/GUIWindowMusicBase.cpp
 @@ -19,6 +19,9 @@
@@ -19567,7 +19589,7 @@ index 91b0cfc..ab08b0a 100644
  #include "threads/SystemClock.h"
  #include "system.h"
  #include "GUIUserMessages.h"
-@@ -1320,6 +1323,11 @@ bool CGUIWindowMusicBase::GetDirectory(const CStdString &strDirectory, CFileItem
+@@ -1322,6 +1325,11 @@ bool CGUIWindowMusicBase::GetDirectory(const CStdString &strDirectory, CFileItem
    // add in the "New Playlist" item if we're in the playlists folder
    if ((items.GetPath() == "special://musicplaylists/") && !items.Contains("newplaylist://"))
    {
