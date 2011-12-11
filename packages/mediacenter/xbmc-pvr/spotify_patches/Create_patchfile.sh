@@ -58,25 +58,25 @@ else
 fi
 
 # Create a branch for official xbmc master.
-git checkout -b xbmc_master origin/master
+git branch xbmc_master origin/master
 
 # Create a branch for official xbmc Eden.
-git checkout -b eden origin/Eden
+git branch eden origin/Eden
 
 # Update with the latest source code from the remote spotyxbmc2 repository.
 git fetch spotyxbmc2
 
 # Create a branch with the selected spotyxbmc2 source code.
 if [ `echo $1 | cut -c -6` = commit ]; then
-  git checkout -b spotyxbmc2 `echo $1 | cut -c 8-`
+  git branch spotyxbmc2 `echo $1 | cut -c 8-`
 fi
 
 if [ `echo $1 | cut -c -6` = branch ]; then
-  git checkout -b spotyxbmc2 spotyxbmc2/`echo $1 | cut -c 8-`
+  git branch spotyxbmc2 spotyxbmc2/`echo $1 | cut -c 8-`
 fi
 
 # Need to remember the last commit in the selected spotyxbmc2 source for our patch filename.
-SPOTYXBMC2_LAST_COMMIT=$(git log | head -n 1 | cut -c 8-17)
+SPOTYXBMC2_LAST_COMMIT=$(git log spotyxbmc2 | head -n 1 | cut -c 8-17)
 
 # Create a branch at the last xbmc commit that is also included in spotyxbmc2 fork.
 git checkout -b last_common $(git merge-base xbmc_master spotyxbmc2)
