@@ -82,7 +82,7 @@ SPOTYXBMC2_LAST_COMMIT=$(git log spotyxbmc2 | head -n 1 | cut -c 8-17)
 git checkout -b last_common $(git merge-base xbmc_master spotyxbmc2)
 
 # Need to merge also the Eden branch changes that akezeke have merged to spotyxbmc2 master.
-git merge $(git merge-base eden spotyxbmc2)
+git merge $(git merge-base --all eden spotyxbmc2)
 
 # We need a temporary branch that we will use for the spotyxbmc2 patch creation.
 git checkout -b tmpsquash
@@ -116,7 +116,7 @@ pwd
 echo
 echo A repository that includes the last official xbmc source code was created in:
 echo $HOME/patchcreate_xbmc_source
-echo You might want to delete the above directory to save some disk space.
+echo You might want to delete this directory to save some disk space.
 echo If you keep the folder untouched, it will greatly reduce the time and effort
 echo to run this script again some other day in the future.
 echo =============================================================================
