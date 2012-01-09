@@ -1,6 +1,6 @@
-From 07c0ed22d2a9a54258a86590ff849b9f7150bd65 Mon Sep 17 00:00:00 2001
+From a3b908ba9df56fa0116fa1c9c9614b365e1d30e7 Mon Sep 17 00:00:00 2001
 From: root <root@OpenELEC-dev.(none)>
-Date: Mon, 9 Jan 2012 16:31:57 +0000
+Date: Mon, 9 Jan 2012 16:31:32 +0000
 Subject: [PATCH] spotyxbmc2-1f2b1e7bcd-Spotify-support-for-xbmc
 
 ---
@@ -29,7 +29,7 @@ Subject: [PATCH] spotyxbmc2-1f2b1e7bcd-Spotify-support-for-xbmc
  .../MusicDatabaseDirectory/DirectoryNodeSong.cpp   |   18 +-
  .../MusicDatabaseDirectory/DirectoryNodeTop100.cpp |    6 +
  xbmc/filesystem/MusicSearchDirectory.cpp           |    6 +-
- xbmc/interfaces/json-rpc/AudioLibrary.cpp          |   38 +-
+ xbmc/interfaces/json-rpc/AudioLibrary.cpp          |   37 +-
  xbmc/interfaces/json-rpc/FileItemHandler.cpp       |   10 +-
  xbmc/interfaces/json-rpc/ServiceDescription.h      |    4 +
  xbmc/interfaces/json-rpc/methods.json              |    1 +
@@ -12306,7 +12306,7 @@ index 0f92385..245c99d
 +  CStdString s_artistStr = "";
  
    CFileItemList items;
-   if (musicdatabase.GetAlbumsNav("musicdb://3/", items, genreID, artistID, -1, -1))
+   if (musicdatabase.GetAlbumsNav("", items, genreID, artistID, -1, -1))
      HandleFileItemList("albumid", false, "albums", items, parameterObject, result);
 -
 +  items.Clear();
@@ -12317,7 +12317,7 @@ index 0f92385..245c99d
    musicdatabase.Close();
    return OK;
  }
-@@ -140,11 +149,16 @@ JSON_STATUS CAudioLibrary::GetSongs(const CStdString &method, ITransportLayer *t
+@@ -140,11 +149,15 @@ JSON_STATUS CAudioLibrary::GetSongs(const CStdString &method, ITransportLayer *t
    int artistID = (int)parameterObject["artistid"].asInteger();
    int albumID  = (int)parameterObject["albumid"].asInteger();
    int genreID  = (int)parameterObject["genreid"].asInteger();
@@ -12325,11 +12325,10 @@ index 0f92385..245c99d
 +  CStdString spotifyID = (CStdString) parameterObject["spotify_albumid"].asString();
 +  CStdString artistName = "";
    CFileItemList items;
--  if (musicdatabase.GetSongsNav("musicdb://4/", items, genreID, artistID, albumID))
--    HandleFileItemList("songid", true, "songs", items, parameterObject, result);
- 
-+  if (spotifyID.IsEmpty() && musicdatabase.GetSongsNav("musicdb://4/", items, genreID, artistID, albumID))
-+    HandleFileItemList("songid", true, "songs", items, parameterObject, result);
+-  if (musicdatabase.GetSongsNav("", items, genreID, artistID, albumID))
++  if (spotifyID.IsEmpty() && musicdatabase.GetSongsNav("", items, genreID, artistID, albumID))
+     HandleFileItemList("songid", true, "songs", items, parameterObject, result);
+-
 +  else if(g_spotify->GetTracks(items,spotifyID,artistName,0))
 +   {
 +   	HandleFileItemList("songid", true, "songs", items, parameterObject, result);
@@ -12337,7 +12336,7 @@ index 0f92385..245c99d
    musicdatabase.Close();
    return OK;
  }
-@@ -306,7 +320,9 @@ bool CAudioLibrary::FillFileItemList(const CVariant &parameterObject, CFileItemL
+@@ -292,7 +305,9 @@ bool CAudioLibrary::FillFileItemList(const CVariant &parameterObject, CFileItemL
      int artistID = (int)parameterObject["artistid"].asInteger(-1);
      int albumID = (int)parameterObject["albumid"].asInteger(-1);
      int genreID = (int)parameterObject["genreid"].asInteger(-1);
@@ -12348,7 +12347,7 @@ index 0f92385..245c99d
      CFileItem fileItem;
      if (FillFileItem(file, fileItem))
      {
-@@ -314,9 +330,15 @@ bool CAudioLibrary::FillFileItemList(const CVariant &parameterObject, CFileItemL
+@@ -300,9 +315,15 @@ bool CAudioLibrary::FillFileItemList(const CVariant &parameterObject, CFileItemL
        list.Add(CFileItemPtr(new CFileItem(fileItem)));
      }
  
