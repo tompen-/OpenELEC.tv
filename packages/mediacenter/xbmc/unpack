@@ -33,6 +33,6 @@ if [ "$SPOTIFY_SUPPORT" = yes ]; then
   echo "### Integrating spotify patches ###"
   for patch in `ls $PKG_DIR/spotify_patches/*.patch`; do
     cat $patch | patch -d \
-      `echo $PKG_BUILD | cut -f1 -d\ ` -p1 --merge
+      `echo $PKG_BUILD | cut -f1 -d\ ` -p1
   done
 fi
