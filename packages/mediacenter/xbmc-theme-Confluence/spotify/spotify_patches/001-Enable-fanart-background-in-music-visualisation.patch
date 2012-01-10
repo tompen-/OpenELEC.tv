@@ -1,0 +1,17 @@
+--- a/720p/MusicVisualisation.xml	2011-12-24 18:47:45.000000000 +0000
++++ b/720p/MusicVisualisation.xml	2011-12-24 18:47:45.000000000 +0000
+@@ -2,6 +2,14 @@
+ 	<defaultcontrol>-</defaultcontrol>
+ 	<allowoverlay>no</allowoverlay>
+ 	<controls>
++                <control type="image">
++			<description>visualisation background</description>
++			<posx>0</posx>
++			<posy>0</posy>
++			<width>1280</width>
++			<height>720</height>
++			<info>MusicPlayer.Property(Fanart_Image)</info>
++		</control>
+ 		<control type="visualisation" id="2">
+ 			<!-- FIX ME Music Visualization needs to have an id of 2 in this window to be able to lock or change preset -->
+ 			<description>visualisation</description>
