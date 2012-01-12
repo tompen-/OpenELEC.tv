@@ -1,6 +1,6 @@
 --- a/720p/MusicVisualisation.xml	2011-12-24 18:47:45.000000000 +0000
 +++ b/720p/MusicVisualisation.xml	2011-12-24 18:47:45.000000000 +0000
-@@ -2,6 +2,17 @@
+@@ -2,6 +2,18 @@
  	<defaultcontrol>-</defaultcontrol>
  	<allowoverlay>no</allowoverlay>
  	<controls>
@@ -13,6 +13,7 @@
 +			<texture background="true">$INFO[MusicPlayer.Property(Fanart_Image)]</texture>
 +			<include>backgroundfade</include>
 +			<fadetime>FanartCrossfadeTime</fadetime>
++			<visible>!Skin.HasSetting(HideBackGroundFanart) + !IsEmpty(MusicPlayer.Property(Fanart_Image))</visible>
 +			<include>Window_OpenClose_Animation</include>
 +		</control>
  		<control type="visualisation" id="2">
