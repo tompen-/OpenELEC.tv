@@ -27,7 +27,10 @@ progress "setup XBMC"
 #
 # clean temp dir
 #
-  rm -rf $HOME/.xbmc/temp/*
+# delete .xbmc/temp but keep spotify cache intact
+  cd $HOME/.xbmc/temp
+  rm -rf `ls $HOME/.xbmc/temp | grep -v "spotify"`
+  cd - >/dev/null
 
 #
 # add some default settings
