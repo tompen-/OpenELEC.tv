@@ -89,7 +89,7 @@ Subject: [PATCH] spotyxbmc2-1f2b1e7bcd-Spotify-support-for-xbmc
  xbmc/music/spotyXBMC/session/SessionCallbacks.h    |   66 +
  xbmc/music/spotyXBMC/thumb/SxThumb.cpp             |   98 +
  xbmc/music/spotyXBMC/thumb/SxThumb.h               |   72 +
- xbmc/music/spotyXBMC/thumb/ThumbStore.cpp          |  209 ++
+ xbmc/music/spotyXBMC/thumb/ThumbStore.cpp          |  217 ++
  xbmc/music/spotyXBMC/thumb/ThumbStore.h            |   68 +
  xbmc/music/spotyXBMC/track/SxTrack.cpp             |  100 +
  xbmc/music/spotyXBMC/track/SxTrack.h               |  132 +
@@ -18928,7 +18928,7 @@ new file mode 100644
 index 0000000..43bf409
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/thumb/ThumbStore.cpp
-@@ -0,0 +1,209 @@
+@@ -0,0 +1,217 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -19003,22 +19003,6 @@ index 0000000..43bf409
 +		for (thumbMap::iterator it = m_thumbs.begin(); it != m_thumbs.end(); ++it) {
 +			delete it->second;
 +		}
-+
-+		//save the fanart list
-+		string path = Settings::getCachePath() + "fanarts.txt";
-+		Logger::printOut("saving fanart list");
-+		ofstream file(path.c_str(), ios::trunc);
-+		bool dowrite = file.is_open();
-+
-+		for (stringMap::iterator it = m_fanarts.begin(); it != m_fanarts.end();
-+				++it) {
-+			if (dowrite) {
-+			//	if (it->second != m_stdFanart)
-+					file << it->first << "\n" << *it->second << "\n";
-+			}
-+		}
-+		file.close();
-+
 +	}
 +
 +	ThumbStore* ThumbStore::m_instance = 0;
@@ -19125,12 +19109,36 @@ index 0000000..43bf409
 +
 +						m_fanarts.insert(
 +								stringMap::value_type(artistNameString, fanartUrl));
++
++						//save the fanart url to the cachefile
++						string path = Settings::getCachePath() + "fanarts.txt";
++						Logger::printOut("saving fanart list");
++						ofstream file(path.c_str(), ios::app);
++						bool dowrite = file.is_open();
++						if (file.is_open()) {
++							file << artistNameString << "\n" << *fanartUrl << "\n";
++						}
++
++						file.close();
++
 +						return fanartUrl;
 +					}
 +				}
 +			}
 +			//Logger::printOut("Adding standard fanart");
 +			m_fanarts.insert(stringMap::value_type(artistNameString, m_stdFanart));
++
++			//save the fanart url to the cachefile
++			string path = Settings::getCachePath() + "fanarts.txt";
++			Logger::printOut("saving fanart list");
++			ofstream file(path.c_str(), ios::app);
++			bool dowrite = file.is_open();
++			if (file.is_open()) {
++				file << artistNameString << "\n" << *m_stdFanart << "\n";
++			}
++
++			file.close();
++
 +			return m_stdFanart;
 +		}
 +		//Logger::printOut("Returning cached fanart");
