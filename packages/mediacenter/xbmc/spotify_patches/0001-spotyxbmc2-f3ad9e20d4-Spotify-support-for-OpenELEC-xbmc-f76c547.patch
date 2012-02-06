@@ -1,7 +1,7 @@
-From a3b908ba9df56fa0116fa1c9c9614b365e1d30e7 Mon Sep 17 00:00:00 2001
+From 8d9970890671409f233b1bb4c2eef465c6c7e89d Mon Sep 17 00:00:00 2001
 From: root <root@OpenELEC-dev.(none)>
-Date: Mon, 9 Jan 2012 16:31:32 +0000
-Subject: [PATCH] spotyxbmc2-1f2b1e7bcd-Spotify-support-for-xbmc
+Date: Mon, 6 Feb 2012 17:00:42 +0000
+Subject: [PATCH] spotyxbmc2-f3ad9e20d4-Spotify-support-for-xbmc
 
 ---
  .gitignore                                         |    2 +-
@@ -11,9 +11,9 @@ Subject: [PATCH] spotyxbmc2-1f2b1e7bcd-Spotify-support-for-xbmc
  addons/plugin.music.spotyXBMC/default.py           |   20 +
  addons/plugin.music.spotyXBMC/fanart.jpg           |  Bin 0 -> 274905 bytes
  addons/plugin.music.spotyXBMC/icon.png             |  Bin 0 -> 7082 bytes
- .../resources/language/English/strings.xml         |  107 +
- .../plugin.music.spotyXBMC/resources/settings.xml  |  103 +
- addons/webinterface.default/js/MediaLibrary.js     |   60 +-
+ .../resources/language/English/strings.xml         |   87 +
+ .../plugin.music.spotyXBMC/resources/settings.xml  |  105 +
+ addons/webinterface.default/js/MediaLibrary.js     |   48 +-
  configure.in                                       |    3 +
  lib/libspotify/include/libspotify/api.h            | 3577 ++++++++++++++++++++
  lib/libspotify/libspotify.lib                      |  Bin 0 -> 57942 bytes
@@ -29,18 +29,18 @@ Subject: [PATCH] spotyxbmc2-1f2b1e7bcd-Spotify-support-for-xbmc
  .../MusicDatabaseDirectory/DirectoryNodeSong.cpp   |   18 +-
  .../MusicDatabaseDirectory/DirectoryNodeTop100.cpp |    6 +
  xbmc/filesystem/MusicSearchDirectory.cpp           |    6 +-
- xbmc/interfaces/json-rpc/AudioLibrary.cpp          |   37 +-
+ xbmc/interfaces/json-rpc/AudioLibrary.cpp          |   38 +-
  xbmc/interfaces/json-rpc/FileItemHandler.cpp       |   10 +-
  xbmc/interfaces/json-rpc/ServiceDescription.h      |    4 +
  xbmc/interfaces/json-rpc/methods.json              |    1 +
  xbmc/interfaces/json-rpc/types.json                |    3 +
  xbmc/music/Makefile                                |   32 +
- xbmc/music/spotyXBMC/Addon.music.spotify.cpp       |  744 ++++
+ xbmc/music/spotyXBMC/Addon.music.spotify.cpp       |  743 ++++
  xbmc/music/spotyXBMC/Addon.music.spotify.h         |   83 +
  xbmc/music/spotyXBMC/Logger.cpp                    |   36 +
- xbmc/music/spotyXBMC/Logger.h                      |   57 +
- xbmc/music/spotyXBMC/SxSettings.cpp                |  186 +
- xbmc/music/spotyXBMC/SxSettings.h                  |  165 +
+ xbmc/music/spotyXBMC/Logger.h                      |   96 +
+ xbmc/music/spotyXBMC/SxSettings.cpp                |  170 +
+ xbmc/music/spotyXBMC/SxSettings.h                  |  274 ++
  xbmc/music/spotyXBMC/Utils.cpp                     |  237 ++
  xbmc/music/spotyXBMC/Utils.h                       |   63 +
  xbmc/music/spotyXBMC/album/AlbumContainer.cpp      |   36 +
@@ -81,15 +81,15 @@ Subject: [PATCH] spotyxbmc2-1f2b1e7bcd-Spotify-support-for-xbmc
  xbmc/music/spotyXBMC/search/SearchHandler.h        |   58 +
  .../search/SearchResultBackgroundLoader.cpp        |   95 +
  .../search/SearchResultBackgroundLoader.h          |   47 +
- xbmc/music/spotyXBMC/session/BackgroundThread.cpp  |   67 +
+ xbmc/music/spotyXBMC/session/BackgroundThread.cpp  |   74 +
  xbmc/music/spotyXBMC/session/BackgroundThread.h    |   44 +
- xbmc/music/spotyXBMC/session/Session.cpp           |  202 ++
+ xbmc/music/spotyXBMC/session/Session.cpp           |  201 ++
  xbmc/music/spotyXBMC/session/Session.h             |  111 +
  xbmc/music/spotyXBMC/session/SessionCallbacks.cpp  |   90 +
  xbmc/music/spotyXBMC/session/SessionCallbacks.h    |   66 +
  xbmc/music/spotyXBMC/thumb/SxThumb.cpp             |   98 +
  xbmc/music/spotyXBMC/thumb/SxThumb.h               |   72 +
- xbmc/music/spotyXBMC/thumb/ThumbStore.cpp          |  217 ++
+ xbmc/music/spotyXBMC/thumb/ThumbStore.cpp          |  225 ++
  xbmc/music/spotyXBMC/thumb/ThumbStore.h            |   68 +
  xbmc/music/spotyXBMC/track/SxTrack.cpp             |  100 +
  xbmc/music/spotyXBMC/track/SxTrack.h               |  132 +
@@ -102,7 +102,7 @@ Subject: [PATCH] spotyxbmc2-1f2b1e7bcd-Spotify-support-for-xbmc
  xbmc/music/windows/GUIWindowMusicNav.cpp           |   52 +-
  xbmc/music/windows/GUIWindowMusicPlaylist.cpp      |    4 +-
  xbmc/settings/Settings.cpp                         |    3 +-
- 98 files changed, 12976 insertions(+), 62 deletions(-)
+ 98 files changed, 13108 insertions(+), 61 deletions(-)
  create mode 100644 Readme.md
  create mode 100644 addons/plugin.music.spotyXBMC/addon.xml
  create mode 100644 addons/plugin.music.spotyXBMC/changelog.txt
@@ -179,7 +179,7 @@ Subject: [PATCH] spotyxbmc2-1f2b1e7bcd-Spotify-support-for-xbmc
  create mode 100644 xbmc/music/spotyXBMC/track/TrackStore.h
 
 diff --git a/.gitignore b/.gitignore
-index a9b3497..581359c 100644
+index bcc3307..0da1488 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -1,5 +1,6 @@
@@ -189,7 +189,7 @@ index a9b3497..581359c 100644
  
  # commonly used editors
  # vim
-@@ -305,7 +306,6 @@ lib/cmyth/Makefile
+@@ -306,7 +307,6 @@ lib/cmyth/Makefile
  /project/Win32BuildSetup/XBMCSetup*.exe
  /project/Win32BuildSetup/languages.nsi
  /project/Win32BuildSetup/BUILD_WIN32/
@@ -5946,16 +5946,15 @@ HcmV?d00001
 
 diff --git a/addons/plugin.music.spotyXBMC/resources/language/English/strings.xml b/addons/plugin.music.spotyXBMC/resources/language/English/strings.xml
 new file mode 100644
-index 0000000..c8ea7c1
+index 0000000..393b113
 --- /dev/null
 +++ b/addons/plugin.music.spotyXBMC/resources/language/English/strings.xml
-@@ -0,0 +1,107 @@
+@@ -0,0 +1,87 @@
 +<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 +<strings>
 +    <string id="30001">spotyXBMC</string>
 +    <string id="30002">by</string>
 +    <string id="30003">Restart XBMC to apply</string>
-+
 +    
 +    <string id="30400">General</string>
 +    <string id="30401">Username</string>
@@ -5969,6 +5968,8 @@ index 0000000..c8ea7c1
 +    <string id="30409">Use volume normalization</string>
 +    <string id="30410">Download fanarts from HTBackdrops</string>
 +    <string id="30411">Download artist thumbs from HTBackdrops.com</string>
++    <string id="30412">Delayed start (seconds)</string>
++    <string id="30413">Write log to file (temp/spotify/log.txt)</string>
 +    
 +    <string id="30420">Performance</string>
 +    <string id="30421">Search: Max number of artists</string>
@@ -6006,7 +6007,7 @@ index 0000000..c8ea7c1
 +    <string id="30458">Latin</string>
 +    <string id="30459">Pop</string>
 +    <string id="30462">Punk</string>
-+    <string id="30463">Reggea</string>
++    <string id="30463">Reggae</string>
 +    <string id="30464">R&B</string>
 +    <string id="30465">Rock</string>
 +    <string id="30466">Singer-songwriter</string>
@@ -6015,30 +6016,9 @@ index 0000000..c8ea7c1
 +    <string id="30469">60s</string>
 +    <string id="30471">70s</string>
 +    <string id="30472">80s</string>
-+
-+    
-+  <!--<string id="30443">Alternative</string>
-+    <string id="30444">Blues</string>
-+    <string id="30445">Country</string>
-+    <string id="30446">Disco</string>
-+    <string id="30447">Funk</string>
-+    <string id="30448">Hard Rock</string>
-+    <string id="30449">Heavy Metal</string>
-+    <string id="30450">Rap</string>
-+    <string id="30451">House</string>
-+    <string id="30452">Jazz</string>
-+    <string id="30453">New Wave</string>
-+    <string id="30454">RNB</string>
-+    <string id="30455">Pop</string>
-+    <string id="30456">Punk</string>
-+    <string id="30457">Reggae</string>
-+    <string id="30458">Pop Rock</string>
-+    <string id="30459">Soul</string>
-+    <string id="30462">Techno</string>-->
 +    
 +    <string id="30460">From decade</string>
 +    <string id="30461">To decade</string>
-+
 +
 +    <string id="30470">Number of radio tracks</string>
 +
@@ -6059,10 +6039,10 @@ index 0000000..c8ea7c1
 +</strings>
 diff --git a/addons/plugin.music.spotyXBMC/resources/settings.xml b/addons/plugin.music.spotyXBMC/resources/settings.xml
 new file mode 100644
-index 0000000..a9f5f53
+index 0000000..01ffd14
 --- /dev/null
 +++ b/addons/plugin.music.spotyXBMC/resources/settings.xml
-@@ -0,0 +1,103 @@
+@@ -0,0 +1,105 @@
 +<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 +<settings>
 +
@@ -6073,13 +6053,15 @@ index 0000000..a9f5f53
 +    <setting id="enable" type="bool" label="30405" default="false" />
 +    <setting id="username" type="text" enable="eq(-1,true)" label="30401" default="" />
 +    <setting id="password" type="text" enable="eq(-2,true)" option="hidden" label="30402" default="" />
++    <setting id="delay" type="enum" enable="eq(-3,true)" label="30412" values="0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20" default="1" />
++    <setting id="logtofile" type="bool" enable="eq(-4,true)" label="30413" default="false" />
 +    <setting type="sep" />
-+    <setting id="highBitrate" type="bool" enable="eq(-4,true)" label="30404" default="true" />
-+    <setting id="normalization" type="bool" enable="eq(-5,true)" label="30409" default="true" />
-+    <setting id="enablefanart" type="bool" enable="eq(-6,true)"  label="30407" default="true" />
-+    <setting id="customfanart" type="bool" enable="eq(-1,true)" visible="eq(-1,true)" label="30408" default="false" />
-+    <setting id="fanart" type="file" enable="eq(-1,true)" visible="eq(-1,true)" label="30406" default="" />
-+    <setting id="htfanart" type="bool" enable="eq(-3,true)" visible="eq(-3,true)" label="30410" default="false" />
++    <setting id="highBitrate" type="bool" enable="eq(-6,true)" label="30404" default="true" />
++    <setting id="normalization" type="bool" enable="eq(-7,true)" label="30409" default="true" />
++    <setting id="enablefanart" type="bool" enable="eq(-8,true)"  label="30407" default="true" />
++    <setting id="customfanart" type="bool" enable="eq(-9,true)" visible="eq(-1,true)" label="30408" default="false" />
++    <setting id="fanart" type="file" enable="eq(-10,true)" visible="eq(-1,true)" label="30406" default="" />
++    <setting id="htfanart" type="bool" enable="eq(-11,true)" visible="eq(-3,true)" label="30410" default="false" />
 +    <setting id="htartistthumb" type="bool" enable="false" visible="false" label="30411" default="false" />
 +  </category>
 +  <category label="30420">
@@ -6167,147 +6149,115 @@ index 0000000..a9f5f53
 +</category>
 +</settings>
 diff --git a/addons/webinterface.default/js/MediaLibrary.js b/addons/webinterface.default/js/MediaLibrary.js
-index 4886efc..81c9607 100755
+index 18a48e6..c26500e 100755
 --- a/addons/webinterface.default/js/MediaLibrary.js
 +++ b/addons/webinterface.default/js/MediaLibrary.js
-@@ -326,13 +326,18 @@ MediaLibrary.prototype = {
- 			}
- 			return floatableAlbum.addClass(className).html('<div class="imgWrapper"><div class="inner"><img src="' + path + '" alt="' + title + '" /></div></div>' + code);
- 		},
--		showAlbumSelectorBlock: function(album) {
--			if (album) {
-+		showAlbumSelectorBlock: function(s_albumid,atitle) {
-+			if (s_albumid) {
- 				//Find album in stored array
- 				var prevAlbum = null,
- 					nextAlbum = null;
- 				$.each($(this.albumList), jQuery.proxy(function(i, item) {
--					if (item.albumid == album.albumid) {
-+					var s_itemid = -1;
-+					if(item.spotify_albumid != undefined) {
-+						s_itemid = item.spotify_albumid;
-+						s_itemid = this.spotifyPathToID(s_itemid);
-+					}
-+					if (item.albumid == s_albumid || s_itemid == s_albumid) {
- 						if (this.albumList.length > 1) {
- 							prevAlbum = this.albumList[i <= 0 ? this.albumList.length-1 : i-1];
- 							nextAlbum = this.albumList[i >= this.albumList.length ? 0 : i+1];
-@@ -356,7 +361,7 @@ MediaLibrary.prototype = {
- 				if (nextAlbum) {
- 					$('#albumSelector .nextAlbum').bind('click', {album: nextAlbum}, jQuery.proxy(this.displayAlbumDetails, this));
- 				}
--				$('#albumSelector .activeAlbumTitle').html(album.title||'Unknown Album');
-+				$('#albumSelector .activeAlbumTitle').html(atitle||'Unknown Album');
- 				albumSelectorBlock.show();
- 			}
- 		},
-@@ -365,14 +370,25 @@ MediaLibrary.prototype = {
- 			this.musicLibraryOpen();
- 		},
- 		displayAlbumDetails: function(event) {
--			this.showAlbumSelectorBlock(event.data.album);
--			var albumDetailsContainer = $('#albumDetails' + event.data.album.albumid);
-+			var s_albumid = 0;
-+			var p_album_id = "";
-+			if(event.data.album.albumid != undefined) {
-+				s_albumid = event.data.album.albumid;
-+				p_album_id = ', "albumid" : ' + event.data.album.albumid;
-+			}
-+			else if(event.data.album.spotify_albumid != undefined) {
-+				s_albumid = event.data.album.spotify_albumid;
-+				s_albumid = this.spotifyPathToID(s_albumid);
-+				p_album_id = ', "albumid" : 1, "spotify_albumid" : "' + event.data.album.spotify_albumid+'"';
-+			}
-+			this.showAlbumSelectorBlock(s_albumid, event.data.album.title);
-+			var albumDetailsContainer = $('#albumDetails' + s_albumid);
- 			$('#topScrollFade').hide();
- 			if (!albumDetailsContainer || albumDetailsContainer.length == 0) {
- 				$('#spinner').show();
--				jQuery.post(JSON_RPC + '?GetSongs', '{"jsonrpc": "2.0", "method": "AudioLibrary.GetSongs", "params": { "properties": ["title", "artist", "genre", "track", "duration", "year", "rating", "playcount"], "albumid" : ' + event.data.album.albumid + ' }, "id": 1}', jQuery.proxy(function(data) {
-+				jQuery.post(JSON_RPC + '?GetSongs', '{"jsonrpc": "2.0", "method": "AudioLibrary.GetSongs", "params": { "properties": ["title", "artist", "genre", "track", "duration", "year", "rating", "playcount"] '+p_album_id+' , "sort": { "method" : "track"} }, "id": 1}', jQuery.proxy(function(data) {
- 					albumDetailsContainer = $('<div>');
--					albumDetailsContainer.attr('id', 'albumDetails' + event.data.album.albumid)
-+					albumDetailsContainer.attr('id', 'albumDetails' + s_albumid)
- 										 .addClass('contentContainer')
- 										 .addClass('albumContainer')
- 										 .html('<table class="albumView"><thead><tr class="headerRow"><th>Artwork</th><th>&nbsp;</th><th>Name</th><th class="time">Time</th><th>Artist</th><th>Genre</th></tr></thead><tbody class="resultSet"></tbody></table>');
-@@ -389,7 +405,7 @@ MediaLibrary.prototype = {
- 							for (var a = 0; a < 5; a++) {
- 								trackRow.append($('<td>').html('&nbsp').attr('style', 'display: none'));
- 							}
--							$('#albumDetails' + event.data.album.albumid + ' .resultSet').append(trackRow);
-+							$('#albumDetails' + s_albumid + ' .resultSet').append(trackRow);
- 						}
- 						var trackRow = $('<tr>').addClass('trackRow').addClass('tr' + i % 2).bind('click', { album: event.data.album, itmnbr: i }, jQuery.proxy(this.playTrack,this));
- 						var trackNumberTD = $('<td>')
-@@ -413,31 +429,31 @@ MediaLibrary.prototype = {
- 							.html(item.genre);
- 							
- 						trackRow.append(trackGenreTD);
--						$('#albumDetails' + event.data.album.albumid + ' .resultSet').append(trackRow);
-+						$('#albumDetails' + s_albumid + ' .resultSet').append(trackRow);
- 					}, this));
- 					if (trackCount > 0) {
- 						var trackRow = $('<tr>').addClass('fillerTrackRow');
- 						for (var i = 0; i < 5; i++) {
- 							trackRow.append($('<td>').html('&nbsp'));
- 						}
--						$('#albumDetails' + event.data.album.albumid + ' .resultSet').append(trackRow);
-+						$('#albumDetails' + s_albumid + ' .resultSet').append(trackRow);
+@@ -349,13 +349,24 @@ MediaLibrary.prototype = {
+   },
+   displayAlbumDetails: function(event) {
+     this.showAlbumSelectorBlock(event.data.album);
+-    var albumDetailsContainer = $('#albumDetails' + event.data.album.albumid);
++    var s_albumid = 0;
++    var p_album_id = "";
++     if(event.data.album.albumid != undefined) {
++         s_albumid = event.data.album.albumid;
++         p_album_id = ', "albumid" : ' + event.data.album.albumid;
++      }
++      else if(event.data.album.spotify_albumid != undefined) {
++        s_albumid = event.data.album.spotify_albumid;
++        s_albumid = s_albumid.substr(26,22);
++        p_album_id = ', "albumid" : 1, "spotify_albumid" : "' + event.data.album.spotify_albumid+'"';
++      }
++    var albumDetailsContainer = $('#albumDetails' + s_albumid);
+     $('#topScrollFade').hide();
+     if (!albumDetailsContainer || albumDetailsContainer.length == 0) {
+       $('#spinner').show();
+-      jQuery.post(JSON_RPC + '?GetSongs', '{"jsonrpc": "2.0", "method": "AudioLibrary.GetSongs", "params": { "properties": ["title", "artist", "genre", "track", "duration", "year", "rating", "playcount"], "albumid" : ' + event.data.album.albumid + ' }, "id": 1}', jQuery.proxy(function(data) {
++         jQuery.post(JSON_RPC + '?GetSongs', '{"jsonrpc": "2.0", "method": "AudioLibrary.GetSongs", "params": { "properties": ["title", "artist", "genre", "track", "duration", "year", "rating", "playcount"] '+p_album_id+' , "sort": { "method" : "track"} }, "id": 1}', jQuery.proxy(function(data) {
+         albumDetailsContainer = $('<div>');
+-        albumDetailsContainer.attr('id', 'albumDetails' + event.data.album.albumid)
++        albumDetailsContainer.attr('id', 'albumDetails' + s_albumid)                   
+                    .addClass('contentContainer')
+                    .addClass('albumContainer')
+                    .html('<table class="albumView"><thead><tr class="headerRow"><th>Artwork</th><th>&nbsp;</th><th>Name</th><th class="time">Time</th><th>Artist</th><th>Genre</th></tr></thead><tbody class="resultSet"></tbody></table>');
+@@ -372,7 +383,7 @@ MediaLibrary.prototype = {
+             for (var a = 0; a < 5; a++) {
+               trackRow.append($('<td>').html('&nbsp').attr('style', 'display: none'));
+             }
+-            $('#albumDetails' + event.data.album.albumid + ' .resultSet').append(trackRow);
++            $('#albumDetails' + s_albumid + ' .resultSet').append(trackRow);
+           }
+           var trackRow = $('<tr>').addClass('trackRow').addClass('tr' + i % 2).bind('click', { album: event.data.album, itmnbr: i }, jQuery.proxy(this.playTrack,this));
+           var trackNumberTD = $('<td>')
+@@ -396,31 +407,31 @@ MediaLibrary.prototype = {
+             .html(item.genre);
  
- 						var trackRow2 = $('<tr>').addClass('fillerTrackRow2');
- 						trackRow2.append($('<td>').addClass('albumBG').html('&nbsp'));
- 						for (var i = 0; i < 5; i++) {
- 							trackRow2.append($('<td>').html('&nbsp'));
- 						}
--						$('#albumDetails' + event.data.album.albumid + ' .resultSet').append(trackRow2);
-+						$('#albumDetails' + s_albumid + ' .resultSet').append(trackRow2);
- 					}
--					$('#albumDetails' + event.data.album.albumid + ' .albumThumb')
-+					$('#albumDetails' + s_albumid + ' .albumThumb')
- 						.append(this.generateThumb('album', albumThumbnail, albumTitle, albumArtist))
- 						.append($('<div>').addClass('footerPadding'));
- 					$('#spinner').hide();
--					myScroll = new iScroll('albumDetails' + event.data.album.albumid);
-+					myScroll = new iScroll('albumDetails' + s_albumid);
- 				}, this), 'json');
- 			} else {
- 				$('.contentContainer').hide();
--				$('#albumDetails' + event.data.album.albumid).show();
-+				$('#albumDetails' + s_albumid).show();
- 			}
- 		},
- 		
-@@ -671,9 +687,18 @@ MediaLibrary.prototype = {
- 			this.updatePlayButtonLocation();
- 		},
- 		playTrack: function(event) {
-+			if(event.data.album.albumid != undefined) {
-+				s_albumid = event.data.album.albumid;
-+				p_album_id = '"albumid" : ' + event.data.album.albumid;
-+			}
-+			else if(event.data.album.spotify_albumid != undefined) {
-+				s_albumid = event.data.album.spotify_albumid;
-+				s_albumid = this.spotifyPathToID(s_albumid);
-+				p_album_id = '"spotify_albumid" : "' + event.data.album.spotify_albumid+'"';
-+			}
- 			jQuery.post(JSON_RPC + '?ClearPlaylist', '{"jsonrpc": "2.0", "method": "Playlist.Clear", "params": { "playlistid": ' + this.playlists["audio"] + ' }, "id": 1}', jQuery.proxy(function(data) {
- 				//check that clear worked.
--				jQuery.post(JSON_RPC + '?AddAlbumToPlaylist', '{"jsonrpc": "2.0", "method": "Playlist.Add", "params": { "playlistid": ' + this.playlists["audio"] + ', "item": { "albumid": ' + event.data.album.albumid + ' } }, "id": 1}', jQuery.proxy(function(data) {
-+				jQuery.post(JSON_RPC + '?AddAlbumToPlaylist', '{"jsonrpc": "2.0", "method": "Playlist.Add", "params": { "playlistid": ' + this.playlists["audio"] + ', "item": { '+p_album_id+' } }, "id": 1}', jQuery.proxy(function(data) {
- 					//play specific song in playlist
- 					jQuery.post(JSON_RPC + '?PlaylistItemPlay', '{"jsonrpc": "2.0", "method": "Player.Open", "params": { "item": { "playlistid": ' + this.playlists["audio"] + ', "position": '+ event.data.itmnbr + ' } }, "id": 1}', function() {}, 'json');
- 				}, this), 'json');
-@@ -876,5 +901,8 @@ MediaLibrary.prototype = {
- 				libraryContainer.show();
- 				libraryContainer.trigger('scroll');
- 			}
-+		},
-+			spotifyPathToID: function (spotiPath) {
-+			return spotiPath.substr(spotiPath.indexOf("spotify:album:")+14).replace("#","_").replace("/","");
- 		}
- 	}
+           trackRow.append(trackGenreTD);
+-          $('#albumDetails' + event.data.album.albumid + ' .resultSet').append(trackRow);
++          $('#albumDetails' + s_albumid + ' .resultSet').append(trackRow);
+         }, this));
+         if (trackCount > 0) {
+           var trackRow = $('<tr>').addClass('fillerTrackRow');
+           for (var i = 0; i < 5; i++) {
+             trackRow.append($('<td>').html('&nbsp'));
+           }
+-          $('#albumDetails' + event.data.album.albumid + ' .resultSet').append(trackRow);
++          $('#albumDetails' + s_albumid + ' .resultSet').append(trackRow);
+ 
+           var trackRow2 = $('<tr>').addClass('fillerTrackRow2');
+           trackRow2.append($('<td>').addClass('albumBG').html('&nbsp'));
+           for (var i = 0; i < 5; i++) {
+             trackRow2.append($('<td>').html('&nbsp'));
+           }
+-          $('#albumDetails' + event.data.album.albumid + ' .resultSet').append(trackRow2);
++          $('#albumDetails' + s_albumid + ' .resultSet').append(trackRow2);
+         }
+         $('#albumDetails' + event.data.album.albumid + ' .albumThumb')
+           .append(this.generateThumb('album', albumThumbnail, albumTitle, albumArtist))
+           .append($('<div>').addClass('footerPadding'));
+         $('#spinner').hide();
+-        myScroll = new iScroll('albumDetails' + event.data.album.albumid);
++        myScroll = new iScroll('albumDetails' + s_albumid);
+       }, this), 'json');
+     } else {
+       $('.contentContainer').hide();
+-      $('#albumDetails' + event.data.album.albumid).show();
++      $('#albumDetails' + s_albumid).show();
+     }
+   },
+ 
+@@ -654,11 +665,20 @@ MediaLibrary.prototype = {
+     this.updatePlayButtonLocation();
+   },
+   playTrack: function(event) {
+-    jQuery.post(JSON_RPC + '?ClearPlaylist', '{"jsonrpc": "2.0", "method": "Playlist.Clear", "params": { "playlistid": ' + this.playlists["audio"] + ' }, "id": 1}', jQuery.proxy(function(data) {
++     if(event.data.album.albumid != undefined) {
++       s_albumid = event.data.album.albumid;
++       p_album_id = '"albumid" : ' + event.data.album.albumid;
++      }
++      else if(event.data.album.spotify_albumid != undefined) {
++         s_albumid = event.data.album.spotify_albumid;
++         s_albumid = s_albumid.substr(26,22);
++         p_album_id = '"spotify_albumid" : "' + event.data.album.spotify_albumid+'"';
++      }  
++      jQuery.post(JSON_RPC + '?ClearPlaylist', '{"jsonrpc": "2.0", "method": "Playlist.Clear", "params": { "playlistid": ' + this.playlists["audio"] + ' }, "id": 1}', jQuery.proxy(function(data) {
+       //check that clear worked.
+-      jQuery.post(JSON_RPC + '?AddAlbumToPlaylist', '{"jsonrpc": "2.0", "method": "Playlist.Add", "params": { "playlistid": ' + this.playlists["audio"] + ', "item": { "albumid": ' + event.data.album.albumid + ' } }, "id": 1}', jQuery.proxy(function(data) {
+-        //play specific song in playlist
+-        jQuery.post(JSON_RPC + '?PlaylistItemPlay', '{"jsonrpc": "2.0", "method": "Player.Open", "params": { "item": { "playlistid": ' + this.playlists["audio"] + ', "position": '+ event.data.itmnbr + ' } }, "id": 1}', function() {}, 'json');
++      jQuery.post(JSON_RPC + '?AddAlbumToPlaylist', '{"jsonrpc": "2.0", "method": "Playlist.Add", "params": { "playlistid": ' + this.playlists["audio"] + ', "item": { '+p_album_id+' } }, "id": 1}', jQuery.proxy(function(data) {
++      //play specific song in playlist
++       jQuery.post(JSON_RPC + '?PlaylistItemPlay', '{"jsonrpc": "2.0", "method": "Player.Open", "params": { "item": { "playlistid": ' + this.playlists["audio"] + ', "position": '+ event.data.itmnbr + ' } }, "id": 1}', function() {}, 'json');
+       }, this), 'json');
+     }, this), 'json');
+   },
+@@ -860,4 +880,4 @@ MediaLibrary.prototype = {
+       libraryContainer.trigger('scroll');
+     }
+   }
+-}
 \ No newline at end of file
++}
 diff --git a/configure.in b/configure.in
 index bca9239..bc3cf51 100755
 --- a/configure.in
@@ -10115,7 +10065,7 @@ literal 0
 HcmV?d00001
 
 diff --git a/xbmc/Application.cpp b/xbmc/Application.cpp
-index 2f6c209..d95d178 100644
+index 5b664c0..da5a63b 100644
 --- a/xbmc/Application.cpp
 +++ b/xbmc/Application.cpp
 @@ -19,6 +19,9 @@
@@ -10128,7 +10078,7 @@ index 2f6c209..d95d178 100644
  #include "threads/SystemClock.h"
  #include "system.h"
  #include "Application.h"
-@@ -304,6 +307,7 @@
+@@ -308,6 +311,7 @@
    #include "input/windows/IRServerSuite.h"
  #endif
  
@@ -10136,7 +10086,7 @@ index 2f6c209..d95d178 100644
  using namespace std;
  using namespace ADDON;
  using namespace XFILE;
-@@ -1200,6 +1204,9 @@ bool CApplication::Initialize()
+@@ -1220,6 +1224,9 @@ bool CApplication::Initialize()
      g_windowManager.ActivateWindow(g_SkinInfo->GetFirstWindow());
    }
  
@@ -10146,7 +10096,7 @@ index 2f6c209..d95d178 100644
    g_sysinfo.Refresh();
  
    CLog::Log(LOGINFO, "removing tempfiles");
-@@ -1242,6 +1249,7 @@ bool CApplication::Initialize()
+@@ -1269,6 +1276,7 @@ bool CApplication::Initialize()
  
    // reset our screensaver (starts timers etc.)
    ResetScreenSaver();
@@ -10154,7 +10104,7 @@ index 2f6c209..d95d178 100644
    return true;
  }
  
-@@ -3102,6 +3110,10 @@ bool CApplication::Cleanup()
+@@ -3145,6 +3153,10 @@ bool CApplication::Cleanup()
  {
    try
    {
@@ -10166,10 +10116,10 @@ index 2f6c209..d95d178 100644
      g_windowManager.Delete(WINDOW_MUSIC_PLAYLIST_EDITOR);
      g_windowManager.Delete(WINDOW_MUSIC_FILES);
 diff --git a/xbmc/GUIInfoManager.cpp b/xbmc/GUIInfoManager.cpp
-index 0aae139..ada6765 100644
+index 5241748..877bc96 100644
 --- a/xbmc/GUIInfoManager.cpp
 +++ b/xbmc/GUIInfoManager.cpp
-@@ -4470,7 +4470,9 @@ bool CGUIInfoManager::GetLibraryBool(int condition)
+@@ -4473,7 +4473,9 @@ bool CGUIInfoManager::GetLibraryBool(int condition)
          db.Close();
        }
      }
@@ -12306,7 +12256,7 @@ index 0f92385..245c99d
 +  CStdString s_artistStr = "";
  
    CFileItemList items;
-   if (musicdatabase.GetAlbumsNav("", items, genreID, artistID, -1, -1))
+   if (musicdatabase.GetAlbumsNav("musicdb://3/", items, genreID, artistID, -1, -1))
      HandleFileItemList("albumid", false, "albums", items, parameterObject, result);
 -
 +  items.Clear();
@@ -12317,7 +12267,7 @@ index 0f92385..245c99d
    musicdatabase.Close();
    return OK;
  }
-@@ -140,11 +149,15 @@ JSON_STATUS CAudioLibrary::GetSongs(const CStdString &method, ITransportLayer *t
+@@ -140,11 +149,16 @@ JSON_STATUS CAudioLibrary::GetSongs(const CStdString &method, ITransportLayer *t
    int artistID = (int)parameterObject["artistid"].asInteger();
    int albumID  = (int)parameterObject["albumid"].asInteger();
    int genreID  = (int)parameterObject["genreid"].asInteger();
@@ -12325,10 +12275,11 @@ index 0f92385..245c99d
 +  CStdString spotifyID = (CStdString) parameterObject["spotify_albumid"].asString();
 +  CStdString artistName = "";
    CFileItemList items;
--  if (musicdatabase.GetSongsNav("", items, genreID, artistID, albumID))
-+  if (spotifyID.IsEmpty() && musicdatabase.GetSongsNav("", items, genreID, artistID, albumID))
-     HandleFileItemList("songid", true, "songs", items, parameterObject, result);
--
+-  if (musicdatabase.GetSongsNav("musicdb://4/", items, genreID, artistID, albumID))
+-    HandleFileItemList("songid", true, "songs", items, parameterObject, result);
+ 
++  if (spotifyID.IsEmpty() && musicdatabase.GetSongsNav("musicdb://4/", items, genreID, artistID, albumID))
++    HandleFileItemList("songid", true, "songs", items, parameterObject, result);
 +  else if(g_spotify->GetTracks(items,spotifyID,artistName,0))
 +   {
 +   	HandleFileItemList("songid", true, "songs", items, parameterObject, result);
@@ -12336,7 +12287,7 @@ index 0f92385..245c99d
    musicdatabase.Close();
    return OK;
  }
-@@ -292,7 +305,9 @@ bool CAudioLibrary::FillFileItemList(const CVariant &parameterObject, CFileItemL
+@@ -306,7 +320,9 @@ bool CAudioLibrary::FillFileItemList(const CVariant &parameterObject, CFileItemL
      int artistID = (int)parameterObject["artistid"].asInteger(-1);
      int albumID = (int)parameterObject["albumid"].asInteger(-1);
      int genreID = (int)parameterObject["genreid"].asInteger(-1);
@@ -12347,7 +12298,7 @@ index 0f92385..245c99d
      CFileItem fileItem;
      if (FillFileItem(file, fileItem))
      {
-@@ -300,9 +315,15 @@ bool CAudioLibrary::FillFileItemList(const CVariant &parameterObject, CFileItemL
+@@ -314,9 +330,15 @@ bool CAudioLibrary::FillFileItemList(const CVariant &parameterObject, CFileItemL
        list.Add(CFileItemPtr(new CFileItem(fileItem)));
      }
  
@@ -12367,7 +12318,7 @@ index 0f92385..245c99d
      if (songID != -1)
      {
 diff --git a/xbmc/interfaces/json-rpc/FileItemHandler.cpp b/xbmc/interfaces/json-rpc/FileItemHandler.cpp
-index 964e0ad..23621da 100644
+index 097ea31..dc6e9a6 100644
 --- a/xbmc/interfaces/json-rpc/FileItemHandler.cpp
 +++ b/xbmc/interfaces/json-rpc/FileItemHandler.cpp
 @@ -20,6 +20,7 @@
@@ -12406,19 +12357,19 @@ index 964e0ad..23621da 100644
      {
        CStdString field = validFields[i].asString();
 @@ -144,6 +145,11 @@ void CFileItemHandler::HandleFileItem(const char *ID, bool allowFile, const char
- 
+
      if (ID)
      {
-+  	  if(stricmp(ID, "spotify_albumid") == 0)
-+  	  { 
-+	 	CStdString spotify_albumid = item->GetPath();
-+  	  	object[ID] = spotify_albumid.c_str();
-+  	  }
++         if(stricmp(ID, "spotify_albumid") == 0)
++         {
++               CStdString spotify_albumid = item->GetPath();
++               object[ID] = spotify_albumid.c_str();
++         }
        if (stricmp(ID, "genreid") == 0)
        {
          CStdString genre = item->GetPath();
 diff --git a/xbmc/interfaces/json-rpc/ServiceDescription.h b/xbmc/interfaces/json-rpc/ServiceDescription.h
-index bf55b4b..83c9f1d 100644
+index facaef1..44723f3 100644
 --- a/xbmc/interfaces/json-rpc/ServiceDescription.h
 +++ b/xbmc/interfaces/json-rpc/ServiceDescription.h
 @@ -107,6 +107,7 @@ namespace JSONRPC
@@ -12466,7 +12417,7 @@ index 5e2a5a6..0977e84 100644
        { "name": "properties", "$ref": "Audio.Fields.Song" },
        { "name": "limits", "$ref": "List.Limits" },
 diff --git a/xbmc/interfaces/json-rpc/types.json b/xbmc/interfaces/json-rpc/types.json
-index 318782d..d2a3dd3 100644
+index 24fd9f8..34a1fac 100644
 --- a/xbmc/interfaces/json-rpc/types.json
 +++ b/xbmc/interfaces/json-rpc/types.json
 @@ -79,6 +79,7 @@
@@ -12538,10 +12489,10 @@ index 32b722a..87f0a56 100644
  
 diff --git a/xbmc/music/spotyXBMC/Addon.music.spotify.cpp b/xbmc/music/spotyXBMC/Addon.music.spotify.cpp
 new file mode 100644
-index 0000000..e9042e8
+index 0000000..bd41d7d
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/Addon.music.spotify.cpp
-@@ -0,0 +1,744 @@
+@@ -0,0 +1,743 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -12593,7 +12544,6 @@ index 0000000..e9042e8
 +Addon_music_spotify* g_spotify;
 +
 +Addon_music_spotify::Addon_music_spotify() {
-+	if (Settings::enabled())
 +		Session::getInstance()->enable();
 +}
 +
@@ -12623,14 +12573,14 @@ index 0000000..e9042e8
 +				const char* owner = ps->getPlaylist(i)->getOwnerName();
 +				if (owner != NULL)
 +					playlistShare.strName.Format("%s %s %s",
-+							ps->getPlaylist(i)->getName(), Settings::getByString(), owner);
++							ps->getPlaylist(i)->getName(), Settings::getInstance()->getByString(), owner);
 +				else
 +					playlistShare.strName.Format("%s", ps->getPlaylist(i)->getName());
 +				CFileItemPtr pItem(new CFileItem(playlistShare));
 +				SxThumb* thumb = ps->getPlaylist(i)->getThumb();
 +				if (thumb != NULL)
 +					pItem->SetThumbnailImage(thumb->getPath());
-+				pItem->SetProperty("fanart_image", Settings::getFanart());
++				pItem->SetProperty("fanart_image", Settings::getInstance()->getFanart());
 +				items.Add(pItem);
 +			}
 +		}
@@ -12695,7 +12645,7 @@ index 0000000..e9042e8
 +
 +	//add the similar artists item
 +	if (artist->getArtists().size() > 0) {
-+		CFileItemPtr pItem(new CFileItem(Settings::getSimilarArtistsString()));
++		CFileItemPtr pItem(new CFileItem(Settings::getInstance()->getSimilarArtistsString()));
 +		CStdString path;
 +		sp_link* link = sp_link_create_from_artist(spArtist);
 +		char* uri = new char[256];
@@ -12707,7 +12657,7 @@ index 0000000..e9042e8
 +		pItem->m_bIsFolder = true;
 +		items.Add(pItem);
 +		pItem->SetIconImage("DefaultMusicArtists.png");
-+		pItem->SetProperty("fanart_image", Settings::getFanart());
++		pItem->SetProperty("fanart_image", Settings::getInstance()->getFanart());
 +	}
 +
 +	//add the albums
@@ -13001,29 +12951,29 @@ index 0000000..e9042e8
 +			return true;
 +
 +		//add the tracks entry
-+		CFileItemPtr pItem(new CFileItem(Settings::getTopListTrackString()));
++		CFileItemPtr pItem(new CFileItem(Settings::getInstance()->getTopListTrackString()));
 +		CStdString path;
 +		path.Format("musicdb://2/spotify:toplist/-1/");
 +		pItem->SetPath(path);
 +		pItem->m_bIsFolder = true;
 +		items.Add(pItem);
-+		pItem->SetProperty("fanart_image", Settings::getFanart());
++		pItem->SetProperty("fanart_image", Settings::getInstance()->getFanart());
 +
 +		//add the album entry
-+		CFileItemPtr pItem2(new CFileItem(Settings::getTopListAlbumString()));
++		CFileItemPtr pItem2(new CFileItem(Settings::getInstance()->getTopListAlbumString()));
 +		path.Format("musicdb://2/spotify:toplist");
 +		pItem2->SetPath(path);
 +		pItem2->m_bIsFolder = true;
 +		items.Add(pItem2);
-+		pItem2->SetProperty("fanart_image", Settings::getFanart());
++		pItem2->SetProperty("fanart_image", Settings::getInstance()->getFanart());
 +
 +		//add the artist entry
-+		CFileItemPtr pItem3(new CFileItem(Settings::getTopListArtistString()));
++		CFileItemPtr pItem3(new CFileItem(Settings::getInstance()->getTopListArtistString()));
 +		path.Format("musicdb://1/spotify:toplist");
 +		pItem3->SetPath(path);
 +		pItem3->m_bIsFolder = true;
 +		items.Add(pItem3);
-+		pItem3->SetProperty("fanart_image", Settings::getFanart());
++		pItem3->SetProperty("fanart_image", Settings::getInstance()->getFanart());
 +	}
 +	return true;
 +}
@@ -13032,25 +12982,25 @@ index 0000000..e9042e8
 +	if (isReady()) {
 +		//add radio 1
 +		CStdString name;
-+		name.Format("%s%s", Settings::getRadioPrefixString(),
-+				Settings::getRadio1Name());
++		name.Format("%s%s", Settings::getInstance()->getRadioPrefixString(),
++				Settings::getInstance()->getRadio1Name());
 +		CFileItemPtr pItem(new CFileItem(name));
 +		CStdString path;
 +		path.Format("musicdb://3/spotify:radio:1/");
 +		pItem->SetPath(path);
 +		pItem->m_bIsFolder = true;
 +		items.Add(pItem);
-+		pItem->SetProperty("fanart_image", Settings::getFanart());
++		pItem->SetProperty("fanart_image", Settings::getInstance()->getFanart());
 +
 +		//add radio 2
-+		name.Format("%s%s", Settings::getRadioPrefixString(),
-+				Settings::getRadio2Name());
++		name.Format("%s%s", Settings::getInstance()->getRadioPrefixString(),
++				Settings::getInstance()->getRadio2Name());
 +		CFileItemPtr pItem2(new CFileItem(name));
 +		path.Format("musicdb://3/spotify:radio:2/");
 +		pItem2->SetPath(path);
 +		pItem2->m_bIsFolder = true;
 +		items.Add(pItem2);
-+		pItem2->SetProperty("fanart_image", Settings::getFanart());
++		pItem2->SetProperty("fanart_image", Settings::getInstance()->getFanart());
 +
 +	}
 +	return true;
@@ -13073,11 +13023,11 @@ index 0000000..e9042e8
 +				buttons.Add(
 +						CONTEXT_BUTTON_SPOTIFY_TOGGLE_STAR_ALBUM,
 +						salbum->isStarred() ?
-+								Settings::getUnstarAlbumString() :
-+								Settings::getStarAlbumString());
++								Settings::getInstance()->getUnstarAlbumString() :
++								Settings::getInstance()->getStarAlbumString());
 +				AlbumStore::getInstance()->removeAlbum(salbum);
 +				buttons.Add(CONTEXT_BUTTON_SPOTIFY_BROWSE_ARTIST,
-+						Settings::getBrowseArtistString());
++						Settings::getInstance()->getBrowseArtistString());
 +			}
 +			sp_link_release(spLink);
 +			sp_album_release(spAlbum);
@@ -13089,12 +13039,12 @@ index 0000000..e9042e8
 +			buttons.Add(
 +					CONTEXT_BUTTON_SPOTIFY_TOGGLE_STAR_TRACK,
 +					sp_track_is_starred(Session::getInstance()->getSpSession(), spTrack) ?
-+							Settings::getUnstarTrackString() :
-+							Settings::getStarTrackString());
++							Settings::getInstance()->getUnstarTrackString() :
++							Settings::getInstance()->getStarTrackString());
 +			buttons.Add(CONTEXT_BUTTON_SPOTIFY_BROWSE_ALBUM,
-+					Settings::getBrowseAlbumString());
++					Settings::getInstance()->getBrowseAlbumString());
 +			buttons.Add(CONTEXT_BUTTON_SPOTIFY_BROWSE_ARTIST,
-+					Settings::getBrowseArtistString());
++					Settings::getInstance()->getBrowseArtistString());
 +
 +			//this is unstable as it is now... find a solution later
 +
@@ -13110,8 +13060,8 @@ index 0000000..e9042e8
 +				buttons.Add(
 +						CONTEXT_BUTTON_SPOTIFY_TOGGLE_STAR_ALBUM,
 +						salbum->isStarred() ?
-+								Settings::getUnstarAlbumString() :
-+								Settings::getStarAlbumString());
++								Settings::getInstance()->getUnstarAlbumString() :
++								Settings::getInstance()->getStarAlbumString());
 +				AlbumStore::getInstance()->removeAlbum(salbum);
 +			}
 +
@@ -13419,10 +13369,10 @@ index 0000000..29b2c14
 +
 diff --git a/xbmc/music/spotyXBMC/Logger.h b/xbmc/music/spotyXBMC/Logger.h
 new file mode 100644
-index 0000000..34495a9
+index 0000000..7884b84
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/Logger.h
-@@ -0,0 +1,57 @@
+@@ -0,0 +1,96 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -13450,6 +13400,8 @@ index 0000000..34495a9
 +#include <iostream>
 +#include <string>
 +#include "../../utils/log.h"
++#include <fstream>
++#include "SxSettings.h"
 +
 +namespace addon_music_spotify {
 +
@@ -13462,19 +13414,56 @@ index 0000000..34495a9
 +    static void printOut(char* text) {
 +	  CLog::Log(LOGDEBUG, "spotifylog: %s", text);
 +      cout << text << "\n";
++      if (Settings::getInstance()->saveLogToFile()){
++        string path = Settings::getInstance()->getCachePath() + "log.txt";
++        ofstream file(path.c_str(), ios::app);
++        bool dowrite = file.is_open();
++        if (file.is_open()) {
++      	  file << text << "\n";
++        }
++        file.close();
++      }
 +    }
 +    static void printOut(const char* text) {
 +      CLog::Log(LOGDEBUG, "spotifylog: %s", text);
 +      cout << text << "\n";
++      if (Settings::getInstance()->saveLogToFile()){
++        string path = Settings::getInstance()->getCachePath() + "log.txt";
++        ofstream file(path.c_str(), ios::app);
++        bool dowrite = file.is_open();
++        if (file.is_open()) {
++      	  file << text << "\n";
++        }
++        file.close();
++      }
 +    }
 +    static void printOut(char text) {
 +      CLog::Log(LOGDEBUG, "spotifylog: %c", text);
 +      cout << text << "\n";
++      if (Settings::getInstance()->saveLogToFile()){
++        string path = Settings::getInstance()->getCachePath() + "log.txt";
++        ofstream file(path.c_str(), ios::app);
++        bool dowrite = file.is_open();
++        if (file.is_open()) {
++      	  file << text << "\n";
++        }
++        file.close();
++      }
 +    }
 +    static void printOut(string text) {
-+	  CLog::Log(LOGDEBUG, "spotifylog: %s", text.c_str());
++    	CLog::Log(LOGDEBUG, "spotifylog: %s", text.c_str());
 +      cout << text << "\n";
++      if (Settings::getInstance()->saveLogToFile()){
++        string path = Settings::getInstance()->getCachePath() + "log.txt";
++        ofstream file(path.c_str(), ios::app);
++        bool dowrite = file.is_open();
++        if (file.is_open()) {
++      	  file << text << "\n";
++        }
++        file.close();
++      }
 +    }
++
 +  };
 +
 +} /* namespace addon_music_spotify */
@@ -13482,10 +13471,10 @@ index 0000000..34495a9
 +
 diff --git a/xbmc/music/spotyXBMC/SxSettings.cpp b/xbmc/music/spotyXBMC/SxSettings.cpp
 new file mode 100644
-index 0000000..1cfc5c5
+index 0000000..9ae6580
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/SxSettings.cpp
-@@ -0,0 +1,186 @@
+@@ -0,0 +1,170 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -13512,92 +13501,142 @@ index 0000000..1cfc5c5
 +
 +namespace addon_music_spotify {
 +
++	Settings* Settings::m_instance = 0;
++	Settings *Settings::getInstance() {
++		return m_instance ? m_instance : (m_instance = new Settings);
++	}
++
++	bool Settings::init(){
++		ADDON::AddonPtr addon;
++		const CStdString pluginId = "plugin.music.spotyXBMC";
++		CStdString value = "";
++
++		if (ADDON::CAddonMgr::Get().GetAddon(pluginId, addon)) {
++		  ADDON::CAddonMgr::Get().LoadAddonDescription(pluginId, addon);
++
++		  m_enabled = addon->GetSetting("enable") == "true";
++		  if (!m_enabled)
++		  	return false;
++		  m_userName =  addon->GetSetting("username");
++		  m_password = addon->GetSetting("password");
++
++		  m_cachePath = CSpecialProtocol::TranslatePath("special://temp/spotify/cache/");
++		  m_thumbPath = CSpecialProtocol::TranslatePath("special://temp/spotify/thumbs/");
++		  m_artistThumbPath = CSpecialProtocol::TranslatePath("special://temp/spotify/artistthumbs/");
++
++		  m_useHighBitrate = addon->GetSetting("highBitrate") == "true";
++		  m_useNormalization = addon->GetSetting("normalization") == "true";
++
++		  if (addon->GetSetting("enablefanart") == "true"){
++		    if (addon->GetSetting("customfanart") == "true"){
++		      m_fanart = addon->GetSetting("fanart");
++		    }else{
++		      m_fanart = addon->FanArt();
++		    }
++		  }
++
++		  m_useHTFanarts = addon->GetSetting("htfanart") == "true";
++		  m_useHTArtistThumbs =  addon->GetSetting("htartistthumb") == "true";
++		  m_startDelay = 1000 * atoi(addon->GetSetting("delay"));
++		  m_saveLogToFile =  addon->GetSetting("logtofile") == "true";
++		  m_searchNumberArtists = 10 * atoi(addon->GetSetting("searchNoArtists")) + 1;
++		  m_searchNumberAlbums = 10 * atoi(addon->GetSetting("searchNoAlbums")) + 1;
++		  m_searchNumberTracks = 10 * atoi(addon->GetSetting("searchNoTracks")) + 1;
++		  m_preloadArtistDetails = addon->GetSetting("preloadArtistDetails") == "true";
++
++		  int i = atoi(addon->GetSetting("artistNoArtists")) + 1;
++		  if (i == 11) m_artistNumberTracks = -1;
++		  m_artistNumberArtists = 10 * i;
++
++	    i = atoi(addon->GetSetting("artistNoAlbums")) + 1;
++		  if (i == 11) m_artistNumberAlbums = -1;
++		  m_artistNumberAlbums = 10 * i;
++
++		  i = atoi(addon->GetSetting("artistNoTracks")) + 1;
++		  if (i == 11) m_artistNumberTracks = -1;
++		  m_artistNumberTracks = 10 * i;
++
++		  m_radio1Name = addon->GetSetting("radio1name");
++		  m_radio1From = 1900 + (10 * (4 + atoi(addon->GetSetting("radio1from"))));
++		  m_radio1To = 1900 + (10 * (4 + atoi(addon->GetSetting("radio1to"))));
++
++		  m_radio1Genres = getRadioGenres(addon, 1);
++
++		  m_radio2Name = addon->GetSetting("radio2name");
++		  m_radio2From = 1900 + (10 * (4 + atoi(addon->GetSetting("radio12rom"))));
++		  m_radio2To = 1900 + (10 * (4 + atoi(addon->GetSetting("radio2to"))));
++
++		  m_radio2Genres = getRadioGenres(addon, 2);
++
++		  m_radioNumberTracks = atoi(addon->GetSetting("radioNoTracks")) + 3;
++		  m_toplistRegionEverywhere = addon->GetSetting("topListRegion") == "1";
++		  m_preloadTopLists = addon->GetSetting("preloadToplists") == "true";
++		  m_byString = addon->GetString(30002);
++		  m_topListArtistString = addon->GetString(30500);
++		  m_topListAlbumString = addon->GetString(30501);
++		  m_topListTrackString = addon->GetString(30502);
++		  m_radioPrefixString = addon->GetString(30503);
++		  m_similarArtistsString = addon->GetString(30504);
++		  m_inboxString = addon->GetString(30505);
++		  m_starTrackString = addon->GetString(30600);
++		  m_unstarTrackString = addon->GetString(30601);
++		  m_starAlbumString = addon->GetString(30602);
++		  m_unstarAlbumString = addon->GetString(30603);
++		  m_browseAlbumString = addon->GetString(30604);
++		  m_browseArtistString = addon->GetString(30605);
++
++		  return true;
++		}
++		return false;
++	}
++
++	void Settings::deInit(){
++		delete m_instance;
++	}
++
 +  Settings::Settings() {
 +  }
 +
 +  Settings::~Settings() {
 +  }
 +
-+  CStdString Settings::getCachePath() {
-+    return CSpecialProtocol::TranslatePath("special://temp/spotify/cache/");
-+  }
++  sp_radio_genre Settings::getRadioGenres(ADDON::AddonPtr addon, int radio) {
 +
-+  CStdString Settings::getThumbPath() {
-+	return CSpecialProtocol::TranslatePath("special://temp/spotify/thumbs/");
-+  }
-+
-+  CStdString Settings::getArtistThumbPath() {
-+	return CSpecialProtocol::TranslatePath("special://temp/spotify/artistthumbs/");
-+  }
-+
-+  int Settings::getArtistNumberArtists() {
-+    int i = atoi(getAddonSetting("artistNoArtists")) + 1;
-+    if (i == 11) return -1;
-+    return 10 * i;
-+  }
-+
-+  int Settings::getArtistNumberAlbums() {
-+    int i = atoi(getAddonSetting("artistNoAlbums")) + 1;
-+    if (i == 11) return -1;
-+    return 10 * i;
-+  }
-+
-+  int Settings::getArtistNumberTracks() {
-+    int i = atoi(getAddonSetting("artistNoTracks")) + 1;
-+    if (i == 11) return -1;
-+    return 10 * i;
-+  }
-+
-+  CStdString Settings::getFanart() {
-+    ADDON::AddonPtr addon;
-+    const CStdString pluginId = "plugin.music.spotyXBMC";
-+    CStdString fanart = "";
-+
-+    if (ADDON::CAddonMgr::Get().GetAddon(pluginId, addon)) {
-+      if (getAddonSetting("enablefanart") == "true"){
-+        if (getAddonSetting("customfanart") == "true"){
-+          fanart = getAddonSetting("fanart");
-+        }else{
-+          fanart = addon->FanArt();
-+        }
-+      }
-+    }
-+    return fanart;
-+  }
-+
-+  sp_radio_genre Settings::getRadio1Genres() {
++  	CStdString radioC;
++  	radioC.Format("radio%igenre", radio);
 +
 +    struct {
 +      bool enable;
 +      int id;
 +    } radiogenres[] = {
-+    		{ getAddonSetting("radio1genre1") == "true", 0x1 },
-+    		{ getAddonSetting("radio1genre2") == "true", 0x2 },
-+    		{ getAddonSetting("radio1genre3") == "true", 0x4 },
-+    		{ getAddonSetting("radio1genre4") == "true", 0x8 },
-+    		{ getAddonSetting("radio1genre5") == "true", 0x10 },
-+    		{ getAddonSetting("radio1genre6") == "true", 0x20 },
-+    		{ getAddonSetting("radio1genre7") == "true", 0x40 },
-+    		{ getAddonSetting("radio1genre8") == "true", 0x80 },
-+    		{ getAddonSetting("radio1genre9") == "true", 0x100 },
-+    		{ getAddonSetting("radio1genre10") == "true", 0x200 },
-+    		{ getAddonSetting("radio1genre11") == "true", 0x400 },
-+    		{ getAddonSetting("radio1genre12") == "true", 0x800 },
-+    		{ getAddonSetting("radio1genre13") == "true", 0x1000 },
-+    		{ getAddonSetting("radio1genre14") == "true", 0x2000 },
-+    		{ getAddonSetting("radio1genre15") == "true", 0x4000 },
-+    		{ getAddonSetting("radio1genre16") == "true", 0x8000 },
-+    		{ getAddonSetting("radio1genre17") == "true", 0x10000 },
-+    		{ getAddonSetting("radio1genre18") == "true", 0x20000 }, 
-+			{ getAddonSetting("radio1genre19") == "true", 0x40000 },
-+    		{ getAddonSetting("radio1genre20") == "true", 0x80000 },
-+    		{ getAddonSetting("radio1genre21") == "true", 0x100000 },
-+    		{ getAddonSetting("radio1genre22") == "true", 0x200000 },
-+    		{ getAddonSetting("radio1genre23") == "true", 0x400000 },
-+    		{ getAddonSetting("radio1genre24") == "true", 0x800000 },
-+    		{ getAddonSetting("radio1genre25") == "true", 0x1000000 },
-+    		{ getAddonSetting("radio1genre26") == "true", 0x2000000 },
-+    		{ getAddonSetting("radio1genre27") == "true", 0x4000000 }, };
++    		{ addon->GetSetting(radioC + "1") == "true", 0x1 },
++    		{ addon->GetSetting(radioC + "2") == "true", 0x2 },
++    		{ addon->GetSetting(radioC + "3") == "true", 0x4 },
++    		{ addon->GetSetting(radioC + "4") == "true", 0x8 },
++    		{ addon->GetSetting(radioC + "") == "true", 0x10 },
++    		{ addon->GetSetting(radioC + "6") == "true", 0x20 },
++    		{ addon->GetSetting(radioC + "7") == "true", 0x40 },
++    		{ addon->GetSetting(radioC + "8") == "true", 0x80 },
++    		{ addon->GetSetting(radioC + "9") == "true", 0x100 },
++    		{ addon->GetSetting(radioC + "10") == "true", 0x200 },
++    		{ addon->GetSetting(radioC + "11") == "true", 0x400 },
++    		{ addon->GetSetting(radioC + "12") == "true", 0x800 },
++    		{ addon->GetSetting(radioC + "13") == "true", 0x1000 },
++    		{ addon->GetSetting(radioC + "14") == "true", 0x2000 },
++    		{ addon->GetSetting(radioC + "15") == "true", 0x4000 },
++    		{ addon->GetSetting(radioC + "16") == "true", 0x8000 },
++    		{ addon->GetSetting(radioC + "17") == "true", 0x10000 },
++    		{ addon->GetSetting(radioC + "18") == "true", 0x20000 },
++			  { addon->GetSetting(radioC + "19") == "true", 0x40000 },
++    		{ addon->GetSetting(radioC + "20") == "true", 0x80000 },
++    		{ addon->GetSetting(radioC + "21") == "true", 0x100000 },
++    		{ addon->GetSetting(radioC + "22") == "true", 0x200000 },
++    		{ addon->GetSetting(radioC + "23") == "true", 0x400000 },
++    		{ addon->GetSetting(radioC + "24") == "true", 0x800000 },
++    		{ addon->GetSetting(radioC + "25") == "true", 0x1000000 },
++    		{ addon->GetSetting(radioC + "26") == "true", 0x2000000 },
++    		{ addon->GetSetting(radioC + "27") == "true", 0x4000000 },
++    };
 +
 +    int mask = 0;
 +    for (int i = 0; i < sizeof(radiogenres) / sizeof(radiogenres[0]); i++)
@@ -13605,79 +13644,13 @@ index 0000000..1cfc5c5
 +
 +    return (sp_radio_genre) mask;
 +  }
-+
-+  sp_radio_genre Settings::getRadio2Genres() {
-+
-+    struct {
-+      bool enable;
-+      int id;
-+    }radiogenres[] = {
-+    		{ getAddonSetting("radio2genre1") == "true", 0x1 },
-+    		{ getAddonSetting("radio2genre2") == "true", 0x2 },
-+    		{ getAddonSetting("radio2genre3") == "true", 0x4 },
-+    		{ getAddonSetting("radio2genre4") == "true", 0x8 },
-+    		{ getAddonSetting("radio2genre5") == "true", 0x10 },
-+    		{ getAddonSetting("radio2genre6") == "true", 0x20 },
-+    		{ getAddonSetting("radio2genre7") == "true", 0x40 },
-+    		{ getAddonSetting("radio2genre8") == "true", 0x80 },
-+    		{ getAddonSetting("radio2genre9") == "true", 0x100 },
-+    		{ getAddonSetting("radio2genre10") == "true", 0x200 },
-+    		{ getAddonSetting("radio2genre11") == "true", 0x400 },
-+    		{ getAddonSetting("radio2genre12") == "true", 0x800 },
-+    		{ getAddonSetting("radio2genre13") == "true", 0x1000 },
-+    		{ getAddonSetting("radio2genre14") == "true", 0x2000 },
-+    		{ getAddonSetting("radio2genre15") == "true", 0x4000 },
-+    		{ getAddonSetting("radio2genre16") == "true", 0x8000 },
-+    		{ getAddonSetting("radio2genre17") == "true", 0x10000 },
-+    		{ getAddonSetting("radio2genre18") == "true", 0x20000 }, 
-+			{ getAddonSetting("radio2genre19") == "true", 0x40000 },
-+    		{ getAddonSetting("radio2genre20") == "true", 0x80000 },
-+    		{ getAddonSetting("radio2genre21") == "true", 0x100000 },
-+    		{ getAddonSetting("radio2genre22") == "true", 0x200000 },
-+    		{ getAddonSetting("radio2genre23") == "true", 0x400000 },
-+    		{ getAddonSetting("radio2genre24") == "true", 0x800000 },
-+    		{ getAddonSetting("radio2genre25") == "true", 0x1000000 },
-+    		{ getAddonSetting("radio2genre26") == "true", 0x2000000 },
-+    		{ getAddonSetting("radio2genre27") == "true", 0x4000000 }, };
-+    int mask = 0;
-+    for (int i = 0; i < sizeof(radiogenres) / sizeof(radiogenres[0]); i++)
-+      if (radiogenres[i].enable) mask |= radiogenres[i].id;
-+
-+    return (sp_radio_genre) mask;
-+  }
-+
-+  CStdString Settings::getAddonSetting(CStdString key) {
-+    ADDON::AddonPtr addon;
-+    const CStdString pluginId = "plugin.music.spotyXBMC";
-+    CStdString value = "";
-+
-+    if (ADDON::CAddonMgr::Get().GetAddon(pluginId, addon)) {
-+      ADDON::CAddonMgr::Get().LoadAddonDescription(pluginId, addon);
-+
-+      value = addon->GetSetting(key);
-+    }
-+    return value;
-+  }
-+
-+  CStdString Settings::getAddonString(int id) {
-+    ADDON::AddonPtr addon;
-+    const CStdString pluginId = "plugin.music.spotyXBMC";
-+    CStdString value = "";
-+
-+    if (ADDON::CAddonMgr::Get().GetAddon(pluginId, addon)) {
-+
-+      value = addon->GetString(id);
-+    }
-+    return value;
-+  }
-+
 +} /* namespace addon_music_spotify */
 diff --git a/xbmc/music/spotyXBMC/SxSettings.h b/xbmc/music/spotyXBMC/SxSettings.h
 new file mode 100644
-index 0000000..8b5ca66
+index 0000000..3cb0ac9
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/SxSettings.h
-@@ -0,0 +1,165 @@
+@@ -0,0 +1,274 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -13714,138 +13687,247 @@ index 0000000..8b5ca66
 +
 +  class Settings {
 +  public:
-+    Settings();
-+    virtual ~Settings();
 +
-+    static bool enabled() {
-+      return getAddonSetting("enable") == "true";
-+    }
-+    static CStdString getUserName() {
-+      return getAddonSetting("username");
-+    }
-+    static CStdString getPassword() {
-+      return getAddonSetting("password");
-+    }
-+    static CStdString getCachePath();
-+    static CStdString getThumbPath();
-+    static CStdString getArtistThumbPath();
++    static Settings *getInstance();
++    bool init();
++    void deInit();
 +
-+    static bool useHighBitrate() {
-+      return getAddonSetting("highBitrate") == "true";
-+    }
-+    static bool useNormalization(){
-+    	return getAddonSetting("normalization") == "true";
++    bool enabled() {
++      return m_enabled;
 +    }
 +
-+    static CStdString getFanart();
-+
-+    static bool getUseHTFanarts() {
-+      return getAddonSetting("htfanart") == "true";
-+    }
-+    static bool getUseHTArtistThumbs() {
-+      return getAddonSetting("htartistthumb") == "true";
++    CStdString getUserName() {
++      return m_userName;
 +    }
 +
-+    static int getSearchNumberArtists() {
-+      return 10 * atoi(getAddonSetting("searchNoArtists")) + 1;
-+    }
-+    static int getSearchNumberAlbums() {
-+      return 10 * atoi(getAddonSetting("searchNoAlbums")) + 1;
-+    }
-+    static int getSearchNumberTracks() {
-+      return 10 * atoi(getAddonSetting("searchNoTracks")) + 1;
++    CStdString getPassword() {
++      return m_password;
 +    }
 +
-+    static bool getPreloadArtistDetails() {
-+      return getAddonSetting("preloadArtistDetails") == "true";
-+    }
-+    static int getArtistNumberArtists();
-+    static int getArtistNumberAlbums();
-+    static int getArtistNumberTracks();
-+
-+    static CStdString getRadio1Name() {
-+      return getAddonSetting("radio1name");
-+    }
-+    static int getRadio1From() {
-+      return 1900 + (10 * (4 + atoi(getAddonSetting("radio1from"))));
-+    }
-+    static int getRadio1To() {
-+      return 1900 + (10 * (4 + atoi(getAddonSetting("radio1to"))));
-+    }
-+    static sp_radio_genre getRadio1Genres();
-+
-+    static CStdString getRadio2Name() {
-+      return getAddonSetting("radio2name");
-+    }
-+    static int getRadio2From() {
-+      return 1900 + (10 * (4 + atoi(getAddonSetting("radio12rom"))));
-+    }
-+    static int getRadio2To() {
-+      return 1900 + (10 * (4 + atoi(getAddonSetting("radio2to"))));
-+    }
-+    static sp_radio_genre getRadio2Genres();
-+
-+    static int getRadioNumberTracks() {
-+      return atoi(getAddonSetting("radioNoTracks")) + 3;
++    CStdString getCachePath() {
++    	return m_cachePath;
 +    }
 +
-+    static bool toplistRegionEverywhere() {
-+      return getAddonSetting("topListRegion") == "1";
++    CStdString getThumbPath() {
++    	return m_thumbPath;
 +    }
 +
-+    static bool getPreloadTopLists() {
-+      return getAddonSetting("preloadToplists") == "true";
++    CStdString getArtistThumbPath() {
++    	return m_artistThumbPath;
 +    }
-+    static CStdString getByString() {
-+      return getAddonString(30002);
++
++    bool useHighBitrate() {
++      return m_useHighBitrate;
 +    }
-+    static CStdString getTopListArtistString() {
-+      return getAddonString(30500);
++    bool useNormalization(){
++    	return m_useNormalization;
 +    }
-+    static CStdString getTopListAlbumString() {
-+      return getAddonString(30501);
++
++    CStdString getFanart() {
++    	return m_fanart;
 +    }
-+    static CStdString getTopListTrackString() {
-+      return getAddonString(30502);
++
++    bool getUseHTFanarts() {
++      return m_useHTFanarts;
 +    }
-+    static CStdString getRadioPrefixString() {
-+      return getAddonString(30503);
++    bool getUseHTArtistThumbs() {
++      return m_useHTArtistThumbs;
 +    }
-+    static CStdString getSimilarArtistsString() {
-+      return getAddonString(30504);
++
++    int getStartDelay() {
++      return m_startDelay;
 +    }
-+    static CStdString getInboxString() {
-+      return getAddonString(30505);
++
++    bool saveLogToFile() {
++      return m_saveLogToFile;
 +    }
-+    static CStdString getStarTrackString() {
-+      return getAddonString(30600);
++
++    int getSearchNumberArtists() {
++      return m_searchNumberArtists;
 +    }
-+    static CStdString getUnstarTrackString() {
-+      return getAddonString(30601);
++
++    int getSearchNumberAlbums() {
++      return m_searchNumberAlbums;
 +    }
-+    static CStdString getStarAlbumString() {
-+      return getAddonString(30602);
++
++    int getSearchNumberTracks() {
++      return m_searchNumberTracks;
 +    }
-+    static CStdString getUnstarAlbumString() {
-+      return getAddonString(30603);
++
++    bool getPreloadArtistDetails() {
++      return m_preloadArtistDetails;
 +    }
-+    static CStdString getBrowseAlbumString() {
-+      return getAddonString(30604);
++
++    int getArtistNumberArtists() {
++    	return m_artistNumberArtists;
 +    }
-+    static CStdString getBrowseArtistString() {
-+      return getAddonString(30605);
++
++    int getArtistNumberAlbums() {
++    	return m_artistNumberAlbums;
++    }
++
++    int getArtistNumberTracks() {
++    	return m_artistNumberTracks;
++    }
++
++    CStdString getRadio1Name() {
++      return m_radio1Name;
++    }
++
++    int getRadio1From() {
++      return m_radio1From;
++    }
++
++    int getRadio1To() {
++      return m_radio1To;
++    }
++
++    sp_radio_genre getRadio1Genres() {
++    	return m_radio1Genres;
++    }
++
++    CStdString getRadio2Name() {
++      return m_radio2Name;
++    }
++
++    int getRadio2From() {
++      return m_radio2From;
++    }
++
++    int getRadio2To() {
++      return m_radio2To;
++    }
++
++    sp_radio_genre getRadio2Genres() {
++    	return m_radio2Genres;
++    }
++
++    int getRadioNumberTracks() {
++      return m_radioNumberTracks;
++    }
++
++    bool toplistRegionEverywhere() {
++      return m_toplistRegionEverywhere;
++    }
++
++    bool getPreloadTopLists() {
++      return m_preloadTopLists;
++    }
++
++    CStdString getByString() {
++      return m_byString;
++    }
++
++    CStdString getTopListArtistString() {
++      return m_topListArtistString;
++    }
++
++    CStdString getTopListAlbumString() {
++      return m_topListAlbumString;
++    }
++
++    CStdString getTopListTrackString() {
++      return m_topListTrackString;
++    }
++
++    CStdString getRadioPrefixString() {
++      return m_radioPrefixString;
++    }
++
++    CStdString getSimilarArtistsString() {
++      return m_similarArtistsString;
++    }
++
++    CStdString getInboxString() {
++      return m_inboxString;
++    }
++
++    CStdString getStarTrackString() {
++      return m_starTrackString;
++    }
++
++    CStdString getUnstarTrackString() {
++      return m_unstarTrackString;
++    }
++
++    CStdString getStarAlbumString() {
++      return m_starAlbumString;
++    }
++
++    CStdString getUnstarAlbumString() {
++      return m_unstarAlbumString;
++    }
++
++    CStdString getBrowseAlbumString() {
++      return m_browseAlbumString;
++    }
++
++    CStdString getBrowseArtistString() {
++      return m_browseArtistString;
 +    }
 +
 +  private:
-+    static CStdString getAddonSetting(CStdString key);
-+    static CStdString getAddonString(int id);
++    bool m_enabled;
++    bool m_useHighBitrate;
++    bool m_useNormalization;
++    bool m_useHTFanarts;
++    bool m_useHTArtistThumbs;
++    bool m_saveLogToFile;
++    bool m_preloadArtistDetails;
++    bool m_toplistRegionEverywhere;
++    bool m_preloadTopLists;
++
++    int m_startDelay;
++    int m_searchNumberArtists;
++    int m_searchNumberAlbums;
++    int m_searchNumberTracks;
++    int m_radio1From;
++    int m_radio1To;
++    int m_radio2From;
++    int m_radio2To;
++    int m_radioNumberTracks;
++    int m_artistNumberArtists;
++    int m_artistNumberAlbums;
++    int m_artistNumberTracks;
++
++    sp_radio_genre m_radio1Genres;
++    sp_radio_genre m_radio2Genres;
++
++    CStdString m_userName;
++    CStdString m_password;
++    CStdString m_cachePath;
++    CStdString m_thumbPath;
++    CStdString m_artistThumbPath;
++    CStdString m_byString;
++    CStdString m_fanart;
++    CStdString m_radio1Name;
++    CStdString m_radio2Name;
++    CStdString m_topListArtistString;
++    CStdString m_topListAlbumString;
++    CStdString m_topListTrackString;
++    CStdString m_radioPrefixString;
++    CStdString m_similarArtistsString;
++    CStdString m_inboxString;
++    CStdString m_starTrackString;
++    CStdString m_unstarTrackString;
++    CStdString m_starAlbumString;
++    CStdString m_unstarAlbumString;
++    CStdString m_browseAlbumString;
++    CStdString m_browseArtistString;
++
++    sp_radio_genre getRadioGenres(ADDON::AddonPtr addon, int radio);
++
++    Settings();
++    virtual ~Settings();
++
++    static Settings *m_instance;
 +  };
 +
 +} /* namespace addon_music_spotify */
 +#endif /* SXSETTINGS_H_ */
 diff --git a/xbmc/music/spotyXBMC/Utils.cpp b/xbmc/music/spotyXBMC/Utils.cpp
 new file mode 100644
-index 0000000..5de804f
+index 0000000..b3cdc34
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/Utils.cpp
 @@ -0,0 +1,237 @@
@@ -13993,17 +14075,17 @@ index 0000000..5de804f
 +    return pItem;
 +  }
 +
-+  void Utils::createDir(string path) {
-+    XFILE::CDirectory::Create(CStdString(path));
++  void Utils::createDir(CStdString path) {
++    XFILE::CDirectory::Create(path);
 +
 +  }
 +
-+  void Utils::removeDir(string path) {
-+    XFILE::CDirectory::Remove(CStdString(path));
++  void Utils::removeDir(CStdString path) {
++    XFILE::CDirectory::Remove(path);
 +  }
 +
-+  void Utils::removeFile(string path) {
-+    XFILE::CFile::Delete(CStdString(path));
++  void Utils::removeFile(CStdString path) {
++    XFILE::CFile::Delete(path);
 +  }
 +
 +  void Utils::updatePlaylists() {
@@ -14088,7 +14170,7 @@ index 0000000..5de804f
 +} /* namespace addon_music_spotify */
 diff --git a/xbmc/music/spotyXBMC/Utils.h b/xbmc/music/spotyXBMC/Utils.h
 new file mode 100644
-index 0000000..30a0dce
+index 0000000..b71bd70
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/Utils.h
 @@ -0,0 +1,63 @@
@@ -14133,9 +14215,9 @@ index 0000000..30a0dce
 +    static const CFileItemPtr SxTrackToItem(SxTrack* track, string prefix = "", int trackNumber = -1);
 +    static const CFileItemPtr SxArtistToItem(SxArtist* artist, string prefix = "");
 +
-+    static void createDir(string path);
-+    static void removeDir(string path);
-+    static void removeFile(string file);
++    static void createDir(CStdString path);
++    static void removeDir(CStdString path);
++    static void removeFile(CStdString file);
 +
 +    static void updateMenu();
 +    static void updatePlaylists();
@@ -14983,7 +15065,7 @@ index 0000000..7ddfd2e
 +#endif /* ARTISTSTORE_H_ */
 diff --git a/xbmc/music/spotyXBMC/artist/SxArtist.cpp b/xbmc/music/spotyXBMC/artist/SxArtist.cpp
 new file mode 100644
-index 0000000..3fc80c2
+index 0000000..bdb5e81
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/artist/SxArtist.cpp
 @@ -0,0 +1,233 @@
@@ -15054,7 +15136,7 @@ index 0000000..3fc80c2
 +		if (loadTracksAndAlbums)
 +			doLoadTracksAndAlbums();
 +		//sometimes the thumb is not loaded correct here, do a small artist browse and try again!
-+		else if (Settings::getPreloadArtistDetails() || !m_hasThumb)
++		else if (Settings::getInstance()->getPreloadArtistDetails() || !m_hasThumb)
 +			doLoadDetails();
 +		else
 +			m_hasDetails = true;
@@ -15139,9 +15221,9 @@ index 0000000..3fc80c2
 +			if (m_loadTrackAndAlbums) {
 +				//add the albums
 +				int maxAlbums =
-+						Settings::getArtistNumberAlbums() == -1 ?
++						Settings::getInstance()->getArtistNumberAlbums() == -1 ?
 +								sp_artistbrowse_num_albums(m_browse) :
-+								Settings::getArtistNumberAlbums();
++								Settings::getInstance()->getArtistNumberAlbums();
 +
 +				int addedAlbums = 0;
 +				for (int index = 0;
@@ -15157,9 +15239,9 @@ index 0000000..3fc80c2
 +
 +				//add the tracks
 +				int maxTracks =
-+						Settings::getArtistNumberTracks() == -1 ?
++						Settings::getInstance()->getArtistNumberTracks() == -1 ?
 +								sp_artistbrowse_num_tracks(m_browse) :
-+								Settings::getArtistNumberTracks();
++								Settings::getInstance()->getArtistNumberTracks();
 +
 +				int addedTracks = 0;
 +				for (int index = 0;
@@ -15176,9 +15258,9 @@ index 0000000..3fc80c2
 +
 +				//add the artists
 +				int maxArtists =
-+						Settings::getArtistNumberArtists() == -1 ?
++						Settings::getInstance()->getArtistNumberArtists() == -1 ?
 +								sp_artistbrowse_num_similar_artists(m_browse) :
-+								Settings::getArtistNumberArtists();
++								Settings::getInstance()->getArtistNumberArtists();
 +
 +				int addedArtists = 0;
 +				for (int index = 0;
@@ -15389,7 +15471,7 @@ index 0000000..ca67874
 +#endif /* SXARTIST_H_ */
 diff --git a/xbmc/music/spotyXBMC/player/Codec.cpp b/xbmc/music/spotyXBMC/player/Codec.cpp
 new file mode 100644
-index 0000000..82ad196
+index 0000000..f0a0562
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/player/Codec.cpp
 @@ -0,0 +1,225 @@
@@ -15435,7 +15517,7 @@ index 0000000..82ad196
 +    m_Channels = 2;
 +    m_BitsPerSample = 16;
 +    //the bitrate is hardcoded, we dont no it before first music delivery and then its to late, the skin has already printed it out
-+    m_Bitrate = Settings::useHighBitrate() ? 320000 : 160000;
++    m_Bitrate = Settings::getInstance()->useHighBitrate() ? 320000 : 160000;
 +    m_CodecName = "spotify";
 +    m_TotalTime = 0;
 +    m_currentTrack = 0;
@@ -16537,7 +16619,7 @@ index 0000000..e504d7a
 +#endif /* STARREDLISTS_H_ */
 diff --git a/xbmc/music/spotyXBMC/playlist/SxPlaylist.cpp b/xbmc/music/spotyXBMC/playlist/SxPlaylist.cpp
 new file mode 100644
-index 0000000..1cd4479
+index 0000000..26d9282
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/playlist/SxPlaylist.cpp
 @@ -0,0 +1,171 @@
@@ -16612,7 +16694,7 @@ index 0000000..1cd4479
 +
 +  const char* SxPlaylist::getName() {
 +	 //not the most elegant solution, but if the index is 0, its the inbox
-+    return m_index == 0 ? Settings::getInboxString().GetBufferSetLength(Settings::getInboxString().GetLength() +1) : sp_playlist_name(m_spPlaylist);
++    return m_index == 0 ? Settings::getInstance()->getInboxString().GetBufferSetLength(Settings::getInstance()->getInboxString().GetLength() +1) : sp_playlist_name(m_spPlaylist);
 +  }
 +
 +  const char* SxPlaylist::getOwnerName() {
@@ -16648,6 +16730,7 @@ index 0000000..1cd4479
 +      if (sp_playlist_get_image(m_spPlaylist, image)) {
 +        m_thumb = ThumbStore::getInstance()->getThumb(image);
 +      }
++      Logger::printOut("reload play 3");
 +
 +      vector<SxTrack*> newTracks;
 +      for (int index = 0; index < sp_playlist_num_tracks(m_spPlaylist); index++) {
@@ -16657,11 +16740,10 @@ index 0000000..1cd4479
 +        if (track) {
 +          newTracks.push_back(track);
 +          //no thumb, lets pick one from the track list
-+          if (m_thumb == NULL
-+          ) if (track->getThumb() != NULL
-+          )
-+          //no need to add ref to the thumb, when the track disappears the playlist will switch thumb
-+            m_thumb = track->getThumb();
++          if (m_thumb == NULL)
++          	if (track->getThumb() != NULL)
++              //no need to add ref to the thumb, when the track disappears the playlist will switch thumb
++              m_thumb = track->getThumb();
 +        }
 +      }
 +
@@ -16810,7 +16892,7 @@ index 0000000..b617419
 +#endif /* SXPLAYLIST_H_ */
 diff --git a/xbmc/music/spotyXBMC/playlist/TopLists.cpp b/xbmc/music/spotyXBMC/playlist/TopLists.cpp
 new file mode 100644
-index 0000000..b4e65aa
+index 0000000..92df520
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/playlist/TopLists.cpp
 @@ -0,0 +1,220 @@
@@ -16853,7 +16935,7 @@ index 0000000..b4e65aa
 +	m_artistsLoaded = false;
 +	m_tracksLoaded = false;
 +	Logger::printOut("creating toplists");
-+	if (Settings::getPreloadTopLists()) {
++	if (Settings::getInstance()->getPreloadTopLists()) {
 +		reLoadArtists();
 +		reLoadAlbums();
 +		reLoadTracks();
@@ -16879,12 +16961,12 @@ index 0000000..b4e65aa
 +		return;
 +	m_waitingForArtists = true;
 +	sp_toplistregion region =
-+			Settings::toplistRegionEverywhere() ?
++			Settings::getInstance()->toplistRegionEverywhere() ?
 +					SP_TOPLIST_REGION_EVERYWHERE :
 +					(sp_toplistregion) sp_session_user_country(
 +							Session::getInstance()->getSpSession());
 +	sp_toplistbrowse_create(Session::getInstance()->getSpSession(),
-+			SP_TOPLIST_TYPE_ARTISTS, region, Settings::getUserName(),
++			SP_TOPLIST_TYPE_ARTISTS, region, Settings::getInstance()->getUserName(),
 +			&cb_toplistArtistsComplete, this);
 +}
 +
@@ -16893,12 +16975,12 @@ index 0000000..b4e65aa
 +		return;
 +	m_waitingForAlbums = true;
 +	sp_toplistregion region =
-+			Settings::toplistRegionEverywhere() ?
++			Settings::getInstance()->toplistRegionEverywhere() ?
 +					SP_TOPLIST_REGION_EVERYWHERE :
 +					(sp_toplistregion) sp_session_user_country(
 +							Session::getInstance()->getSpSession());
 +	sp_toplistbrowse_create(Session::getInstance()->getSpSession(),
-+			SP_TOPLIST_TYPE_ALBUMS, region, Settings::getUserName(),
++			SP_TOPLIST_TYPE_ALBUMS, region, Settings::getInstance()->getUserName(),
 +			&cb_toplistAlbumsComplete, this);
 +}
 +
@@ -16907,12 +16989,12 @@ index 0000000..b4e65aa
 +		return;
 +	m_waitingForTracks = true;
 +	sp_toplistregion region =
-+			Settings::toplistRegionEverywhere() ?
++			Settings::getInstance()->toplistRegionEverywhere() ?
 +					SP_TOPLIST_REGION_EVERYWHERE :
 +					(sp_toplistregion) sp_session_user_country(
 +							Session::getInstance()->getSpSession());
 +	sp_toplistbrowse_create(Session::getInstance()->getSpSession(),
-+			SP_TOPLIST_TYPE_TRACKS, region, Settings::getUserName(),
++			SP_TOPLIST_TYPE_TRACKS, region, Settings::getInstance()->getUserName(),
 +			&cb_toplistTracksComplete, this);
 +}
 +
@@ -17295,7 +17377,7 @@ index 0000000..c95f354
 +#endif /* RADIOBACKGROUNDLOADER_H_ */
 diff --git a/xbmc/music/spotyXBMC/radio/RadioHandler.cpp b/xbmc/music/spotyXBMC/radio/RadioHandler.cpp
 new file mode 100644
-index 0000000..9521836
+index 0000000..dd01be7
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/radio/RadioHandler.cpp
 @@ -0,0 +1,107 @@
@@ -17336,8 +17418,8 @@ index 0000000..9521836
 +  RadioHandler::RadioHandler() {
 +    Logger::printOut("creating radio handler");
 +    //hardcode two radios, allow for any number of radios later maybe
-+    SxRadio *radio1 = new SxRadio(1, Settings::getRadio1From(), Settings::getRadio1To(), Settings::getRadio1Genres());
-+    SxRadio *radio2 = new SxRadio(2, Settings::getRadio2From(), Settings::getRadio2To(), Settings::getRadio2Genres());
++    SxRadio *radio1 = new SxRadio(1, Settings::getInstance()->getRadio1From(), Settings::getInstance()->getRadio1To(), Settings::getInstance()->getRadio1Genres());
++    SxRadio *radio2 = new SxRadio(2, Settings::getInstance()->getRadio2From(), Settings::getInstance()->getRadio2To(), Settings::getInstance()->getRadio2Genres());
 +
 +    m_radios.push_back(radio1);
 +    m_radios.push_back(radio2);
@@ -17465,7 +17547,7 @@ index 0000000..eb89e22
 +#endif /* RADIOHANDLER_H_ */
 diff --git a/xbmc/music/spotyXBMC/radio/SxRadio.cpp b/xbmc/music/spotyXBMC/radio/SxRadio.cpp
 new file mode 100644
-index 0000000..18d28ce
+index 0000000..d401da0
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/radio/SxRadio.cpp
 @@ -0,0 +1,89 @@
@@ -17509,7 +17591,7 @@ index 0000000..18d28ce
 +    m_currentResultPos = 0;
 +    m_currentSearch = NULL;
 +    //hard code the number of tracks to 15 for now
-+    m_numberOfTracksToDisplay = Settings::getRadioNumberTracks();
++    m_numberOfTracksToDisplay = Settings::getInstance()->getRadioNumberTracks();
 +    m_isWaitingForResults = false;
 +    fetchNewTracks();
 +  }
@@ -17637,7 +17719,7 @@ index 0000000..57ed770
 +#endif /* SXRADIO_H_ */
 diff --git a/xbmc/music/spotyXBMC/search/Search.cpp b/xbmc/music/spotyXBMC/search/Search.cpp
 new file mode 100644
-index 0000000..8fa2a85
+index 0000000..2397b45
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/search/Search.cpp
 @@ -0,0 +1,89 @@
@@ -17675,9 +17757,9 @@ index 0000000..8fa2a85
 +namespace addon_music_spotify {
 +
 +  Search::Search(string query) {
-+    m_maxArtistResults = Settings::getSearchNumberArtists();
-+    m_maxAlbumResults = Settings::getSearchNumberAlbums();
-+    m_maxTrackResults = Settings::getSearchNumberTracks();
++    m_maxArtistResults = Settings::getInstance()->getSearchNumberArtists();
++    m_maxAlbumResults = Settings::getInstance()->getSearchNumberAlbums();
++    m_maxTrackResults = Settings::getInstance()->getSearchNumberTracks();
 +
 +    m_query = query;
 +
@@ -18127,10 +18209,10 @@ index 0000000..dfa2086
 +#endif /* SEARCHRESULTBACKGROUNDLOADER_H_ */
 diff --git a/xbmc/music/spotyXBMC/session/BackgroundThread.cpp b/xbmc/music/spotyXBMC/session/BackgroundThread.cpp
 new file mode 100644
-index 0000000..f0057af
+index 0000000..25de687
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/session/BackgroundThread.cpp
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,74 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -18155,6 +18237,7 @@ index 0000000..f0057af
 +#include "Session.h"
 +#include "BackgroundThread.h"
 +#include "../Logger.h"
++#include "../SxSettings.h"
 +
 +namespace addon_music_spotify {
 +
@@ -18165,7 +18248,13 @@ index 0000000..f0057af
 +  }
 +
 +  void BackgroundThread::OnStartup() {
++  	Sleep(1000);
 +    Logger::printOut("bgthread OnStartup");
++    if (!Settings::getInstance()->init()){
++    	Logger::printOut("bgthread quiting, spotyxbmc is not enabled or the addon is missing");
++    	return;
++    }
++  	Sleep(Settings::getInstance()->getStartDelay());
 +    Session::getInstance()->connect();
 +    Session::getInstance()->unlock();
 +    Logger::printOut("bgthread OnStartup done");
@@ -18250,10 +18339,10 @@ index 0000000..8ed6213
 +#endif /* BACKGROUNDTHREAD_H_ */
 diff --git a/xbmc/music/spotyXBMC/session/Session.cpp b/xbmc/music/spotyXBMC/session/Session.cpp
 new file mode 100644
-index 0000000..73ed056
+index 0000000..378d207
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/session/Session.cpp
-@@ -0,0 +1,202 @@
+@@ -0,0 +1,201 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -18310,8 +18399,6 @@ index 0000000..73ed056
 +  bool Session::enable() {
 +    if (isEnabled()) return true;
 +
-+    m_isEnabled = true;
-+
 +    lock();
 +    m_bgThread = new BackgroundThread();
 +    m_bgThread->Create(true);
@@ -18336,7 +18423,7 @@ index 0000000..73ed056
 +      Logger::printOut(itoa(SPOTIFY_API_VERSION, version, 10));
 +	  
 +	  //the api is not copying the string so create a new c string
-+	  CStdString location = Settings::getCachePath();
++	  CStdString location = Settings::getInstance()->getCachePath();
 +	  char * cstr;
 +      cstr = new char [location.size()+1];
 +      strcpy (cstr, location.c_str());
@@ -18365,13 +18452,13 @@ index 0000000..73ed056
 +      }
 +
 +      //set high bitrate
-+      if (Settings::useHighBitrate()) sp_session_preferred_bitrate(m_session, SP_BITRATE_320k);
++      if (Settings::getInstance()->useHighBitrate()) sp_session_preferred_bitrate(m_session, SP_BITRATE_320k);
 +
 +      sp_session_set_connection_type(m_session, SP_CONNECTION_TYPE_WIRED);
 +      sp_session_set_connection_rules(m_session, SP_CONNECTION_RULE_NETWORK);
-+      sp_session_set_volume_normalization(m_session, Settings::useNormalization());
++      sp_session_set_volume_normalization(m_session, Settings::getInstance()->useNormalization());
 +
-+      sp_session_login(m_session, Settings::getUserName().c_str(), Settings::getPassword().c_str(), true);
++      sp_session_login(m_session, Settings::getInstance()->getUserName().c_str(), Settings::getInstance()->getPassword().c_str(), true);
 +      m_isEnabled = true;
 +      Logger::printOut("Logged in, returning");
 +      return true;
@@ -18389,45 +18476,46 @@ index 0000000..73ed056
 +  }
 +
 +  bool Session::disConnect() {
-+    Logger::printOut("Logging out");
++  	if (m_isEnabled) {
++      Logger::printOut("Logging out");
 +
-+    PlayerHandler::deInit();
-+    Logger::printOut("cleaned player");
++      PlayerHandler::deInit();
++      Logger::printOut("cleaned player");
 +
-+    //delete m_playlists;
-+    //m_playlists = NULL;
-+    Logger::printOut("cleaned playlists");
++      //delete m_playlists;
++      //m_playlists = NULL;
++      Logger::printOut("cleaned playlists");
 +
-+    //SearchHandler::deInit();
-+    Logger::printOut("cleaned search");
++      //SearchHandler::deInit();
++      Logger::printOut("cleaned search");
 +
-+    //RadioHandler::deInit();
-+    Logger::printOut("cleaned radios");
++      //RadioHandler::deInit();
++      Logger::printOut("cleaned radios");
 +
-+    //ArtistStore::deInit();
-+    Logger::printOut("cleaned artists");
++      //ArtistStore::deInit();
++      Logger::printOut("cleaned artists");
 +
-+    //AlbumStore::deInit();
-+    Logger::printOut("cleaned albums");
++      //AlbumStore::deInit();
++      Logger::printOut("cleaned albums");
 +
-+    //TrackStore::deInit();
-+    Logger::printOut("cleaned tracks");
++      //TrackStore::deInit();
++      Logger::printOut("cleaned tracks");
 +
-+    ThumbStore::deInit();
-+    Logger::printOut("cleaned thumbs");
++      ThumbStore::deInit();
++      Logger::printOut("cleaned thumbs");
 +
-+    //TODO FIX THE LOGOUT... Why is it crashing on logout?
-+    m_isLoggedOut = false;
-+    sp_session_logout(m_session);
++      //TODO FIX THE LOGOUT... Why is it crashing on logout?
++      m_isLoggedOut = false;
++      sp_session_logout(m_session);
 +
-+    Logger::printOut("logged out waiting for callback");
-+    while (!m_isLoggedOut) {
-+      processEvents();
-+    }
-+    Logger::printOut("logged out");
-+    sp_session_release(m_session);
-+    Logger::printOut("cleaned session");
-+
++      Logger::printOut("logged out waiting for callback");
++      while (!m_isLoggedOut) {
++        processEvents();
++      }
++      Logger::printOut("logged out");
++      sp_session_release(m_session);
++      Logger::printOut("cleaned session");
++  	}
 +    return true;
 +  }
 +
@@ -18925,10 +19013,10 @@ index 0000000..b6185dc
 +#endif /* SXTHUMB_H_ */
 diff --git a/xbmc/music/spotyXBMC/thumb/ThumbStore.cpp b/xbmc/music/spotyXBMC/thumb/ThumbStore.cpp
 new file mode 100644
-index 0000000..43bf409
+index 0000000..7da24ca
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/thumb/ThumbStore.cpp
-@@ -0,0 +1,217 @@
+@@ -0,0 +1,225 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -18970,15 +19058,16 @@ index 0000000..43bf409
 +	using namespace std;
 +
 +	ThumbStore::ThumbStore() {
-+		Utils::removeDir(Settings::getThumbPath());
-+		Utils::createDir(Settings::getThumbPath());
-+		Utils::removeDir(Settings::getArtistThumbPath());
-+		Utils::createDir(Settings::getArtistThumbPath());
-+
-+		m_stdFanart = new CStdString(Settings::getFanart());
++		Logger::printOut("ThumbStore creating paths");
++		//Utils::removeDir(Settings::getInstance()->getThumbPath());
++		Utils::createDir(Settings::getInstance()->getThumbPath());
++		//Utils::removeDir(Settings::getInstance()->getArtistThumbPath());
++		//Utils::createDir(Settings::getInstance()->getArtistThumbPath());
++		Logger::printOut("ThumbStore creating paths done");
++		m_stdFanart = new CStdString(Settings::getInstance()->getFanart());
 +
 +		//load the fanartmap from file
-+		string path = Settings::getCachePath() + "fanarts.txt";
++		string path = Settings::getInstance()->getCachePath() + "fanarts.txt";
 +		Logger::printOut("loading fanart list");
 +		ifstream file(path.c_str());
 +		if (file.is_open()) {
@@ -18987,7 +19076,14 @@ index 0000000..43bf409
 +				string path;
 +				getline(file, name);
 +				getline(file, path);
-+				CStdString *fanartUrl = new CStdString(path);
++				CStdString *fanartUrl;
++				if (path[0] == '/') {
++					// Don't create a new string if its not necessary
++					fanartUrl = m_stdFanart;
++				}
++				else {
++					fanartUrl= new CStdString(path);
++				}
 +				m_fanarts.insert(stringMap::value_type(name, fanartUrl));
 +			}
 +		}
@@ -18996,7 +19092,7 @@ index 0000000..43bf409
 +
 +	void ThumbStore::deInit() {
 +		delete m_instance;
-+		Utils::removeDir(Settings::getThumbPath());
++		Utils::removeDir(Settings::getInstance()->getThumbPath());
 +	}
 +
 +	ThumbStore::~ThumbStore() {
@@ -19025,7 +19121,7 @@ index 0000000..43bf409
 +				return NULL;
 +			}
 +
-+			string path = Settings::getThumbPath();
++			string path = Settings::getInstance()->getThumbPath();
 +			thumb = new SxThumb(spImage, path);
 +			m_thumbs.insert(thumbMap::value_type(image, thumb));
 +		} else {
@@ -19056,7 +19152,7 @@ index 0000000..43bf409
 +
 +	CStdString *ThumbStore::getFanart(const char *artistName) {
 +
-+		if (!Settings::getUseHTFanarts())
++		if (!Settings::getInstance()->getUseHTFanarts())
 +			return m_stdFanart;
 +
 +		//Logger::printOut("Looking for fanart");
@@ -19111,7 +19207,7 @@ index 0000000..43bf409
 +								stringMap::value_type(artistNameString, fanartUrl));
 +
 +						//save the fanart url to the cachefile
-+						string path = Settings::getCachePath() + "fanarts.txt";
++						string path = Settings::getInstance()->getCachePath() + "fanarts.txt";
 +						Logger::printOut("saving fanart list");
 +						ofstream file(path.c_str(), ios::app);
 +						bool dowrite = file.is_open();
@@ -19129,7 +19225,7 @@ index 0000000..43bf409
 +			m_fanarts.insert(stringMap::value_type(artistNameString, m_stdFanart));
 +
 +			//save the fanart url to the cachefile
-+			string path = Settings::getCachePath() + "fanarts.txt";
++			string path = Settings::getInstance()->getCachePath() + "fanarts.txt";
 +			Logger::printOut("saving fanart list");
 +			ofstream file(path.c_str(), ios::app);
 +			bool dowrite = file.is_open();
@@ -19908,10 +20004,10 @@ index a472469..9b7c695 100644
      m_vecItems->Get(i)->Select(false);
  
 diff --git a/xbmc/settings/Settings.cpp b/xbmc/settings/Settings.cpp
-index ca56955..3448c94 100644
+index eda98f4..8bd0441 100644
 --- a/xbmc/settings/Settings.cpp
 +++ b/xbmc/settings/Settings.cpp
-@@ -103,7 +103,8 @@ void CSettings::Initialize()
+@@ -102,7 +102,8 @@ void CSettings::Initialize()
    m_bNonLinStretch = false;
  
    m_pictureExtensions = ".png|.jpg|.jpeg|.bmp|.gif|.ico|.tif|.tiff|.tga|.pcx|.cbz|.zip|.cbr|.rar|.m3u|.dng|.nef|.cr2|.crw|.orf|.arw|.erf|.3fr|.dcr|.x3f|.mef|.raf|.mrw|.pef|.sr2|.rss";
