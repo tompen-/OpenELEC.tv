@@ -1,7 +1,7 @@
-From 8d9970890671409f233b1bb4c2eef465c6c7e89d Mon Sep 17 00:00:00 2001
+From 001f29cf9b457ab9ff33c35916d6b8b53ca30209 Mon Sep 17 00:00:00 2001
 From: root <root@OpenELEC-dev.(none)>
-Date: Mon, 6 Feb 2012 17:00:42 +0000
-Subject: [PATCH] spotyxbmc2-f3ad9e20d4-Spotify-support-for-xbmc
+Date: Wed, 8 Feb 2012 08:37:59 +0000
+Subject: [PATCH] spotyxbmc2-efefa1946d-Spotify-support-for-xbmc
 
 ---
  .gitignore                                         |    2 +-
@@ -30,7 +30,7 @@ Subject: [PATCH] spotyxbmc2-f3ad9e20d4-Spotify-support-for-xbmc
  .../MusicDatabaseDirectory/DirectoryNodeTop100.cpp |    6 +
  xbmc/filesystem/MusicSearchDirectory.cpp           |    6 +-
  xbmc/interfaces/json-rpc/AudioLibrary.cpp          |   38 +-
- xbmc/interfaces/json-rpc/FileItemHandler.cpp       |   10 +-
+ xbmc/interfaces/json-rpc/FileItemHandler.cpp       |   18 +-
  xbmc/interfaces/json-rpc/ServiceDescription.h      |    4 +
  xbmc/interfaces/json-rpc/methods.json              |    1 +
  xbmc/interfaces/json-rpc/types.json                |    3 +
@@ -12235,7 +12235,7 @@ index 5cb681a..19269af 100644
 diff --git a/xbmc/interfaces/json-rpc/AudioLibrary.cpp b/xbmc/interfaces/json-rpc/AudioLibrary.cpp
 old mode 100644
 new mode 100755
-index 0f92385..245c99d
+index ca7f7b5..468af4c
 --- a/xbmc/interfaces/json-rpc/AudioLibrary.cpp
 +++ b/xbmc/interfaces/json-rpc/AudioLibrary.cpp
 @@ -19,6 +19,8 @@
@@ -12356,18 +12356,26 @@ index 097ea31..dc6e9a6 100644
      for (unsigned int i = 0; i < validFields.size(); i++)
      {
        CStdString field = validFields[i].asString();
-@@ -144,6 +145,11 @@ void CFileItemHandler::HandleFileItem(const char *ID, bool allowFile, const char
-
+@@ -144,7 +145,18 @@ void CFileItemHandler::HandleFileItem(const char *ID, bool allowFile, const char
+ 
      if (ID)
      {
-+         if(stricmp(ID, "spotify_albumid") == 0)
-+         {
-+               CStdString spotify_albumid = item->GetPath();
-+               object[ID] = spotify_albumid.c_str();
-+         }
-       if (stricmp(ID, "genreid") == 0)
-       {
-         CStdString genre = item->GetPath();
+-      if (item->HasMusicInfoTag() && item->GetMusicInfoTag()->GetDatabaseId() > 0)
++  	  if(stricmp(ID, "spotify_albumid") == 0)
++  	  { 
++	 	CStdString spotify_albumid = item->GetPath();
++  	  	object[ID] = spotify_albumid.c_str();
++  	  }
++      if (stricmp(ID, "genreid") == 0)
++      {
++        CStdString genre = item->GetPath();
++        genre.TrimRight('/');
++        object[ID] = atoi(genre.c_str());
++      }
++      else if (item->HasMusicInfoTag() && item->GetMusicInfoTag()->GetDatabaseId() > 0)
+         object[ID] = (int)item->GetMusicInfoTag()->GetDatabaseId();
+       else if (item->HasVideoInfoTag() && item->GetVideoInfoTag()->m_iDbId > 0)
+         object[ID] = item->GetVideoInfoTag()->m_iDbId;
 diff --git a/xbmc/interfaces/json-rpc/ServiceDescription.h b/xbmc/interfaces/json-rpc/ServiceDescription.h
 index facaef1..44723f3 100644
 --- a/xbmc/interfaces/json-rpc/ServiceDescription.h
@@ -13471,7 +13479,7 @@ index 0000000..7884b84
 +
 diff --git a/xbmc/music/spotyXBMC/SxSettings.cpp b/xbmc/music/spotyXBMC/SxSettings.cpp
 new file mode 100644
-index 0000000..9ae6580
+index 0000000..3827c61
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/SxSettings.cpp
 @@ -0,0 +1,170 @@
@@ -19840,7 +19848,7 @@ index 0000000..eabb6ae
 +} /* namespace addon_music_spotify */
 +#endif /* ALBUMSTORE_H_ */
 diff --git a/xbmc/music/tags/MusicInfoTagLoaderWMA.cpp b/xbmc/music/tags/MusicInfoTagLoaderWMA.cpp
-index ced5d2d..3ff30c8 100644
+index af46361..cd8673c 100644
 --- a/xbmc/music/tags/MusicInfoTagLoaderWMA.cpp
 +++ b/xbmc/music/tags/MusicInfoTagLoaderWMA.cpp
 @@ -433,7 +433,7 @@ void CMusicInfoTagLoaderWMA::SetTagValueString(const CStdString& strFrameName, c
