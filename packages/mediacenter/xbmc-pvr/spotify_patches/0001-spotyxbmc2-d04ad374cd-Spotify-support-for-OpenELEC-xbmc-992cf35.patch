@@ -1,7 +1,7 @@
-From 001f29cf9b457ab9ff33c35916d6b8b53ca30209 Mon Sep 17 00:00:00 2001
+From 8e8f9dd26f8c29edf582efdcfc4a6954fe29505c Mon Sep 17 00:00:00 2001
 From: root <root@OpenELEC-dev.(none)>
-Date: Wed, 8 Feb 2012 08:37:59 +0000
-Subject: [PATCH] spotyxbmc2-efefa1946d-Spotify-support-for-xbmc
+Date: Fri, 10 Feb 2012 19:29:06 +0000
+Subject: [PATCH] spotyxbmc2-d04ad374cd-Spotify-support-for-xbmc
 
 ---
  .gitignore                                         |    2 +-
@@ -30,7 +30,7 @@ Subject: [PATCH] spotyxbmc2-efefa1946d-Spotify-support-for-xbmc
  .../MusicDatabaseDirectory/DirectoryNodeTop100.cpp |    6 +
  xbmc/filesystem/MusicSearchDirectory.cpp           |    6 +-
  xbmc/interfaces/json-rpc/AudioLibrary.cpp          |   38 +-
- xbmc/interfaces/json-rpc/FileItemHandler.cpp       |   18 +-
+ xbmc/interfaces/json-rpc/FileItemHandler.cpp       |   10 +-
  xbmc/interfaces/json-rpc/ServiceDescription.h      |    4 +
  xbmc/interfaces/json-rpc/methods.json              |    1 +
  xbmc/interfaces/json-rpc/types.json                |    3 +
@@ -102,7 +102,7 @@ Subject: [PATCH] spotyxbmc2-efefa1946d-Spotify-support-for-xbmc
  xbmc/music/windows/GUIWindowMusicNav.cpp           |   52 +-
  xbmc/music/windows/GUIWindowMusicPlaylist.cpp      |    4 +-
  xbmc/settings/Settings.cpp                         |    3 +-
- 98 files changed, 13108 insertions(+), 61 deletions(-)
+ 98 files changed, 13101 insertions(+), 60 deletions(-)
  create mode 100644 Readme.md
  create mode 100644 addons/plugin.music.spotyXBMC/addon.xml
  create mode 100644 addons/plugin.music.spotyXBMC/changelog.txt
@@ -199,7 +199,7 @@ index bcc3307..0da1488 100644
  /project/BuildDependencies/downloads
 diff --git a/Readme.md b/Readme.md
 new file mode 100644
-index 0000000..79c6eb2
+index 0000000..8596579
 --- /dev/null
 +++ b/Readme.md
 @@ -0,0 +1,243 @@
@@ -320,7 +320,7 @@ index 0000000..79c6eb2
 +6. Install all XBMC dependencies listed in the corresponding readme file.
 +   For ubuntu 11.04 run:
 +
-+`$ sudo apt-get install git-core make g++ gcc gawk pmount libtool nasm yasm automake cmake gperf zip unzip bison libsdl-dev libsdl-image1.2-dev libsdl-gfx1.2-dev libsdl-mixer1.2-dev libfribidi-dev liblzo2-dev libfreetype6-dev libsqlite3-dev libogg-dev libasound-dev python-sqlite libglew-dev libcurl3 libcurl4-gnutls-dev libxrandr-dev libxrender-dev libmad0-dev libogg-dev libvorbisenc2 libsmbclient-dev libmysqlclient-dev libpcre3-dev libdbus-1-dev libhal-dev libhal-storage-dev libjasper-dev libfontconfig-dev libbz2-dev libboost-dev libenca-dev libxt-dev libxmu-dev libpng-dev libjpeg-dev libpulse-dev mesa-utils libcdio-dev libsamplerate-dev libmpeg3-dev libflac-dev libiso9660-dev libass-dev libssl-dev fp-compiler gdc libmpeg2-4-dev libmicrohttpd-dev libmodplug-dev libssh-dev gettext cvs python-dev libyajl-dev libboost-thread-dev libplist-dev autopoint`
++`$ sudo apt-get install git-core make g++ gcc gawk pmount libtool nasm yasm automake cmake gperf zip unzip bison libltdl-dev libsdl-dev libsdl-image1.2-dev libsdl-gfx1.2-dev libsdl-mixer1.2-dev libfribidi-dev liblzo2-dev libfreetype6-dev libsqlite3-dev libogg-dev libasound2-dev python-sqlite libglew-dev libcurl3 libcurl4-gnutls-dev libxrandr-dev libxrender-dev libmad0-dev libogg-dev libvorbisenc2 libsmbclient-dev libmysqlclient-dev libpcre3-dev libdbus-1-dev libhal-dev libhal-storage-dev libjasper-dev libfontconfig-dev libbz2-dev libboost-dev libenca-dev libxt-dev libxmu-dev libpng-dev libjpeg-dev libpulse-dev mesa-utils libcdio-dev libsamplerate-dev libmpeg3-dev libflac-dev libiso9660-dev libass-dev libssl-dev fp-compiler gdc libmpeg2-4-dev libmicrohttpd-dev libmodplug-dev libssh-dev gettext cvs python-dev libyajl-dev libboost-thread-dev libplist-dev libusb-dev libudev-dev autopoint`
 +
 +
 +7. Configure, make and install xbmc
@@ -10065,7 +10065,7 @@ literal 0
 HcmV?d00001
 
 diff --git a/xbmc/Application.cpp b/xbmc/Application.cpp
-index 5b664c0..da5a63b 100644
+index cedda60..267131f 100644
 --- a/xbmc/Application.cpp
 +++ b/xbmc/Application.cpp
 @@ -19,6 +19,9 @@
@@ -12318,7 +12318,7 @@ index ca7f7b5..468af4c
      if (songID != -1)
      {
 diff --git a/xbmc/interfaces/json-rpc/FileItemHandler.cpp b/xbmc/interfaces/json-rpc/FileItemHandler.cpp
-index 097ea31..dc6e9a6 100644
+index 097ea31..6f35a45 100644
 --- a/xbmc/interfaces/json-rpc/FileItemHandler.cpp
 +++ b/xbmc/interfaces/json-rpc/FileItemHandler.cpp
 @@ -20,6 +20,7 @@
@@ -12356,26 +12356,18 @@ index 097ea31..dc6e9a6 100644
      for (unsigned int i = 0; i < validFields.size(); i++)
      {
        CStdString field = validFields[i].asString();
-@@ -144,7 +145,18 @@ void CFileItemHandler::HandleFileItem(const char *ID, bool allowFile, const char
+@@ -144,6 +145,11 @@ void CFileItemHandler::HandleFileItem(const char *ID, bool allowFile, const char
  
      if (ID)
      {
--      if (item->HasMusicInfoTag() && item->GetMusicInfoTag()->GetDatabaseId() > 0)
-+  	  if(stricmp(ID, "spotify_albumid") == 0)
-+  	  { 
-+	 	CStdString spotify_albumid = item->GetPath();
-+  	  	object[ID] = spotify_albumid.c_str();
-+  	  }
-+      if (stricmp(ID, "genreid") == 0)
-+      {
-+        CStdString genre = item->GetPath();
-+        genre.TrimRight('/');
-+        object[ID] = atoi(genre.c_str());
++      if(stricmp(ID, "spotify_albumid") == 0)
++      { 
++	CStdString spotify_albumid = item->GetPath();
++  	object[ID] = spotify_albumid.c_str();
 +      }
-+      else if (item->HasMusicInfoTag() && item->GetMusicInfoTag()->GetDatabaseId() > 0)
+       if (item->HasMusicInfoTag() && item->GetMusicInfoTag()->GetDatabaseId() > 0)
          object[ID] = (int)item->GetMusicInfoTag()->GetDatabaseId();
        else if (item->HasVideoInfoTag() && item->GetVideoInfoTag()->m_iDbId > 0)
-         object[ID] = item->GetVideoInfoTag()->m_iDbId;
 diff --git a/xbmc/interfaces/json-rpc/ServiceDescription.h b/xbmc/interfaces/json-rpc/ServiceDescription.h
 index facaef1..44723f3 100644
 --- a/xbmc/interfaces/json-rpc/ServiceDescription.h
@@ -18217,7 +18209,7 @@ index 0000000..dfa2086
 +#endif /* SEARCHRESULTBACKGROUNDLOADER_H_ */
 diff --git a/xbmc/music/spotyXBMC/session/BackgroundThread.cpp b/xbmc/music/spotyXBMC/session/BackgroundThread.cpp
 new file mode 100644
-index 0000000..25de687
+index 0000000..2a4d6d4
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/session/BackgroundThread.cpp
 @@ -0,0 +1,74 @@
@@ -18256,7 +18248,7 @@ index 0000000..25de687
 +  }
 +
 +  void BackgroundThread::OnStartup() {
-+  	Sleep(1000);
++  	Sleep(100);
 +    Logger::printOut("bgthread OnStartup");
 +    if (!Settings::getInstance()->init()){
 +    	Logger::printOut("bgthread quiting, spotyxbmc is not enabled or the addon is missing");
@@ -18286,7 +18278,7 @@ index 0000000..25de687
 +        Session::getInstance()->unlock();
 +      }
 +      Session::getInstance()->m_nextEvent -= 5;
-+      Sleep(5);
++      Sleep(0);
 +    }
 +    Logger::printOut("exiting process thread");
 +    Session::getInstance()->disConnect();
@@ -20026,5 +20018,5 @@ index eda98f4..8bd0441 100644
    m_discStubExtensions = ".disc";
    // internal music extensions
 -- 
-1.7.7.1
+1.7.8.3
 
