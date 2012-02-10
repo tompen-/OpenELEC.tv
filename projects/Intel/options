@@ -76,7 +76,7 @@
   esac
 
 # Build optimizations (size/speed)
-  OPTIMIZATIONS="speed"
+  OPTIMIZATIONS="normal"
 
 # Project CFLAGS
   PROJECT_CFLAGS="-mfpmath=sse -msse2 -mssse3"
