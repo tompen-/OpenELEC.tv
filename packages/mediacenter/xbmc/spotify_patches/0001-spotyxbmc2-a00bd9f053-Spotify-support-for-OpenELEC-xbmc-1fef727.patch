@@ -1,7 +1,7 @@
-From 91f868ea72e2270b7178ce37a98609e5576ff3bc Mon Sep 17 00:00:00 2001
+From 036e707f2b2ee5bd337c174eb2b2a12737fe55f9 Mon Sep 17 00:00:00 2001
 From: root <root@OpenELEC-dev.(none)>
-Date: Fri, 10 Feb 2012 19:31:10 +0000
-Subject: [PATCH] spotyxbmc2-d04ad374cd-Spotify-support-for-xbmc
+Date: Sun, 12 Feb 2012 09:18:27 +0000
+Subject: [PATCH] spotyxbmc2-a00bd9f053-Spotify-support-for-xbmc
 
 ---
  .gitignore                                         |    2 +-
@@ -38,7 +38,7 @@ Subject: [PATCH] spotyxbmc2-d04ad374cd-Spotify-support-for-xbmc
  xbmc/music/spotyXBMC/Addon.music.spotify.cpp       |  743 ++++
  xbmc/music/spotyXBMC/Addon.music.spotify.h         |   83 +
  xbmc/music/spotyXBMC/Logger.cpp                    |   36 +
- xbmc/music/spotyXBMC/Logger.h                      |   96 +
+ xbmc/music/spotyXBMC/Logger.h                      |   92 +
  xbmc/music/spotyXBMC/SxSettings.cpp                |  170 +
  xbmc/music/spotyXBMC/SxSettings.h                  |  274 ++
  xbmc/music/spotyXBMC/Utils.cpp                     |  237 ++
@@ -87,9 +87,9 @@ Subject: [PATCH] spotyxbmc2-d04ad374cd-Spotify-support-for-xbmc
  xbmc/music/spotyXBMC/session/Session.h             |  111 +
  xbmc/music/spotyXBMC/session/SessionCallbacks.cpp  |   90 +
  xbmc/music/spotyXBMC/session/SessionCallbacks.h    |   66 +
- xbmc/music/spotyXBMC/thumb/SxThumb.cpp             |   98 +
+ xbmc/music/spotyXBMC/thumb/SxThumb.cpp             |  102 +
  xbmc/music/spotyXBMC/thumb/SxThumb.h               |   72 +
- xbmc/music/spotyXBMC/thumb/ThumbStore.cpp          |  225 ++
+ xbmc/music/spotyXBMC/thumb/ThumbStore.cpp          |  223 ++
  xbmc/music/spotyXBMC/thumb/ThumbStore.h            |   68 +
  xbmc/music/spotyXBMC/track/SxTrack.cpp             |  100 +
  xbmc/music/spotyXBMC/track/SxTrack.h               |  132 +
@@ -102,7 +102,7 @@ Subject: [PATCH] spotyxbmc2-d04ad374cd-Spotify-support-for-xbmc
  xbmc/music/windows/GUIWindowMusicNav.cpp           |   52 +-
  xbmc/music/windows/GUIWindowMusicPlaylist.cpp      |    4 +-
  xbmc/settings/Settings.cpp                         |    3 +-
- 98 files changed, 13101 insertions(+), 60 deletions(-)
+ 98 files changed, 13099 insertions(+), 60 deletions(-)
  create mode 100644 Readme.md
  create mode 100644 addons/plugin.music.spotyXBMC/addon.xml
  create mode 100644 addons/plugin.music.spotyXBMC/changelog.txt
@@ -6039,7 +6039,7 @@ index 0000000..393b113
 +</strings>
 diff --git a/addons/plugin.music.spotyXBMC/resources/settings.xml b/addons/plugin.music.spotyXBMC/resources/settings.xml
 new file mode 100644
-index 0000000..01ffd14
+index 0000000..4b6e78d
 --- /dev/null
 +++ b/addons/plugin.music.spotyXBMC/resources/settings.xml
 @@ -0,0 +1,105 @@
@@ -6070,7 +6070,7 @@ index 0000000..01ffd14
 +    <setting id="searchNoTracks" type="enum" label="30423" values="10|20|30|40|50|60|70|80|90|100" default="1" />
 +    <setting type="sep" />
 +    <setting id="preloadArtistDetails" type="bool" label="30427" default="false" />
-+    <setting id="artistNoArtists" type="enum" label="30424" values="10|20|30|40|50|60|70|80|90|100|All" default="4" />
++    <setting id="artistNoArtists" type="enum" label="30424" values="10|20|30|40|50|60|70|80|90|100|All" default="1" />
 +    <setting id="artistNoAlbums" type="enum" label="30425" values="10|20|30|40|50|60|70|80|90|100|All" default="6" />
 +    <setting id="artistNoTracks" type="enum" label="30426" values="10|20|30|40|50|60|70|80|90|100|All" default="6" />
 +    <setting type="sep" />
@@ -13369,10 +13369,10 @@ index 0000000..29b2c14
 +
 diff --git a/xbmc/music/spotyXBMC/Logger.h b/xbmc/music/spotyXBMC/Logger.h
 new file mode 100644
-index 0000000..7884b84
+index 0000000..8148649
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/Logger.h
-@@ -0,0 +1,96 @@
+@@ -0,0 +1,92 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -13417,7 +13417,6 @@ index 0000000..7884b84
 +      if (Settings::getInstance()->saveLogToFile()){
 +        string path = Settings::getInstance()->getCachePath() + "log.txt";
 +        ofstream file(path.c_str(), ios::app);
-+        bool dowrite = file.is_open();
 +        if (file.is_open()) {
 +      	  file << text << "\n";
 +        }
@@ -13430,7 +13429,6 @@ index 0000000..7884b84
 +      if (Settings::getInstance()->saveLogToFile()){
 +        string path = Settings::getInstance()->getCachePath() + "log.txt";
 +        ofstream file(path.c_str(), ios::app);
-+        bool dowrite = file.is_open();
 +        if (file.is_open()) {
 +      	  file << text << "\n";
 +        }
@@ -13443,7 +13441,6 @@ index 0000000..7884b84
 +      if (Settings::getInstance()->saveLogToFile()){
 +        string path = Settings::getInstance()->getCachePath() + "log.txt";
 +        ofstream file(path.c_str(), ios::app);
-+        bool dowrite = file.is_open();
 +        if (file.is_open()) {
 +      	  file << text << "\n";
 +        }
@@ -13456,7 +13453,6 @@ index 0000000..7884b84
 +      if (Settings::getInstance()->saveLogToFile()){
 +        string path = Settings::getInstance()->getCachePath() + "log.txt";
 +        ofstream file(path.c_str(), ios::app);
-+        bool dowrite = file.is_open();
 +        if (file.is_open()) {
 +      	  file << text << "\n";
 +        }
@@ -18831,10 +18827,10 @@ index 0000000..fa5be46
 +#endif /* SESSIONCALLBACKS_H_ */
 diff --git a/xbmc/music/spotyXBMC/thumb/SxThumb.cpp b/xbmc/music/spotyXBMC/thumb/SxThumb.cpp
 new file mode 100644
-index 0000000..ff0ef70
+index 0000000..ee82c49
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/thumb/SxThumb.cpp
-@@ -0,0 +1,98 @@
+@@ -0,0 +1,102 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -18879,16 +18875,20 @@ index 0000000..ff0ef70
 +		linkStringClean.Remove(':');
 +		sp_link_release(link);
 +		m_file = path + linkStringClean.c_str() + ".jpg";
-+		CStdString pathS(m_file);
-+		CStdString cached(CTextureCache::Get().CheckCachedImage(pathS));
-+		if (!cached.IsEmpty()) {
++		if (XFILE::CFile::Exists(m_file, false)) {
++			m_isLoaded = true;
++		} else {
++		  CStdString pathS(m_file);
++		  CStdString cached(CTextureCache::Get().CheckCachedImage(pathS));
++		  if (!cached.IsEmpty()) {
 +			//Logger::printOut("Thumb already in XBMC cache, no need to download again");
 +			m_file = cached;
 +			m_imageIsFromCache = true;
 +			m_isLoaded = true;
-+		} else {
++		  } else {
 +			m_imageIsFromCache = false;
 +			sp_image_add_load_callback(m_image, &cb_imageLoaded, this);
++		  }
 +		}
 +
 +		m_references = 1;
@@ -19013,10 +19013,10 @@ index 0000000..b6185dc
 +#endif /* SXTHUMB_H_ */
 diff --git a/xbmc/music/spotyXBMC/thumb/ThumbStore.cpp b/xbmc/music/spotyXBMC/thumb/ThumbStore.cpp
 new file mode 100644
-index 0000000..7da24ca
+index 0000000..62a05ea
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/thumb/ThumbStore.cpp
-@@ -0,0 +1,225 @@
+@@ -0,0 +1,223 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -19210,7 +19210,6 @@ index 0000000..7da24ca
 +						string path = Settings::getInstance()->getCachePath() + "fanarts.txt";
 +						Logger::printOut("saving fanart list");
 +						ofstream file(path.c_str(), ios::app);
-+						bool dowrite = file.is_open();
 +						if (file.is_open()) {
 +							file << artistNameString << "\n" << *fanartUrl << "\n";
 +						}
@@ -19228,7 +19227,6 @@ index 0000000..7da24ca
 +			string path = Settings::getInstance()->getCachePath() + "fanarts.txt";
 +			Logger::printOut("saving fanart list");
 +			ofstream file(path.c_str(), ios::app);
-+			bool dowrite = file.is_open();
 +			if (file.is_open()) {
 +				file << artistNameString << "\n" << *m_stdFanart << "\n";
 +			}
