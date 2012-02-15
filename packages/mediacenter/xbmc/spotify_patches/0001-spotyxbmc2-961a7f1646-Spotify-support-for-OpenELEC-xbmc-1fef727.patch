@@ -1,7 +1,7 @@
-From 036e707f2b2ee5bd337c174eb2b2a12737fe55f9 Mon Sep 17 00:00:00 2001
+From 231d78f0282f16c108282fb341e4e2083fe19801 Mon Sep 17 00:00:00 2001
 From: root <root@OpenELEC-dev.(none)>
-Date: Sun, 12 Feb 2012 09:18:27 +0000
-Subject: [PATCH] spotyxbmc2-a00bd9f053-Spotify-support-for-xbmc
+Date: Wed, 15 Feb 2012 23:04:41 +0000
+Subject: [PATCH] spotyxbmc2-961a7f1646-Spotify-support-for-xbmc
 
 ---
  .gitignore                                         |    2 +-
@@ -12,6 +12,7 @@ Subject: [PATCH] spotyxbmc2-a00bd9f053-Spotify-support-for-xbmc
  addons/plugin.music.spotyXBMC/fanart.jpg           |  Bin 0 -> 274905 bytes
  addons/plugin.music.spotyXBMC/icon.png             |  Bin 0 -> 7082 bytes
  .../resources/language/English/strings.xml         |   87 +
+ .../resources/language/French/strings.xml          |   87 +
  .../plugin.music.spotyXBMC/resources/settings.xml  |  105 +
  addons/webinterface.default/js/MediaLibrary.js     |   48 +-
  configure.in                                       |    3 +
@@ -102,7 +103,7 @@ Subject: [PATCH] spotyxbmc2-a00bd9f053-Spotify-support-for-xbmc
  xbmc/music/windows/GUIWindowMusicNav.cpp           |   52 +-
  xbmc/music/windows/GUIWindowMusicPlaylist.cpp      |    4 +-
  xbmc/settings/Settings.cpp                         |    3 +-
- 98 files changed, 13099 insertions(+), 60 deletions(-)
+ 99 files changed, 13186 insertions(+), 60 deletions(-)
  create mode 100644 Readme.md
  create mode 100644 addons/plugin.music.spotyXBMC/addon.xml
  create mode 100644 addons/plugin.music.spotyXBMC/changelog.txt
@@ -110,6 +111,7 @@ Subject: [PATCH] spotyxbmc2-a00bd9f053-Spotify-support-for-xbmc
  create mode 100644 addons/plugin.music.spotyXBMC/fanart.jpg
  create mode 100644 addons/plugin.music.spotyXBMC/icon.png
  create mode 100644 addons/plugin.music.spotyXBMC/resources/language/English/strings.xml
+ create mode 100644 addons/plugin.music.spotyXBMC/resources/language/French/strings.xml
  create mode 100644 addons/plugin.music.spotyXBMC/resources/settings.xml
  create mode 100644 lib/libspotify/include/libspotify/api.h
  create mode 100644 lib/libspotify/libspotify.lib
@@ -6037,9 +6039,102 @@ index 0000000..393b113
 +    <string id="30604">Spotify: browse album</string>
 +    <string id="30605">Spotify: browse artist</string>
 +</strings>
+diff --git a/addons/plugin.music.spotyXBMC/resources/language/French/strings.xml b/addons/plugin.music.spotyXBMC/resources/language/French/strings.xml
+new file mode 100644
+index 0000000..6565ea9
+--- /dev/null
++++ b/addons/plugin.music.spotyXBMC/resources/language/French/strings.xml
+@@ -0,0 +1,87 @@
++﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
++<strings>
++    <string id="30001">spotyXBMC</string>
++    <string id="30002">par</string>
++    <string id="30003">Redémarrer XBMC pour appliquer</string>
++    
++    <string id="30400">Général</string>
++    <string id="30401">Nom d'utilisateur</string>
++    <string id="30402">Mot de Passe</string>
++    <string id="30403">Emplacement du cache</string>
++    <string id="30404">Bitrate haute qualité</string>
++    <string id="30405">Activé</string>
++    <string id="30406">Vignettes</string>
++    <string id="30407">Utilisé les pochettes Spotify</string>
++    <string id="30408">Utilisé des pochettes personnalisé</string>
++    <string id="30409">Utilisé le normalisateur de volume</string>
++    <string id="30410">Télécharger les pochettes depuis HTBackdrops</string>
++    <string id="30411">Télécharger les vignettes depuis HTBackdrops</string>
++    <string id="30412">Temporisation du démarrage (seconds)</string>
++    <string id="30413">Emplacement du log (temp/spotify/log.txt)</string>
++    
++    <string id="30420">Performance</string>
++    <string id="30421">Recherche: Nombre max d'artistes</string>
++    <string id="30422">Recherche: Nombre max d'albums</string>
++    <string id="30423">Recherche: Nombre max de pistes</string>
++    <string id="30424">Explorateur d'artiste: Nombre max d'artistes similaire</string>
++    <string id="30425">Explorateur d'artiste: Nombre max d'albums</string>
++    <string id="30426">Explorateur d'artiste: Nombre max de pistes</string>
++    <string id="30427">Préchargement albums et piste des artistes</string>
++
++    <string id="30430">Top listes</string>
++    <string id="30431">Voir listes par région</string>
++    <string id="30432">Mondial</string>
++    <string id="30433">Votre Pays</string>
++    <string id="30434">Précharger le top 100 (cocher = ralenti le démarrage de XBMC)</string>
++
++    <string id="30440">Spotify radio1</string>
++    <string id="30441">Spotify radio2</string>
++    <string id="30442">Nom</string>
++    <string id="30443">Alternative</string>
++    <string id="30444">Black Metal</string>
++    <string id="30445">Blues</string>
++    <string id="30446">Classical</string>
++    <string id="30447">Country</string>
++    <string id="30448">Club/House</string>
++    <string id="30449">Death Metal</string>
++    <string id="30450">Electronic</string>
++    <string id="30451">Emo</string>
++    <string id="30452">Folk</string>
++    <string id="30453">Hardcore</string>
++    <string id="30454">Heavy Metal</string>
++    <string id="30455">Hip-hop</string>
++    <string id="30456">Indie</string>
++    <string id="30457">Jazz</string>
++    <string id="30458">Latin</string>
++    <string id="30459">Pop</string>
++    <string id="30462">Punk</string>
++    <string id="30463">Reggae</string>
++    <string id="30464">R&B</string>
++    <string id="30465">Rock</string>
++    <string id="30466">Singer-songwriter</string>
++    <string id="30467">Soul</string>
++    <string id="30468">Trance</string>
++    <string id="30469">60s</string>
++    <string id="30471">70s</string>
++    <string id="30472">80s</string>
++    
++    <string id="30460">De la décénnie</string>
++    <string id="30461">à la décénnie</string>
++
++    <string id="30470">Nombre de piste de la radio</string>
++
++    <string id="30500">Top 100 Spotify artistes</string>
++    <string id="30501">Top 100 Spotify albums</string>
++    <string id="30502">Top 100 Spotify pistes</string>
++    <string id="30503">Spotify radio: </string>
++    <string id="30504">* Artistes Similaire </string>
++    <string id="30505">* Boite de réception</string>
++    
++    <!-- Context buttons -->
++    <string id="30600">Spotify: suivre la piste</string>
++    <string id="30601">Spotify: désactivé le suivi de la piste</string>
++    <string id="30602">Spotify: suivre l'album</string>
++    <string id="30603">Spotify: désactivé le suivi de l'album</string>
++    <string id="30604">Spotify: parcourir l'album</string>
++    <string id="30605">Spotify: parcourir l'artiste</string>
++</strings>
 diff --git a/addons/plugin.music.spotyXBMC/resources/settings.xml b/addons/plugin.music.spotyXBMC/resources/settings.xml
 new file mode 100644
-index 0000000..4b6e78d
+index 0000000..50c7859
 --- /dev/null
 +++ b/addons/plugin.music.spotyXBMC/resources/settings.xml
 @@ -0,0 +1,105 @@
@@ -6081,7 +6176,7 @@ index 0000000..4b6e78d
 +    <setting id="preloadToplists" type="bool" label="30434" default="false" />
 +  </category>
 +  <category label="30440">
-+    <setting id="radio1name" type="text" label="30440" default="Rock"/>
++    <setting id="radio1name" type="text" label="30442" default="Rock"/>
 +    <setting id="radio1from" type="enum" label="30460" values="Older|50s|60s|70s|80s|90s|00s|10s" default="3" />
 +    <setting id="radio1to" type="enum" label="30461" values="Older|50s|60s|70s|80s|90s|00s|10s" default="7" />
 +    <setting id="radio1genre1" type="bool" label="30443" default="false" />
@@ -6115,7 +6210,7 @@ index 0000000..4b6e78d
 +
 +</category>
 +  <category label="30441">
-+    <setting id="radio2name" type="text" label="30441" default="Dance"/>
++    <setting id="radio2name" type="text" label="30442" default="Dance"/>
 +    <setting id="radio2from" type="enum" label="30460" values="Older|50s|60s|70s|80s|90s|00s|10s" default="0" />
 +    <setting id="radio2to" type="enum" label="30461" values="Older|50s|60s|70s|80s|90s|00s|10s" default="7" />
 +    <setting id="radio2genre1" type="bool" label="30443" default="false" />
@@ -18827,7 +18922,7 @@ index 0000000..fa5be46
 +#endif /* SESSIONCALLBACKS_H_ */
 diff --git a/xbmc/music/spotyXBMC/thumb/SxThumb.cpp b/xbmc/music/spotyXBMC/thumb/SxThumb.cpp
 new file mode 100644
-index 0000000..ee82c49
+index 0000000..5d721ee
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/thumb/SxThumb.cpp
 @@ -0,0 +1,102 @@
@@ -18875,7 +18970,7 @@ index 0000000..ee82c49
 +		linkStringClean.Remove(':');
 +		sp_link_release(link);
 +		m_file = path + linkStringClean.c_str() + ".jpg";
-+		if (XFILE::CFile::Exists(m_file, false)) {
++		if (XFILE::CFile::Exists(m_file, true)) {
 +			m_isLoaded = true;
 +		} else {
 +		  CStdString pathS(m_file);
