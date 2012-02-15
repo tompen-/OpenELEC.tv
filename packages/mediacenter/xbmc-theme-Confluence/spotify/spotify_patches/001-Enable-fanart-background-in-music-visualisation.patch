@@ -19,3 +19,24 @@
  		<control type="visualisation" id="2">
  			<!-- FIX ME Music Visualization needs to have an id of 2 in this window to be able to lock or change preset -->
  			<description>visualisation</description>
+@@ -10,6 +23,20 @@
+ 			<width>1280</width>
+ 			<height>720</height>
+ 		</control>
++		<control type="image">
++			<description>visualisation background</description>
++			<posx>0</posx>
++			<posy>0</posy>
++			<width>1280</width>
++			<height>720</height>
++			<colordiffuse>88888888</colordiffuse>
++			<aspectratio scalediffuse="false">keep</aspectratio>
++			<texture background="true">$INFO[MusicPlayer.Property(Fanart_Image)]</texture>
++			<include>backgroundfade</include>
++			<fadetime>FanartCrossfadeTime</fadetime>
++			<visible>Visualisation.Enabled + !Skin.HasSetting(HideBackGroundFanart) + !IsEmpty(MusicPlayer.Property(Fanart_Image))</visible>
++			<include>Window_OpenClose_Animation</include>
++		</control>
+ 		<!-- media infos -->
+ 		<control type="group">
+ 			<animation effect="fade" time="200">VisibleChange</animation>
