@@ -1,6 +1,6 @@
 #!/bin/sh
 
-################################################################################
+#################################################################################
 #
 #  This script file is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -14,9 +14,9 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this software.  If not, write to:
-#  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+#  Free Software Foundation, 51 Franklin Street, Suite 500, Boston, MA 02110, USA
 #  http://www.gnu.org/copyleft/gpl.html
-################################################################################
+#################################################################################
 
 if [ -z "$1" ]; then
   echo
