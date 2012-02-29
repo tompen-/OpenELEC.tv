@@ -1,6 +1,6 @@
-From a7503b78d51e0adb553e72bf2ab11679837b52ba Mon Sep 17 00:00:00 2001
+From 890309802f1388914b07a67e9d15d1e62f2e39d8 Mon Sep 17 00:00:00 2001
 From: root <root@OpenELEC-dev.(none)>
-Date: Wed, 15 Feb 2012 23:10:42 +0000
+Date: Wed, 29 Feb 2012 20:48:11 +0000
 Subject: [PATCH] spotyxbmc2-961a7f1646-Spotify-support-for-xbmc
 
 ---
@@ -18,7 +18,7 @@ Subject: [PATCH] spotyxbmc2-961a7f1646-Spotify-support-for-xbmc
  configure.in                                       |    3 +
  lib/libspotify/include/libspotify/api.h            | 3577 ++++++++++++++++++++
  lib/libspotify/libspotify.lib                      |  Bin 0 -> 57942 bytes
- xbmc/Application.cpp                               |   12 +
+ xbmc/Application.cpp                               |   11 +
  xbmc/GUIInfoManager.cpp                            |    4 +-
  xbmc/XBApplicationEx.cpp                           |    1 +
  xbmc/configure.in                                  | 1805 ++++++++++
@@ -10191,14 +10191,6 @@ index cedda60..267131f 100644
    g_sysinfo.Refresh();
  
    CLog::Log(LOGINFO, "removing tempfiles");
-@@ -1269,6 +1276,7 @@ bool CApplication::Initialize()
- 
-   // reset our screensaver (starts timers etc.)
-   ResetScreenSaver();
-+
-   return true;
- }
- 
 @@ -3145,6 +3153,10 @@ bool CApplication::Cleanup()
  {
    try
