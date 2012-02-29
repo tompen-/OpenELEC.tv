@@ -77,15 +77,12 @@ fi
     case "$RET" in
       0)
         poweroff -f
-        break
         ;;
       64)
         poweroff -f
-        break
         ;;
       66)
         reboot
-        break
         ;;
       255)
         echo "Abnormal Exit. Exited with code $RET"
