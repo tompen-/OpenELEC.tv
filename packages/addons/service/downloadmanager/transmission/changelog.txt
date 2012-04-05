@@ -1,3 +1,24 @@
+2.1.1
+- update to addon version 2.1
+
+2.0.4
+- update to transmission-2.50
+
+2.0.3
+- rebuild for libiconv changes
+
+2.0.2
+- update libevent to libevent-2.0.16-stable 
+
+2.0.1
+- fix service script
+
+2.0.0
+- prepare for OpenELEC-2.0 release
+
+1.90.2
+- depends on xbmc.python API 2.0
+
 1.90.1
 - update to transmission-2.42
 

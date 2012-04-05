@@ -6,11 +6,11 @@
   fi
 
 # Welcome Message for e.g. SSH Server (up to 5 Lines)
-  GREATING0="##############################################"
-  GREATING1="# OpenELEC - The living room PC for everyone #"
-  GREATING2="# ...... visit http://www.openelec.tv ...... #"
-  GREATING3="##############################################"
-  GREATING4=""
+  GREETING0="##############################################"
+  GREETING1="# OpenELEC - The living room PC for everyone #"
+  GREETING2="# ...... visit http://www.openelec.tv ...... #"
+  GREETING3="##############################################"
+  GREETING4=""
 
 # Hostname for target system (openelec)
   HOSTNAME="openelec"
@@ -81,17 +81,8 @@
 # Project CFLAGS
   PROJECT_CFLAGS="-mmmx -msse -msse2 -mfpmath=sse"
 
-# LTO (Link Time Optimazion) support
+# LTO (Link Time Optimization) support
   LTO_SUPPORT="no"
-
-# GOLD (Google Linker) support
-  GOLD_SUPPORT="no"
-
-# Graphite Support
-  GRAPHITE_SUPPORT="yes"
-
-# LOOP optimazion support
-  LOOP_SUPPORT="yes"
 
 # Bootloader to use (syslinux / u-boot / atv-bootloader)
   BOOTLOADER="syslinux"
@@ -106,6 +97,9 @@
 
 # use linux-next (latest rc) instead latest released version
   LINUX_NEXT="no"
+
+# SquashFS compression method (gzip / lzo / xz)
+  SQUASHFS_COMPRESSION="gzip"
 
 # Mediacenter to use (xbmc / no)
   if [ "$PVR" = yes ]; then
@@ -160,7 +154,7 @@
 # e.g. ADDITIONAL_DRIVERS="asix-ax887xx AF9035"
   ADDITIONAL_DRIVERS="asix-ax887xx"
   if [ "$PVR" = yes ]; then
-    ADDITIONAL_DRIVERS="$ADDITIONAL_DRIVERS AF9035 a867_drv aver_h826d"
+    ADDITIONAL_DRIVERS="$ADDITIONAL_DRIVERS AF9035 A867 aver_h826d RTL2832 hdhomerun-driver vtuner-driver"
   fi
 
 # build with network support (yes / no)
@@ -220,25 +214,28 @@
 # build and install hfs filesystem utilities (yes / no)
   HFSTOOLS="yes"
 
-# Displayserver to use (xorg-server / no)
-  DISPLAYSERVER="xorg-server"
+# OpenGL(X) implementation to use (no / Mesa)
+  OPENGL="Mesa"
+
+# OpenGL-ES implementation to use (no)
+  OPENGLES="no"
 
 # Windowmanager to use (ratpoison / none)
   WINDOWMANAGER="ratpoison"
 
-# Graphic drivers to use (all / i915,i965,r200,r300,r600,fglrx,nvidia,nouveau,vmware)
+# Xorg Graphic drivers to use (all / i915,i965,r200,r300,r600,fglrx,nvidia,nouveau,vmware)
 # Space separated list is supported,
 # e.g. GRAPHIC_DRIVERS="i915 i965 r300 r600 nvidia nouveau"
-  GRAPHIC_DRIVERS="i915 i965 r200 r300 r600 nouveau vmware"
-
-# Mesa to use (Mesa / mesa)
-  MESA="mesa"
+  GRAPHIC_DRIVERS="i915 i965 r200 r300 r600 nouveau"
 
 # Use VDPAU video acceleration (needs nVidia driver and a supported card)
   VDPAU="no"
 
 # Use VAAPI video acceleration (needs intel i965 driver and a supported card)
   VAAPI="yes"
+
+# Use XVBA video acceleration (needs AMD fglrx driver and a supported card)
+  XVBA="no"
 
 # Use Broadcom CrystalHD Decoder Card for video acceleration 
 # (needs Kernelsupport for Broadcom Decoder Card and a supported card)
@@ -250,8 +247,17 @@
 # build and install ATV IR remote support (yes / no)
   ATVCLIENT_SUPPORT="yes"
 
+# build and install IRServer IR/LCD support (yes / no)
+  IRSERVER_SUPPORT="yes"
+
+# build and install Joystick support (yes / no)
+  JOYSTICK_SUPPORT="yes"
+
 # build and install CEC adapter support (yes / no)
   CEC_SUPPORT="yes"
+  
+# build and install iSCSI support - iscsistart (yes / no)
+  ISCSI_SUPPORT="yes"
 
 # LCD driver to Use - Possible drivers are ( Comma seperated:
 # bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,
@@ -264,7 +270,7 @@
 # 'all' compiles all drivers;
 # 'all,!xxx,!yyy' de-selects previously selected drivers
 # "none" for disable LCD support
-  LCD_DRIVER="irtrans,imon,imonlcd,mdm166a"
+  LCD_DRIVER="irtrans,imon,imonlcd,mdm166a,MtxOrb"
 
 # additional Firmware to use (dvb-firmware, misc-firmware, wlan-firmware)
 # Space separated list is supported,
@@ -299,5 +305,5 @@
   ADDON_SERVER_URL="http://addons.openelec.tv"
 
 # set the addon dirs
-  ADDON_PATH="$OS_VERSION/$PROJECT/$TARGET_ARCH"
+  ADDON_PATH="$ADDON_VERSION/$PROJECT/$TARGET_ARCH"
   ADDON_URL="$ADDON_SERVER_URL/$ADDON_PATH"

@@ -1,0 +1,9 @@
+2.1.1
+- update to addon version 2.1
+- update to maraschino-707e82c
+
+2.0.2
+- update to maraschino-c4e7467
+
+0.99.1
+- initial version maraschino-923de4c
