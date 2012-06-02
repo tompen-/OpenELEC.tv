@@ -149,6 +149,12 @@
 # (DVD decryption support in XBMC) (yes / no)
   DVDCSS_SUPPORT="yes"
 
+# build and install with LAME cdrip encoder support
+  ENCODER_LAME="yes"
+
+# build and install with VORBIS cdrip encoder support
+  ENCODER_VORBIS="yes"
+
 # build and install with BluRay support (yes / no)
   BLURAY_SUPPORT="yes"
 
@@ -233,6 +239,9 @@
 # e.g. GRAPHIC_DRIVERS="i915 i965 r300 r600 nvidia nouveau"
   GRAPHIC_DRIVERS="i915 i965 r200 r300 r600 nouveau"
 
+# OpenMAX implementation to use (no / bcm2835-driver)
+  OPENMAX="no"
+
 # Use VDPAU video acceleration (needs nVidia driver and a supported card)
   VDPAU="no"
 
@@ -276,6 +285,9 @@
 # 'all,!xxx,!yyy' de-selects previously selected drivers
 # "none" for disable LCD support
   LCD_DRIVER="irtrans,imon,imonlcd,mdm166a,MtxOrb"
+
+# Modules to install in initramfs for early boot
+  INITRAMFS_MODULES="uvesafb xhci-hcd"
 
 # additional Firmware to use (dvb-firmware, misc-firmware, wlan-firmware)
 # Space separated list is supported,

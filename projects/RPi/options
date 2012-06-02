@@ -153,6 +153,12 @@
 # (DVD decryption support in XBMC) (yes / no)
   DVDCSS_SUPPORT="yes"
 
+# build and install with LAME cdrip encoder support
+  ENCODER_LAME="yes"
+
+# build and install with VORBIS cdrip encoder support
+  ENCODER_VORBIS="yes"
+
 # build and install with BluRay support (yes / no)
   BLURAY_SUPPORT="yes"
 
@@ -161,7 +167,7 @@
 # asix-ax887xx:     Asix AX887xx USB LAN Driver
 # Space separated list is supported,
 # e.g. ADDITIONAL_DRIVERS="asix-ax887xx AF9035"
-  ADDITIONAL_DRIVERS="asix-ax887xx"
+  ADDITIONAL_DRIVERS=""
   if [ "$PVR" = yes ]; then
     ADDITIONAL_DRIVERS="$ADDITIONAL_DRIVERS AF9035 A867 aver_h826d RTL2832 hdhomerun-driver vtuner-driver"
   fi
@@ -276,6 +282,9 @@
 # 'all,!xxx,!yyy' de-selects previously selected drivers
 # "none" for disable LCD support
   LCD_DRIVER="irtrans,imon,imonlcd,mdm166a,MtxOrb"
+
+# Modules to install in initramfs for early boot
+  INITRAMFS_MODULES=""
 
 # additional Firmware to use (dvb-firmware, misc-firmware, wlan-firmware)
 # Space separated list is supported,
