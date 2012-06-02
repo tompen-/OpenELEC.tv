@@ -1,3 +1,5 @@
+#!/bin/sh
+
 ################################################################################
 #      This file is part of OpenELEC - http://www.openelec.tv
 #      Copyright (C) 2009-2012 Stephan Raue (stephan@openelec.tv)
@@ -18,19 +20,6 @@
 #  http://www.gnu.org/copyleft/gpl.html
 ################################################################################
 
-PKG_NAME="libnl"
-PKG_VERSION="3.2.4"
-PKG_REV="1"
-PKG_ARCH="any"
-PKG_LICENSE="LGPL"
-PKG_SITE="http://people.suug.ch/~tgr/libnl/"
-PKG_URL="http://www.infradead.org/~tgr/libnl/files/$PKG_NAME-$PKG_VERSION.tar.gz"
-PKG_DEPENDS=""
-PKG_BUILD_DEPENDS="toolchain"
-PKG_PRIORITY="optional"
-PKG_SECTION="network"
-PKG_SHORTDESC="libnl: libnl - netlink library"
-PKG_LONGDESC="libnl is a library for applications dealing with netlink socket. It provides an easy to use interface for raw netlink message but also netlink family specific APIs."
-PKG_IS_ADDON="no"
-
-PKG_AUTORECONF="yes"
+for i in `ls xbmc-*.patch`; do
+  mv $i `echo $i | sed "s,$1,$2,g"`
+done
