@@ -1,0 +1,13 @@
+diff --git a/xbmc/music/spotyXBMC/session/BackgroundThread.cpp b/xbmc/music/spotyXBMC/session/BackgroundThread.cpp
+index f0057af..d5efd8b 100644
+--- a/xbmc/music/spotyXBMC/session/BackgroundThread.cpp
++++ b/xbmc/music/spotyXBMC/session/BackgroundThread.cpp
+@@ -56,7 +56,7 @@ namespace addon_music_spotify {
+         Session::getInstance()->unlock();
+       }
+       Session::getInstance()->m_nextEvent -= 5;
+-      Sleep(5);
++      Sleep(0);
+     }
+     Logger::printOut("exiting process thread");
+     Session::getInstance()->disConnect();
