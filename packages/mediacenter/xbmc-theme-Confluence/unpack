@@ -24,11 +24,6 @@
 
 echo "### Applying project based patches ###"
 
-for patch in `ls $PROJECT_DIR/$PROJECT/patches/$1`; do
-  cat $PROJECT_DIR/$PROJECT/patches/$1/$patch | patch -d \
-    `echo $PKG_BUILD | cut -f1 -d\ ` -p1
-done
-
 if [ "$SPOTIFY_SUPPORT" = yes ]; then
   echo "### Integrating spotify patches ###"
   for patch in `ls $PKG_DIR/spotify/spotify_patches/*.patch`; do

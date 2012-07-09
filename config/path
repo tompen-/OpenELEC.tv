@@ -106,12 +106,18 @@ HOST_PKG_CONFIG_PATH=""
 HOST_PKG_CONFIG_LIBDIR="$ROOT/$TOOLCHAIN/lib/pkgconfig:$ROOT/$TOOLCHAIN/share/pkgconfig"
 HOST_PKG_CONFIG_SYSROOT_DIR=""
 
-export CCACHE_DIR=$ROOT/$BUILD/.ccache
+if [ -z "$CCACHE_DIR" ]; then
+    export CCACHE_DIR=$HOME/.ccache-openelec
+fi
 export MAKEFLAGS=-j$CONCURRENCY_MAKE_LEVEL
 export PKG_CONFIG=$ROOT/$TOOLCHAIN/bin/pkg-config
 
 if [ -z "$PATH" -o "$PATH" = "${PATH#$ROOT/$TOOLCHAIN/bin:}" ]; then
   export PATH="$ROOT/$TOOLCHAIN/bin:$PATH"
+fi
+
+if [ -z "$LD_LIBRARY_PATH" -o "$LD_LIBRARY_PATH" = "${LD_LIBRARY_PATH#$ROOT/$TOOLCHAIN/lib:}" ]; then
+  export LD_LIBRARY_PATH="$ROOT/$TOOLCHAIN/lib:$LD_LIBRARY_PATH"
 fi
 
 VERSION_SUFFIX=$TARGET_ARCH
