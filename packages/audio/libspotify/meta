@@ -52,6 +52,10 @@ if [ "$TARGET_ARCH" = arm ]; then
     PKG_URL="http://developer.spotify.com/download/libspotify/$PKG_NAME-$PKG_VERSION-Linux-armv7-release.tar.gz"
     LIBSPOTIFY_FOLDERNAME="$PKG_NAME-Linux-armv7-release"
   fi
+  if [ "$TARGET_CPU" = arm1176jzf-s ]; then
+    PKG_URL="http://developer.spotify.com/download/libspotify/$PKG_NAME-$PKG_VERSION-Linux-armv6-release.tar.gz"
+    LIBSPOTIFY_FOLDERNAME="$PKG_NAME-Linux-armv6-release"
+  fi
 fi
 
 PKG_DEPENDS=""
