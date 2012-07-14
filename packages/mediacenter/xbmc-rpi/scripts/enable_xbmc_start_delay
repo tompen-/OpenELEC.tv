@@ -1,0 +1,152 @@
+#!/bin/sh
+#################################################################################
+#
+#  This script file is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2, or (at your option)
+#  any later version.
+#
+#  This Program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this software.  If not, write to:
+#  Free Software Foundation, 51 Franklin Street, Suite 500, Boston, MA 02110, USA
+#  http://www.gnu.org/copyleft/gpl.html
+#################################################################################
+
+if [ ! "$1" = I_UNDERSTAND_PLEASE_BOOT_SLOWLY ]; then
+  echo ' '
+  echo 'This script DISABLES one major feature in OpenELEC, fast bootup time.'
+  echo 'Using this script you can enable delayed XBMC startup.'
+  echo 'XBMC will wait until internet access works before it starts.'
+  echo ' '
+  echo 'When enabled, if internet does not work after 40sec, XBMC will start anyway'
+  echo 'Your display will be black while waiting for internet, max 40sec.'
+  echo ' '
+  echo 'If you want to enable delayed XBMC startup, do this command:'
+  echo ' '
+  echo "$0 I_UNDERSTAND_PLEASE_BOOT_SLOWLY"
+  echo ' '
+  exit 1
+else
+  if [ -e /storage/.config/autostart.sh ]; then
+    cat /storage/.config/autostart.sh | grep "no internet access yet," 1>/dev/null 2>&1
+    if [ "$?" -eq 0 ]; then
+      echo '***************** ERROR ERROR ERROR **********************'
+      echo '* Problem is: I have nothing to do!                      *'
+      echo '* XBMC is already waiting for internet before it starts. *'
+      echo '* Please see the file: /storage/.config/autostart.sh     *'
+      echo '* It should contain the text shown below. Remove that    *'
+      echo '* text if you want to disable the delayed XBMC startup.  *'
+      echo '**********************************************************'
+      echo ' '
+      echo '('
+      echo 'REACHABLE=0'
+      echo 'for i in 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 \'
+      echo '         26 27 28 29 30 31 32 33 34 35 36 37 38 39 40; do'
+      echo '  if [ "$REACHABLE" = 0 ]; then'
+      echo '    ping -q -c 1 -w 1 -W 1 www.google.com 1>/dev/null 2>&1'
+      echo '    if [ "$?" -eq 0 ]; then'
+      echo '      logger -t Connman "### [$i] ping to www.google.com works, starting XBMC ###"'
+      echo '      REACHABLE=1'
+      echo '    else'
+      echo '      logger -t Connman "### [$i] no internet access yet, delaying XBMC startup ###"'
+      echo '      sleep 1'
+      echo '    fi'
+      echo '  fi'
+      echo 'done'
+      echo ')'
+      echo ' '
+    else
+      mkdir -p /storage/.config
+      echo '(' >>/storage/.config/autostart.sh
+      echo 'REACHABLE=0' >>/storage/.config/autostart.sh
+      echo 'for i in 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 \' >>/storage/.config/autostart.sh
+      echo '         26 27 28 29 30 31 32 33 34 35 36 37 38 39 40; do' >>/storage/.config/autostart.sh
+      echo '  if [ "$REACHABLE" = 0 ]; then' >>/storage/.config/autostart.sh
+      echo '    ping -q -c 1 -w 1 -W 1 www.google.com 1>/dev/null 2>&1' >>/storage/.config/autostart.sh
+      echo '    if [ "$?" -eq 0 ]; then' >>/storage/.config/autostart.sh
+      echo '      logger -t Connman "### [$i] ping to www.google.com works, starting XBMC ###"' >>/storage/.config/autostart.sh
+      echo '      REACHABLE=1' >>/storage/.config/autostart.sh
+      echo '    else' >>/storage/.config/autostart.sh
+      echo '      logger -t Connman "### [$i] no internet access yet, delaying XBMC startup ###"' >>/storage/.config/autostart.sh
+      echo '      sleep 1' >>/storage/.config/autostart.sh
+      echo '    fi' >>/storage/.config/autostart.sh
+      echo '  fi' >>/storage/.config/autostart.sh
+      echo 'done' >>/storage/.config/autostart.sh
+      echo ')' >>/storage/.config/autostart.sh
+
+      chmod +x /storage/.config/autostart.sh 1>/dev/null 2>&1
+
+      echo ' '
+      echo '('
+      echo 'REACHABLE=0'
+      echo 'for i in 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 \'
+      echo '         26 27 28 29 30 31 32 33 34 35 36 37 38 39 40; do'
+      echo '  if [ "$REACHABLE" = 0 ]; then'
+      echo '    ping -q -c 1 -w 1 -W 1 www.google.com 1>/dev/null 2>&1'
+      echo '    if [ "$?" -eq 0 ]; then'
+      echo '      logger -t Connman "### [$i] ping to www.google.com works, starting XBMC ###"'
+      echo '      REACHABLE=1'
+      echo '    else'
+      echo '      logger -t Connman "### [$i] no internet access yet, delaying XBMC startup ###"'
+      echo '      sleep 1'
+      echo '    fi'
+      echo '  fi'
+      echo 'done'
+      echo ')'
+      echo ' '
+      echo 'Delayed XBMC start have been activated.'
+      echo 'On boot, we wait max 40sec for internet access before XBMC is started.'
+      echo ' '
+      echo 'If you want to disable delayed XBMC startup sometime in the future,'
+      echo 'remove the text shown above from the file: /storage/.config/autostart.sh'
+    fi
+  else
+    echo '(' >>/storage/.config/autostart.sh
+    echo 'REACHABLE=0' >>/storage/.config/autostart.sh
+    echo 'for i in 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 \' >>/storage/.config/autostart.sh
+    echo '         26 27 28 29 30 31 32 33 34 35 36 37 38 39 40; do' >>/storage/.config/autostart.sh
+    echo '  if [ "$REACHABLE" = 0 ]; then' >>/storage/.config/autostart.sh
+    echo '    ping -q -c 1 -w 1 -W 1 www.google.com 1>/dev/null 2>&1' >>/storage/.config/autostart.sh
+    echo '    if [ "$?" -eq 0 ]; then' >>/storage/.config/autostart.sh
+    echo '      logger -t Connman "### [$i] ping to www.google.com works, starting XBMC ###"' >>/storage/.config/autostart.sh
+    echo '      REACHABLE=1' >>/storage/.config/autostart.sh
+    echo '    else' >>/storage/.config/autostart.sh
+    echo '      logger -t Connman "### [$i] no internet access yet, delaying XBMC startup ###"' >>/storage/.config/autostart.sh
+    echo '      sleep 1' >>/storage/.config/autostart.sh
+    echo '    fi' >>/storage/.config/autostart.sh
+    echo '  fi' >>/storage/.config/autostart.sh
+    echo 'done' >>/storage/.config/autostart.sh
+    echo ')' >>/storage/.config/autostart.sh
+
+    chmod +x /storage/.config/autostart.sh 1>/dev/null 2>&1
+
+    echo ' '
+    echo '('
+    echo 'REACHABLE=0'
+    echo 'for i in 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 \'
+    echo '         26 27 28 29 30 31 32 33 34 35 36 37 38 39 40; do'
+    echo '  if [ "$REACHABLE" = 0 ]; then'
+    echo '    ping -q -c 1 -w 1 -W 1 www.google.com 1>/dev/null 2>&1'
+    echo '    if [ "$?" -eq 0 ]; then'
+    echo '      logger -t Connman "### [$i] ping to www.google.com works, starting XBMC ###"'
+    echo '      REACHABLE=1'
+    echo '    else'
+    echo '      logger -t Connman "### [$i] no internet access yet, delaying XBMC startup ###"'
+    echo '      sleep 1'
+    echo '    fi'
+    echo '  fi'
+    echo 'done'
+    echo ')'
+    echo ' '
+    echo 'Delayed XBMC start have been activated.'
+    echo 'On boot, we wait max 40sec for internet access before XBMC is started.'
+    echo ' '
+    echo 'If you want to disable delayed XBMC startup sometime in the future,'
+    echo 'remove the text shown above from the file: /storage/.config/autostart.sh'
+  fi
+fi
