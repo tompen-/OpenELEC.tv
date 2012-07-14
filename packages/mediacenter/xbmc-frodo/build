@@ -221,6 +221,14 @@ fi
 # setup skin dir from default skin
   SKIN_DIR="skin.`tolower $SKIN_DEFAULT`"
 
+# reduce GCC compile optimization when building xbmc with spotify support.
+if [ "$SPOTIFY_SUPPORT" = yes ]; then
+  CXXFLAGS=`echo $CXXFLAGS | sed -e "s| -Ofast| -O3|"`
+  CXXFLAGS=`echo $CXXFLAGS | sed -e "s| -ffast-math||"`
+# if xbmc.bin is compiled with -ffast-math and spotyxbmc addon is enabled,
+# xbmc often crashes within a few seconds after xbmc gui have started.
+fi
+
 cd $PKG_BUILD
 
 # adding fake Makefile for stripped skin

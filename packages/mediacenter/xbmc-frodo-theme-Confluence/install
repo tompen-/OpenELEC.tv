@@ -31,3 +31,10 @@ mkdir -p $INSTALL/usr/share/xbmc/addons/skin.confluence
 
 mkdir -p $INSTALL/usr/share/xbmc/addons/skin.confluence/media
   cp $PKG_BUILD/Textures.xbt $INSTALL/usr/share/xbmc/addons/skin.confluence/media
+
+if [ "$SPOTIFY_SUPPORT" = yes ]; then
+  mkdir -p $INSTALL/usr/share/xbmc/addons/skin.confluence/media/flagging
+  mkdir -p $INSTALL/usr/share/xbmc/addons/skin.confluence/media/flagging/audio
+  cp $PKG_DIR/spotify/spotify.png \
+  $INSTALL/usr/share/xbmc/addons/skin.confluence/media/flagging/audio/spotify.png
+fi

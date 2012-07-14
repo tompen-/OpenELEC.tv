@@ -1,0 +1,11 @@
+--- a/addons/plugin.music.spotyXBMC/resources/settings.xml	2012-01-10 16:40:28.000000000 +0000
++++ b/addons/plugin.music.spotyXBMC/resources/settings.xml	2012-01-10 20:10:03.000000000 +0000
+@@ -16,7 +16,7 @@
+     <setting id="enablefanart" type="bool" enable="eq(-8,true)"  label="30407" default="true" />
+     <setting id="customfanart" type="bool" enable="eq(-9,true)" visible="eq(-1,true)" label="30408" default="false" />
+     <setting id="fanart" type="file" enable="eq(-10,true)" visible="eq(-1,true)" label="30406" default="" />
+-    <setting id="htfanart" type="bool" enable="eq(-11,true)" visible="eq(-3,true)" label="30410" default="false" />
++    <setting id="htfanart" type="bool" enable="eq(-11,true)" visible="eq(-3,true)" label="30410" default="true" />
+     <setting id="htartistthumb" type="bool" enable="false" visible="false" label="30411" default="false" />
+   </category>
+   <category label="30420">
