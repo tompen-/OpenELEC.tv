@@ -20062,7 +20062,7 @@ index 0000000..378d207
 +      config.api_version = SPOTIFY_API_VERSION;
 +      Logger::printOut("API version:");
 +      char* version = new char[20];
-+      Logger::printOut(itoa(SPOTIFY_API_VERSION, version, 10));
++//      Logger::printOut(itoa(SPOTIFY_API_VERSION, version, 10));
 +	  
 +	  //the api is not copying the string so create a new c string
 +	  CStdString location = Settings::getInstance()->getCachePath();
