@@ -1,7 +1,7 @@
-From e5e3d761d91b5af7a3d0e0be599d737f9683fe04 Mon Sep 17 00:00:00 2001
+From 3976f1ea3fa894debfc7f21edce7171c3d09d5d2 Mon Sep 17 00:00:00 2001
 From: root <root@OpenELEC-dev.(none)>
-Date: Sat, 14 Jul 2012 15:35:49 +0100
-Subject: [PATCH] spotyxbmc2-961a7f1646-Spotify-support-for-xbmc-frodo-29465212db-INCOMPLETE-AudioLibrary.cpp-needed
+Date: Mon, 23 Jul 2012 17:56:09 +0100
+Subject: [PATCH] spotyxbmc2-dcd4fa1ca6-Spotify-support-for-xbmc
 
 ---
  .gitignore                                         |    2 +-
@@ -20,8 +20,11 @@ Subject: [PATCH] spotyxbmc2-961a7f1646-Spotify-support-for-xbmc-frodo-29465212db
  lib/libspotify/include/libspotify/api.h            | 3577 ++++++++++++++++++++
  lib/libspotify/libspotify.lib                      |  Bin 0 -> 57942 bytes
  xbmc/Application.cpp                               |   10 +
+ xbmc/FileItem.cpp                                  |   10 +
+ xbmc/FileItem.h                                    |    1 +
  xbmc/GUIInfoManager.cpp                            |    4 +-
  xbmc/cores/paplayer/CodecFactory.cpp               |    6 +
+ xbmc/cores/paplayer/PAPlayer.cpp                   |   58 +-
  xbmc/dialogs/GUIDialogContextMenu.h                |    7 +-
  .../MusicDatabaseDirectory/DirectoryNodeAlbum.cpp  |    8 +
  .../MusicDatabaseDirectory/DirectoryNodeArtist.cpp |    8 +
@@ -29,13 +32,14 @@ Subject: [PATCH] spotyxbmc2-961a7f1646-Spotify-support-for-xbmc-frodo-29465212db
  .../MusicDatabaseDirectory/DirectoryNodeSong.cpp   |    6 +
  .../MusicDatabaseDirectory/DirectoryNodeTop100.cpp |    6 +
  xbmc/filesystem/MusicSearchDirectory.cpp           |    6 +-
+ xbmc/interfaces/json-rpc/AudioLibrary.cpp          |   60 +-
  xbmc/interfaces/json-rpc/FileItemHandler.cpp       |    6 +
- xbmc/interfaces/json-rpc/ServiceDescription.h      |    4 +
+ xbmc/interfaces/json-rpc/ServiceDescription.h      |   10 +-
  xbmc/interfaces/json-rpc/methods.json              |    1 +
- xbmc/interfaces/json-rpc/types.json                |    3 +
+ xbmc/interfaces/json-rpc/types.json                |    8 +-
  xbmc/music/Makefile                                |   33 +-
- xbmc/music/spotyXBMC/Addon.music.spotify.cpp       |  743 ++++
- xbmc/music/spotyXBMC/Addon.music.spotify.h         |   83 +
+ xbmc/music/spotyXBMC/Addon.music.spotify.cpp       |  762 +++++
+ xbmc/music/spotyXBMC/Addon.music.spotify.h         |   84 +
  xbmc/music/spotyXBMC/Logger.cpp                    |   36 +
  xbmc/music/spotyXBMC/Logger.h                      |   92 +
  xbmc/music/spotyXBMC/SxSettings.cpp                |  170 +
@@ -99,7 +103,7 @@ Subject: [PATCH] spotyxbmc2-961a7f1646-Spotify-support-for-xbmc-frodo-29465212db
  xbmc/music/windows/GUIWindowMusicBase.cpp          |    8 +
  xbmc/music/windows/GUIWindowMusicNav.cpp           |   54 +-
  xbmc/settings/Settings.cpp                         |    3 +-
- 95 files changed, 14923 insertions(+), 20 deletions(-)
+ 99 files changed, 15066 insertions(+), 37 deletions(-)
  create mode 100644 Readme.md
  create mode 100644 addons/plugin.music.spotyXBMC/addon.xml
  create mode 100644 addons/plugin.music.spotyXBMC/changelog.txt
@@ -6349,10 +6353,10 @@ index 64b0a40..a146bd1 100755
              //play specific song in playlist
              jQuery.ajax({
 diff --git a/configure.in b/configure.in
-index 730b98e..42b7bab 100755
+index d44825f..e3245c1 100755
 --- a/configure.in
 +++ b/configure.in
-@@ -1430,6 +1430,9 @@ else
+@@ -1429,6 +1429,9 @@ else
    AC_MSG_NOTICE($vdpau_disabled)
  fi
  
@@ -13738,7 +13742,7 @@ literal 0
 HcmV?d00001
 
 diff --git a/xbmc/Application.cpp b/xbmc/Application.cpp
-index b1be42b..fcf74db 100644
+index df84f8a..86e4471 100644
 --- a/xbmc/Application.cpp
 +++ b/xbmc/Application.cpp
 @@ -19,6 +19,9 @@
@@ -13761,7 +13765,7 @@ index b1be42b..fcf74db 100644
    g_sysinfo.Refresh();
  
    CLog::Log(LOGINFO, "removing tempfiles");
-@@ -3239,6 +3245,10 @@ bool CApplication::Cleanup()
+@@ -3242,6 +3248,10 @@ bool CApplication::Cleanup()
  {
    try
    {
@@ -13772,8 +13776,41 @@ index b1be42b..fcf74db 100644
      g_windowManager.Delete(WINDOW_MUSIC_PLAYLIST);
      g_windowManager.Delete(WINDOW_MUSIC_PLAYLIST_EDITOR);
      g_windowManager.Delete(WINDOW_MUSIC_FILES);
+diff --git a/xbmc/FileItem.cpp b/xbmc/FileItem.cpp
+index b4d6344..ac63bf6 100644
+--- a/xbmc/FileItem.cpp
++++ b/xbmc/FileItem.cpp
+@@ -900,6 +900,16 @@ bool CFileItem::IsRemovable() const
+   return IsOnDVD() || IsCDDA() || m_iDriveType == CMediaSource::SOURCE_TYPE_REMOVABLE;
+ }
+ 
++bool CFileItem::IsSpotify() const
++{
++  if (URIUtils::GetExtension(m_strPath).Equals(".spotify", false))
++    return true;
++  CStdString extension = m_strPath.Right(m_strPath.GetLength() - m_strPath.Find('.') - 1);
++  if (extension.Left(12) == "spotifyradio")
++    return true;
++  return false;
++}
++
+ bool CFileItem::IsReadOnly() const
+ {
+   if (IsParentFolder()) return true;
+diff --git a/xbmc/FileItem.h b/xbmc/FileItem.h
+index 3ef2ef6..513ddd3 100644
+--- a/xbmc/FileItem.h
++++ b/xbmc/FileItem.h
+@@ -140,6 +140,7 @@ public:
+   bool IsParentFolder() const;
+   bool IsFileFolder() const;
+   bool IsRemovable() const;
++  bool IsSpotify() const;
+   bool IsTuxBox() const;
+   bool IsMythTV() const;
+   bool IsHDHomeRun() const;
 diff --git a/xbmc/GUIInfoManager.cpp b/xbmc/GUIInfoManager.cpp
-index 03bc33f..9d4ea55 100644
+index d0cc2c9..392180e 100644
 --- a/xbmc/GUIInfoManager.cpp
 +++ b/xbmc/GUIInfoManager.cpp
 @@ -4551,7 +4551,9 @@ bool CGUIInfoManager::GetLibraryBool(int condition)
@@ -13811,6 +13848,96 @@ index bc30c63..ca008de 100644
  
    return NULL;
  }
+diff --git a/xbmc/cores/paplayer/PAPlayer.cpp b/xbmc/cores/paplayer/PAPlayer.cpp
+index 4da756e..a540b8f 100644
+--- a/xbmc/cores/paplayer/PAPlayer.cpp
++++ b/xbmc/cores/paplayer/PAPlayer.cpp
+@@ -40,6 +40,7 @@
+ #define TIME_TO_CACHE_NEXT_FILE 5000 /* 5 seconds before end of song, start caching the next song */
+ #define FAST_XFADE_TIME           80 /* 80 milliseconds */
+ #define MAX_SKIP_XFADE_TIME     2000 /* max 2 seconds crossfade on track skip */
++/* Spotify hack !! When changing defines above, also do it OpenFile and QueueNextFileEx below */
+ 
+ CAEChannelInfo ICodec::GetChannelInfo()
+ {
+@@ -232,7 +233,26 @@ void PAPlayer::CloseAllStreams(bool fade/* = true */)
+ 
+ bool PAPlayer::OpenFile(const CFileItem& file, const CPlayerOptions &options)
+ {
+-  m_defaultCrossfadeMS = g_guiSettings.GetInt("musicplayer.crossfade") * 1000;
++  if (!file.IsSpotify())
++  {
++    m_defaultCrossfadeMS = g_guiSettings.GetInt("musicplayer.crossfade") * 1000;
++    #undef TIME_TO_CACHE_NEXT_FILE //Ensure we have default values
++    #undef FAST_XFADE_TIME
++    #undef MAX_SKIP_XFADE_TIME
++    #define TIME_TO_CACHE_NEXT_FILE 5000
++    #define FAST_XFADE_TIME           80
++    #define MAX_SKIP_XFADE_TIME     2000
++  }
++  else
++  {
++    m_defaultCrossfadeMS = 0;
++    #undef TIME_TO_CACHE_NEXT_FILE
++    #undef FAST_XFADE_TIME
++    #undef MAX_SKIP_XFADE_TIME
++    #define TIME_TO_CACHE_NEXT_FILE 0000
++    #define FAST_XFADE_TIME           00
++    #define MAX_SKIP_XFADE_TIME     0000
++  }
+ 
+   if (m_streams.size() > 1 || !m_defaultCrossfadeMS)
+   {
+@@ -266,7 +286,12 @@ bool PAPlayer::OpenFile(const CFileItem& file, const CPlayerOptions &options)
+ 
+ void PAPlayer::UpdateCrossfadeTime(const CFileItem& file)
+ {
+-  m_upcomingCrossfadeMS = m_defaultCrossfadeMS = g_guiSettings.GetInt("musicplayer.crossfade") * 1000;
++  if (!file.IsSpotify())
++    m_upcomingCrossfadeMS = m_defaultCrossfadeMS = g_guiSettings.GetInt("musicplayer.crossfade") * 1000;
++  else
++    CLog::Log(LOGDEBUG, "PAPlayer::UpdateCrossfadeTime: Spotify track detected, crossfade is disabled.");
++  m_upcomingCrossfadeMS = m_defaultCrossfadeMS; // Spotify (spotyxbmc) can not handle crossfade
++
+   if (m_upcomingCrossfadeMS)
+   {
+     if (m_streams.size() == 0 ||
+@@ -293,6 +318,35 @@ bool PAPlayer::QueueNextFile(const CFileItem &file)
+ 
+ bool PAPlayer::QueueNextFileEx(const CFileItem &file, bool fadeIn/* = true */)
+ {
++
++  if (!file.IsSpotify())
++  {
++    #undef TIME_TO_CACHE_NEXT_FILE //Make sure we have default values
++    #undef FAST_XFADE_TIME
++    #undef MAX_SKIP_XFADE_TIME
++    #define TIME_TO_CACHE_NEXT_FILE 5000
++    #define FAST_XFADE_TIME           80
++    #define MAX_SKIP_XFADE_TIME     2000
++  }
++  else
++  {
++    m_defaultCrossfadeMS = 0;
++    #undef TIME_TO_CACHE_NEXT_FILE
++    #undef FAST_XFADE_TIME
++    #undef MAX_SKIP_XFADE_TIME
++    #define TIME_TO_CACHE_NEXT_FILE 0000
++    #define FAST_XFADE_TIME           00
++    #define MAX_SKIP_XFADE_TIME     0000
++    CSharedLock lock(m_streamsLock);
++    while (m_streams.size() > 0) //Make sure we only have one concurrent stream
++    {
++      lock.Leave();
++      Sleep(50);
++      CSharedLock lock(m_streamsLock);
++    }
++    lock.Leave();
++  }
++
+   StreamInfo *si = new StreamInfo();
+ 
+   if (!si->m_decoder.Create(file, (file.m_lStartOffset * 1000) / 75))
 diff --git a/xbmc/dialogs/GUIDialogContextMenu.h b/xbmc/dialogs/GUIDialogContextMenu.h
 index 0771c7d..cdfd105 100644
 --- a/xbmc/dialogs/GUIDialogContextMenu.h
@@ -13979,8 +14106,122 @@ index 5cb681a..19269af 100644
    unsigned int time = XbmcThreads::SystemClockMillis();
    CMusicDatabase db;
    db.Open();
+diff --git a/xbmc/interfaces/json-rpc/AudioLibrary.cpp b/xbmc/interfaces/json-rpc/AudioLibrary.cpp
+index 929737b..37ad87b 100644
+--- a/xbmc/interfaces/json-rpc/AudioLibrary.cpp
++++ b/xbmc/interfaces/json-rpc/AudioLibrary.cpp
+@@ -19,6 +19,7 @@
+  *
+  */
+ 
++#include "music/spotyXBMC/Addon.music.spotify.h"
+ #include "AudioLibrary.h"
+ #include "music/MusicDatabase.h"
+ #include "FileItem.h"
+@@ -95,12 +96,23 @@ JSONRPC_STATUS CAudioLibrary::GetAlbums(const CStdString &method, ITransportLaye
+   ParseLimits(parameterObject, sorting.limitStart, sorting.limitEnd);
+   if (!ParseSorting(parameterObject, sorting.sortBy, sorting.sortOrder, sorting.sortAttributes))
+     return InvalidParams;
++  
++  CStdString s_path = "";
++  CStdString s_artistStr = "";
+ 
+   CFileItemList items;
+-  if (!musicdatabase.GetAlbumsNav("musicdb://3/", items, genreID, artistID, -1, -1, sorting))
++   int size;
++  if(!(artistID > 0) && g_spotify->GetAlbums(items, s_path,s_artistStr))
++  {  
++      size = items.Size();
++      if (items.HasProperty("total") && items.GetProperty("total").asInteger() > size)
++      size = (int)items.GetProperty("total").asInteger();
++      HandleFileItemList("spotify_albumid", false, "albums", items, parameterObject, result,size,false);
++  }
++  if (!musicdatabase.GetAlbumsNav("musicdb://3/", items, genreID, artistID, -1, -1, sorting) && artistID != -1)
+     return InternalError;
+ 
+-  int size = items.Size();
++  size = items.Size();
+   if (items.HasProperty("total") && items.GetProperty("total").asInteger() > size)
+     size = (int)items.GetProperty("total").asInteger();
+   HandleFileItemList("albumid", false, "albums", items, parameterObject, result, size, false);
+@@ -140,6 +152,9 @@ JSONRPC_STATUS CAudioLibrary::GetSongs(const CStdString &method, ITransportLayer
+   int artistID = (int)parameterObject["artistid"].asInteger();
+   int albumID  = (int)parameterObject["albumid"].asInteger();
+   int genreID  = (int)parameterObject["genreid"].asInteger();
++  
++  CStdString spotifyID = (CStdString) parameterObject["spotify_albumid"].asString();
++  CStdString artistName = "";
+ 
+   SortDescription sorting;
+   ParseLimits(parameterObject, sorting.limitStart, sorting.limitEnd);
+@@ -147,14 +162,21 @@ JSONRPC_STATUS CAudioLibrary::GetSongs(const CStdString &method, ITransportLayer
+     return InvalidParams;
+ 
+   CFileItemList items;
+-  if (!musicdatabase.GetSongsNav("musicdb://4/", items, genreID, artistID, albumID, sorting))
++  if (spotifyID.IsEmpty() && !musicdatabase.GetSongsNav("musicdb://4/", items, genreID, artistID, albumID, sorting))
+     return InternalError;
+-
+-  int size = items.Size();
+-  if (items.HasProperty("total") && items.GetProperty("total").asInteger() > size)
++   
++    int size = items.Size();
++    if (items.HasProperty("total") && items.GetProperty("total").asInteger() > size)
+     size = (int)items.GetProperty("total").asInteger();
+-  HandleFileItemList("songid", true, "songs", items, parameterObject, result, size, false);
++    HandleFileItemList("songid", true, "songs", items, parameterObject, result, size, false);
+ 
++   if(g_spotify->GetTracks(items,spotifyID,artistName,0))
++   {
++    if (items.HasProperty("total") && items.GetProperty("total").asInteger() > size)
++    size = (int)items.GetProperty("total").asInteger();
++   	HandleFileItemList("spotify_songid", true, "songs", items, parameterObject, result,size,false);
++   }
++  
+   return OK;
+ }
+ 
+@@ -476,7 +498,12 @@ bool CAudioLibrary::FillFileItemList(const CVariant &parameterObject, CFileItemL
+   int artistID = (int)parameterObject["artistid"].asInteger(-1);
+   int albumID = (int)parameterObject["albumid"].asInteger(-1);
+   int genreID = (int)parameterObject["genreid"].asInteger(-1);
+-
++  CStdString spotifyID = "";
++  CStdString spotifySongID = "";
++  
++  spotifyID = (CStdString) parameterObject["spotify_albumid"].asString();
++  spotifySongID = (CStdString) parameterObject["spotify_songid"].asString();
++  CStdString artistName = "";
+   bool success = false;
+   CFileItem fileItem;
+   if (FillFileItem(file, fileItem))
+@@ -484,11 +511,20 @@ bool CAudioLibrary::FillFileItemList(const CVariant &parameterObject, CFileItemL
+     success = true;
+     list.Add(CFileItemPtr(new CFileItem(fileItem)));
+   }
+-
+-  if (artistID != -1 || albumID != -1 || genreID != -1)
+-    success |= musicdatabase.GetSongsNav("", list, genreID, artistID, albumID);
+-
++  if(spotifyID != "")
++  {
++     success |= g_spotify->GetTracks(list,spotifyID,artistName,0);
++  }
++  else
++  {
++    if (artistID != -1 || albumID != -1 || genreID != -1)
++      success |= musicdatabase.GetSongsNav("", list, genreID, artistID, albumID);
++  }
+   int songID = (int)parameterObject["songid"].asInteger(-1);
++  if(spotifySongID != "")
++  {
++     success |= g_spotify->GetOneTrack(list,spotifySongID);
++  }  
+   if (songID != -1)
+   {
+     CSong song;
 diff --git a/xbmc/interfaces/json-rpc/FileItemHandler.cpp b/xbmc/interfaces/json-rpc/FileItemHandler.cpp
-index 6026b40..ccb38c0 100644
+index 6026b40..ea9d16e 100644
 --- a/xbmc/interfaces/json-rpc/FileItemHandler.cpp
 +++ b/xbmc/interfaces/json-rpc/FileItemHandler.cpp
 @@ -20,6 +20,7 @@
@@ -13995,38 +14236,49 @@ index 6026b40..ccb38c0 100644
  
      if (ID)
      {
-+      if(stricmp(ID, "spotify_albumid") == 0)
++      if(stricmp(ID, "spotify_albumid") == 0 || stricmp(ID, "spotify_songid") == 0)
 +      {
-+	CStdString spotify_albumid = item->GetPath();
-+	object[ID] = spotify_albumid.c_str();
++	CStdString spotifyid = item->GetPath();
++	object[ID] = spotifyid.c_str();
 +      }
        if (item->HasMusicInfoTag() && item->GetMusicInfoTag()->GetDatabaseId() > 0)
          object[ID] = (int)item->GetMusicInfoTag()->GetDatabaseId();
        else if (item->HasVideoInfoTag() && item->GetVideoInfoTag()->m_iDbId > 0)
 diff --git a/xbmc/interfaces/json-rpc/ServiceDescription.h b/xbmc/interfaces/json-rpc/ServiceDescription.h
-index adf6a0a..8ae3531 100644
+index ce62951..f7ab253 100644
 --- a/xbmc/interfaces/json-rpc/ServiceDescription.h
 +++ b/xbmc/interfaces/json-rpc/ServiceDescription.h
-@@ -129,6 +129,7 @@ namespace JSONRPC
+@@ -129,7 +129,9 @@ namespace JSONRPC
          "{ \"type\": \"object\", \"properties\": { \"musicvideoid\": { \"$ref\": \"Library.Id\", \"required\": true } }, \"additionalProperties\": false },"
          "{ \"type\": \"object\", \"properties\": { \"artistid\": { \"$ref\": \"Library.Id\", \"required\": true } }, \"additionalProperties\": false },"
          "{ \"type\": \"object\", \"properties\": { \"albumid\": { \"$ref\": \"Library.Id\", \"required\": true } }, \"additionalProperties\": false },"
+-        "{ \"type\": \"object\", \"properties\": { \"songid\": { \"$ref\": \"Library.Id\", \"required\": true } }, \"additionalProperties\": false },"
 +        "{ \"type\": \"object\", \"properties\": { \"spotify_albumid\": { \"type\": \"string\", \"required\": true } }, \"additionalProperties\": false },"
-         "{ \"type\": \"object\", \"properties\": { \"songid\": { \"$ref\": \"Library.Id\", \"required\": true } }, \"additionalProperties\": false },"
++        "{ \"type\": \"object\", \"properties\": { \"spotify_songid\": { \"type\": \"string\", \"required\": true } }, \"additionalProperties\": false },"
++	"{ \"type\": \"object\", \"properties\": { \"songid\": { \"$ref\": \"Library.Id\", \"required\": true } }, \"additionalProperties\": false },"
          "{ \"type\": \"object\", \"properties\": { \"genreid\": { \"$ref\": \"Library.Id\", \"required\": true, \"description\": \"Identification of a genre from the AudioLibrary\" } }, \"additionalProperties\": false }"
        "]"
-@@ -399,8 +400,10 @@ namespace JSONRPC
+     "}",
+@@ -399,6 +401,7 @@ namespace JSONRPC
        "\"extends\": \"Audio.Details.Media\","
        "\"properties\": {"
          "\"albumid\": { \"$ref\": \"Library.Id\", \"required\": true },"
 +        "\"spotify_albumid\": { \"type\": \"string\" },"
          "\"description\": { \"type\": \"string\" },"
          "\"theme\": { \"type\": \"string\" },"
-+        "\"spotify_albumid\": { \"type\": \"string\" },"
          "\"mood\": { \"type\": \"string\" },"
-         "\"style\": { \"type\": \"string\" },"
-         "\"type\": { \"type\": \"string\" },"
-@@ -1528,6 +1531,7 @@ namespace JSONRPC
+@@ -423,7 +426,9 @@ namespace JSONRPC
+         "\"musicbrainztrackid\": { \"type\": \"string\" },"
+         "\"musicbrainzartistid\": { \"type\": \"string\" },"
+         "\"artistid\": { \"$ref\": \"Library.Id\" },"
+-        "\"albumid\": { \"$ref\": \"Library.Id\" },"
++        "\"spotify_albumid\": { \"type\": \"string\" },"
++        "\"spotify_songid\": { \"type\": \"string\" },"
++	 "\"albumid\": { \"$ref\": \"Library.Id\" },"
+         "\"lastplayed\": { \"type\": \"string\" },"
+         "\"disc\": { \"type\": \"integer\" }"
+       "}"
+@@ -1528,6 +1533,7 @@ namespace JSONRPC
        "\"params\": ["
          "{ \"name\": \"artistid\", \"$ref\": \"Library.Id\" },"
          "{ \"name\": \"albumid\", \"$ref\": \"Library.Id\" },"
@@ -14047,18 +14299,19 @@ index 877a998..e2ef21c 100644
        { "name": "properties", "$ref": "Audio.Fields.Song" },
        { "name": "limits", "$ref": "List.Limits" },
 diff --git a/xbmc/interfaces/json-rpc/types.json b/xbmc/interfaces/json-rpc/types.json
-index e078cbe..7de6c0a 100644
+index 7eb3455..46fbff8 100644
 --- a/xbmc/interfaces/json-rpc/types.json
 +++ b/xbmc/interfaces/json-rpc/types.json
-@@ -101,6 +101,7 @@
+@@ -101,6 +101,8 @@
        { "type": "object", "properties": { "musicvideoid": { "$ref": "Library.Id", "required": true } }, "additionalProperties": false },
        { "type": "object", "properties": { "artistid": { "$ref": "Library.Id", "required": true } }, "additionalProperties": false },
        { "type": "object", "properties": { "albumid": { "$ref": "Library.Id", "required": true } }, "additionalProperties": false },
 +      { "type": "object", "properties": { "spotify_albumid": { "type": "string", "required": true } }, "additionalProperties": false },
++      { "type": "object", "properties": { "spotify_songid": {"type": "string", "required": true } }, "additionalProperties": false },
        { "type": "object", "properties": { "songid": { "$ref": "Library.Id", "required": true } }, "additionalProperties": false },
        { "type": "object", "properties": { "genreid": { "$ref": "Library.Id", "required": true, "description": "Identification of a genre from the AudioLibrary" } }, "additionalProperties": false }
      ]
-@@ -371,8 +372,10 @@
+@@ -371,8 +373,10 @@
      "extends": "Audio.Details.Media",
      "properties": {
        "albumid": { "$ref": "Library.Id", "required": true },
@@ -14069,6 +14322,22 @@ index e078cbe..7de6c0a 100644
        "mood": { "type": "string" },
        "style": { "type": "string" },
        "type": { "type": "string" },
+@@ -395,6 +399,8 @@
+       "musicbrainztrackid": { "type": "string" },
+       "musicbrainzartistid": { "type": "string" },
+       "artistid": { "$ref": "Library.Id" },
++      "spotify_songid": { "type": "string" },
++      "spotify_albumid": { "type": "string" },
+       "albumid": { "$ref": "Library.Id" },
+       "lastplayed": { "type": "string" },
+       "disc": { "type": "integer" }
+@@ -833,4 +839,4 @@
+       }
+     }
+   }
+-}
+\ No newline at end of file
++}
 diff --git a/xbmc/music/Makefile b/xbmc/music/Makefile
 index 32b722a..f79d32d 100644
 --- a/xbmc/music/Makefile
@@ -14115,10 +14384,10 @@ index 32b722a..f79d32d 100644
  include ../../Makefile.include
 diff --git a/xbmc/music/spotyXBMC/Addon.music.spotify.cpp b/xbmc/music/spotyXBMC/Addon.music.spotify.cpp
 new file mode 100644
-index 0000000..bd41d7d
+index 0000000..59c23ce
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/Addon.music.spotify.cpp
-@@ -0,0 +1,743 @@
+@@ -0,0 +1,762 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -14374,6 +14643,25 @@ index 0000000..bd41d7d
 +		return getAllTracks(items, artistName);
 +	}
 +	return true;
++}
++bool Addon_music_spotify::GetOneTrack(CFileItemList& items, CStdString& path) {
++  Logger::printOut("get one track");
++  CURL url(path);
++  CStdString uri = url.GetFileNameWithoutPath();
++  if (uri.Left(13).Equals("spotify:track")) {
++      if (isReady()) {
++      sp_link *spLink = sp_link_create_from_string(uri.Left(uri.Find('.')));
++      if (!spLink) return false;
++      sp_track *spTrack = sp_link_as_track(spLink);
++      if (spTrack) {
++        SxTrack* track = TrackStore::getInstance()->getTrack(spTrack);
++        items.Add(Utils::SxTrackToItem(track));
++        sp_track_release(spTrack);
++      }
++      sp_link_release(spLink);
++    } 
++  }
++  return true;  
 +}
 +
 +bool Addon_music_spotify::getAlbumTracksFromTrack(CFileItemList& items,
@@ -14864,10 +15152,10 @@ index 0000000..bd41d7d
 +
 diff --git a/xbmc/music/spotyXBMC/Addon.music.spotify.h b/xbmc/music/spotyXBMC/Addon.music.spotify.h
 new file mode 100644
-index 0000000..b3bf704
+index 0000000..d54d427
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/Addon.music.spotify.h
-@@ -0,0 +1,83 @@
+@@ -0,0 +1,84 @@
 +/*
 + spotyxbmc2 - A project to integrate Spotify into XBMC
 + Copyright (C) 2011  David Erenger
@@ -14916,6 +15204,7 @@ index 0000000..b3bf704
 +  bool isReady();
 +
 +  bool GetTracks(CFileItemList& items, CStdString& path, CStdString artistName, int albumId);
++  bool GetOneTrack(CFileItemList& items, CStdString& path);
 +  bool GetAlbums(CFileItemList& items, CStdString& path, CStdString artistName);
 +  bool GetArtists(CFileItemList& items, CStdString& path);
 +  bool GetPlaylists(CFileItemList& items);
@@ -19981,7 +20270,7 @@ index 0000000..8ed6213
 +#endif /* BACKGROUNDTHREAD_H_ */
 diff --git a/xbmc/music/spotyXBMC/session/Session.cpp b/xbmc/music/spotyXBMC/session/Session.cpp
 new file mode 100644
-index 0000000..378d207
+index 0000000..4ce0f0f
 --- /dev/null
 +++ b/xbmc/music/spotyXBMC/session/Session.cpp
 @@ -0,0 +1,201 @@
