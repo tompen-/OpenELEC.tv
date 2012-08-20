@@ -14331,13 +14331,6 @@ index 7eb3455..46fbff8 100644
        "albumid": { "$ref": "Library.Id" },
        "lastplayed": { "type": "string" },
        "disc": { "type": "integer" }
-@@ -833,4 +839,4 @@
-       }
-     }
-   }
--}
-\ No newline at end of file
-+}
 diff --git a/xbmc/music/Makefile b/xbmc/music/Makefile
 index 32b722a..f79d32d 100644
 --- a/xbmc/music/Makefile
