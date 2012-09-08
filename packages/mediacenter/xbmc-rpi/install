@@ -26,7 +26,6 @@ PYTHON_LIBDIR="`ls -d $INSTALL/usr/lib/python*`"
 
 mkdir -p $INSTALL/usr/bin
   cp $PKG_DIR/scripts/cputemp $INSTALL/usr/bin
-  cp $PKG_DIR/scripts/enable_xbmc_start_delay $INSTALL/usr/bin
   cp $PKG_DIR/scripts/gputemp $INSTALL/usr/bin
   cp $PKG_DIR/scripts/wait_on_xbmc_exit $INSTALL/usr/bin
   cp $PKG_BUILD/tools/EventClients/Clients/XBMC\ Send/xbmc-send.py $INSTALL/usr/bin/xbmc-send
@@ -84,10 +83,6 @@ mkdir -p $INSTALL/usr/share/xbmc/addons
   $SED "s|@OS_VERSION@|$OS_VERSION|g" -i $INSTALL/usr/share/xbmc/addons/os.openelec.tv/addon.xml
   cp -R $PKG_DIR/config/repository.openelec.tv $INSTALL/usr/share/xbmc/addons
   $SED "s|@ADDON_URL@|$ADDON_URL|g" -i $INSTALL/usr/share/xbmc/addons/repository.openelec.tv/addon.xml
-
-if [ "$SPOTIFY_SUPPORT" = yes ]; then
-  cp -R $PKG_DIR/config/plugin.music.spotyXBMC $INSTALL/usr/share/xbmc/addons
-fi
 
 mkdir -p $PYTHON_LIBDIR/site-packages/xbmc
   cp -R $PKG_BUILD/tools/EventClients/lib/python/* $PYTHON_LIBDIR/site-packages/xbmc
