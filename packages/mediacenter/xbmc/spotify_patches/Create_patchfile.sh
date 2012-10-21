@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#################################################################################
+################################################################################
 #
 #  This script file is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -14,9 +14,9 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this software.  If not, write to:
-#  Free Software Foundation, 51 Franklin Street, Suite 500, Boston, MA 02110, USA
+#  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #  http://www.gnu.org/copyleft/gpl.html
-#################################################################################
+################################################################################
 
 if [ -z "$1" ]; then
   echo
@@ -47,7 +47,7 @@ if [ -e /$HOME/patchcreate_xbmc_source ]
 then
   # This script have been run before, we only need to pull the latest xbmc source code from repository.
   cd $HOME/patchcreate_xbmc_source
-  git fetch origin
+  git pull
 else
   # First time we run this script, we need to clone the complete xbmc source code repository.
   git clone git://github.com/xbmc/xbmc.git $HOME/patchcreate_xbmc_source
@@ -57,32 +57,23 @@ else
   git remote add spotyxbmc2 git://github.com/akezeke/spotyxbmc2.git
 fi
 
-# Create a branch for official xbmc master.
-git branch xbmc_master origin/master
-
-# Create a branch for official xbmc Eden.
-git branch eden origin/Eden
-
 # Update with the latest source code from the remote spotyxbmc2 repository.
 git fetch spotyxbmc2
 
 # Create a branch with the selected spotyxbmc2 source code.
 if [ `echo $1 | cut -c -6` = commit ]; then
-  git branch spotyxbmc2 `echo $1 | cut -c 8-`
+  git checkout -b spotyxbmc2 `echo $1 | cut -c 8-`
 fi
 
 if [ `echo $1 | cut -c -6` = branch ]; then
-  git branch spotyxbmc2 spotyxbmc2/`echo $1 | cut -c 8-`
+  git checkout -b spotyxbmc2 spotyxbmc2/`echo $1 | cut -c 8-`
 fi
 
 # Need to remember the last commit in the selected spotyxbmc2 source for our patch filename.
-SPOTYXBMC2_LAST_COMMIT=$(git log spotyxbmc2 | head -n 1 | cut -c 8-17)
+SPOTYXBMC2_LAST_COMMIT=$(git log | head -n 1 | cut -c 8-17)
 
 # Create a branch at the last xbmc commit that is also included in spotyxbmc2 fork.
-git checkout -b last_common $(git merge-base xbmc_master spotyxbmc2)
-
-# Need to merge also the Eden branch changes that akezeke have merged to spotyxbmc2 master.
-git merge $(git merge-base --all eden spotyxbmc2)
+git checkout -b last_common $(git merge-base master spotyxbmc2)
 
 # We need a temporary branch that we will use for the spotyxbmc2 patch creation.
 git checkout -b tmpsquash
@@ -105,7 +96,7 @@ mv $HOME/patchcreate_xbmc_source/00*.patch .
 # Cleanup, here we prepare so we can run this script again.
 cd $HOME/patchcreate_xbmc_source
 git checkout master
-git branch -D spotyxbmc2 tmpsquash last_common eden xbmc_master
+git branch -D spotyxbmc2 tmpsquash last_common
 cd -
 
 echo
@@ -116,7 +107,7 @@ pwd
 echo
 echo A repository that includes the last official xbmc source code was created in:
 echo $HOME/patchcreate_xbmc_source
-echo You might want to delete this directory to save some disk space.
+echo You might want to delete the above directory to save some disk space.
 echo If you keep the folder untouched, it will greatly reduce the time and effort
 echo to run this script again some other day in the future.
 echo =============================================================================

@@ -1,9 +1,5 @@
 # Name of the Distro to build (full name, without special charcters)
-  if [ "$XBMC" = frodo ]; then
-    DISTRONAME="OpenELEC_frodo"
-  else
-    DISTRONAME="OpenELEC"
-  fi
+  DISTRONAME="OpenELEC"
 
 # Welcome Message for e.g. SSH Server (up to 5 Lines)
   GREETING0="##############################################"
@@ -107,11 +103,7 @@
   SQUASHFS_COMPRESSION="gzip"
 
 # Mediacenter to use (xbmc / no)
-  if [ "$XBMC" = frodo ]; then
-    MEDIACENTER="xbmc-frodo"
-  else
-    MEDIACENTER="xbmc"
-  fi
+  MEDIACENTER="xbmc"
 
 # Skins to install (Confluence)
 # Space separated list is supported,
@@ -162,11 +154,10 @@
   BLURAY_SUPPORT="yes"
 
 # additional drivers to install:
-# AF9035:           Afa Technologies Inc. AF9035A USB DVB Device
-# asix-ax887xx:     Asix AX887xx USB LAN Driver
+# for a list of additinoal drivers see packages/linux-drivers
 # Space separated list is supported,
-# e.g. ADDITIONAL_DRIVERS="asix-ax887xx AF9035"
-  ADDITIONAL_DRIVERS="asix-ax887xx bcm_sta RTL8192CU AF9035 A867 aver_h826d RTL2832 hdhomerun-driver vtuner-driver"
+# e.g. ADDITIONAL_DRIVERS="DRIVER1 DRIVER2"
+  ADDITIONAL_DRIVERS="RTL8192CU"
 
 # build with network support (yes / no)
   NETWORK="yes"
@@ -210,6 +201,9 @@
 
 # build and install SSH Guard (yes / no)
   SSHGUARD_SUPPORT="yes"
+
+# build and install PPP support (yes / no)
+  PPTP_SUPPORT="yes"
 
 # build and install diskmounter service (udisks)
 # this service provide auto mounting support for external drives
