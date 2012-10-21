@@ -12,11 +12,15 @@
   <bginfoloadermaxthreads>2</bginfoloadermaxthreads>
   <useddsfanart>true</useddsfanart>
 
-  <gui>
-    <algorithmdirtyregions>3</algorithmdirtyregions>
-    <nofliptimeout>0</nofliptimeout>
-    <visualizedirtyregions>off</visualizedirtyregions>
-  </gui>
+  <video>
+    <defaultplayer>omxplayer</defaultplayer>
+    <defaultdvdplayer>omxplayer</defaultdvdplayer>
+  </video>
+
+  <audio>
+    <defaultplayer>omxplayer</defaultplayer>
+    <streamsilence>false</streamsilence>
+  </audio>
 
   <network>
     <cachemembuffersize>5282880</cachemembuffersize>
