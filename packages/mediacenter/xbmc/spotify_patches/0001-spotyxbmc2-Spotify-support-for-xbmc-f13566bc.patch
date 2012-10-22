@@ -14127,7 +14127,7 @@ index 0000000..59c23ce
 +				SxThumb* thumb = ps->getPlaylist(i)->getThumb();
 +				if (thumb != NULL)
 +					pItem->SetArt("thumb", thumb->getPath());
-+				pItem->SetProperty("fanart_image", Settings::getInstance()->getFanart());
++				pItem->SetArt("fanart", Settings::getInstance()->getFanart());
 +				items.Add(pItem);
 +			}
 +		}
@@ -14204,7 +14204,7 @@ index 0000000..59c23ce
 +		pItem->m_bIsFolder = true;
 +		items.Add(pItem);
 +		pItem->SetIconImage("DefaultMusicArtists.png");
-+		pItem->SetProperty("fanart_image", Settings::getInstance()->getFanart());
++		pItem->SetArt("fanart", Settings::getInstance()->getFanart());
 +	}
 +
 +	//add the albums
@@ -14523,7 +14523,7 @@ index 0000000..59c23ce
 +		pItem->SetPath(path);
 +		pItem->m_bIsFolder = true;
 +		items.Add(pItem);
-+		pItem->SetProperty("fanart_image", Settings::getInstance()->getFanart());
++		pItem->SetArt("fanart", Settings::getInstance()->getFanart());
 +
 +		//add the album entry
 +		CFileItemPtr pItem2(new CFileItem(Settings::getInstance()->getTopListAlbumString()));
@@ -14531,7 +14531,7 @@ index 0000000..59c23ce
 +		pItem2->SetPath(path);
 +		pItem2->m_bIsFolder = true;
 +		items.Add(pItem2);
-+		pItem2->SetProperty("fanart_image", Settings::getInstance()->getFanart());
++		pItem2->SetArt("fanart", Settings::getInstance()->getFanart());
 +
 +		//add the artist entry
 +		CFileItemPtr pItem3(new CFileItem(Settings::getInstance()->getTopListArtistString()));
@@ -14539,7 +14539,7 @@ index 0000000..59c23ce
 +		pItem3->SetPath(path);
 +		pItem3->m_bIsFolder = true;
 +		items.Add(pItem3);
-+		pItem3->SetProperty("fanart_image", Settings::getInstance()->getFanart());
++		pItem3->SetArt("fanart", Settings::getInstance()->getFanart());
 +	}
 +	return true;
 +}
@@ -14556,7 +14556,7 @@ index 0000000..59c23ce
 +		pItem->SetPath(path);
 +		pItem->m_bIsFolder = true;
 +		items.Add(pItem);
-+		pItem->SetProperty("fanart_image", Settings::getInstance()->getFanart());
++		pItem->SetArt("fanart", Settings::getInstance()->getFanart());
 +
 +		//add radio 2
 +		name.Format("%s%s", Settings::getInstance()->getRadioPrefixString(),
@@ -14566,7 +14566,7 @@ index 0000000..59c23ce
 +		pItem2->SetPath(path);
 +		pItem2->m_bIsFolder = true;
 +		items.Add(pItem2);
-+		pItem2->SetProperty("fanart_image", Settings::getInstance()->getFanart());
++		pItem2->SetArt("fanart", Settings::getInstance()->getFanart());
 +
 +	}
 +	return true;
@@ -15579,7 +15579,7 @@ index 0000000..fcc1390
 +    const CFileItemPtr pItem(new CFileItem(path, outAlbum));
 +    if (album->hasThumb())
 +      pItem->SetArt("thumb", album->getThumb()->getPath());
-+    pItem->SetProperty("fanart_image", *album->getFanart());
++    pItem->SetArt("fanart", *album->getFanart());
 +    return pItem;
 +  }
 +
@@ -15610,7 +15610,7 @@ index 0000000..fcc1390
 +    const CFileItemPtr pItem(new CFileItem(outSong));
 +    if (track->hasThumb())
 +      pItem->SetArt("thumb", track->getThumb()->getPath());
-+    pItem->SetProperty("fanart_image", *track->getFanart());
++    pItem->SetArt("fanart", *track->getFanart());
 +    return pItem;
 +  }
 +
@@ -15635,7 +15635,7 @@ index 0000000..fcc1390
 +      pItem->SetArt("thumb", artist->getThumb()->getPath());
 +
 +    pItem->SetIconImage("DefaultArtist.png");
-+    pItem->SetProperty("fanart_image", *artist->getFanart());
++    pItem->SetArt("fanart", *artist->getFanart());
 +    pItem->SetProperty("artist_description", artist->getBio());
 +
 +    return pItem;
