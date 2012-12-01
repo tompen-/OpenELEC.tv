@@ -1,10 +1,37 @@
----  a/xbmc/music/spotyXBMC/radio/RadioHandler.cpp	2012-12-01 14:13:34.660868909 +0400
-+++  b/xbmc/music/spotyXBMC/radio/RadioHandler.cpp	2012-12-01 14:18:35.716869139 +0400
-@@ -60,6 +60,7 @@
+--- a/xbmc/music/spotyXBMC/radio/RadioHandler.cpp	2012-12-01 21:10:23.405869677 +0400
++++ b/xbmc/music/spotyXBMC/radio/RadioHandler.cpp	2012-12-01 21:11:40.696869315 +0400
+@@ -27,6 +27,7 @@
+ #include "../../../playlists/PlayList.h"
+ #include "../Addon.music.spotify.h"
+ #include "guilib/GUIWindowManager.h"
++#include "../../../threads/SingleLock.h"
+ 
+ using namespace PLAYLIST;
+ 
+@@ -60,6 +61,8 @@
    }
  
    void RadioHandler::allTracksLoaded(int radioNumber) {
 +    Sleep(10000); //So we modify playlists after xbmc have started track
++    CSingleLock lock(m_lock);
      Utils::updateRadio(radioNumber);
  
      CStdString path;
+--- a/xbmc/music/spotyXBMC/radio/RadioHandler.h	2012-12-01 21:06:52.781869575 +0400
++++ b/xbmc/music/spotyXBMC/radio/RadioHandler.h	2012-12-01 21:07:32.947868841 +0400
+@@ -23,6 +23,7 @@
+ #define RADIOHANDLER_H_
+ 
+ #include "SxRadio.h"
++#include "../../../threads/CriticalSection.h"
+ 
+ namespace addon_music_spotify {
+ 
+@@ -43,6 +44,7 @@
+     RadioHandler();
+     virtual ~RadioHandler();
+     static RadioHandler *m_instance;
++    CCriticalSection m_lock;
+ 
+     vector<SxRadio*> m_radios;
+   };
