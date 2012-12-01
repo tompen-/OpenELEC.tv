@@ -1,0 +1,10 @@
+---  a/xbmc/music/spotyXBMC/radio/RadioHandler.cpp	2012-12-01 14:13:34.660868909 +0400
++++  b/xbmc/music/spotyXBMC/radio/RadioHandler.cpp	2012-12-01 14:18:35.716869139 +0400
+@@ -60,6 +60,7 @@
+   }
+ 
+   void RadioHandler::allTracksLoaded(int radioNumber) {
++    Sleep(1000); //So we modify playlists after xbmc have started track
+     Utils::updateRadio(radioNumber);
+ 
+     CStdString path;
