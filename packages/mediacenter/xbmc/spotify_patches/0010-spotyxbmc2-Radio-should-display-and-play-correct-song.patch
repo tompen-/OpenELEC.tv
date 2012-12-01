@@ -4,7 +4,7 @@
    }
  
    void RadioHandler::allTracksLoaded(int radioNumber) {
-+    Sleep(1000); //So we modify playlists after xbmc have started track
++    Sleep(10000); //So we modify playlists after xbmc have started track
      Utils::updateRadio(radioNumber);
  
      CStdString path;
