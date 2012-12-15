@@ -33,15 +33,15 @@ then
   sed -i '/ramdiskSize/ s/,[0-9]*"/,'$RAMDISK_USABLE_MEMORY'"/g' "$ADDON_PLUGIN"
 fi
 
+# The rest of this script is executed as a background task,
+# allowing fast XBMC startup.
+(
+
 # remove from previous boot.
 if [ -w "/storage/.xbmc/temp/spotify/mounted_ramdisk_size" ]
 then
   rm "/storage/.xbmc/temp/spotify/mounted_ramdisk_size"
 fi
-
-# The rest of this script is executed as a background task,
-# allowing fast XBMC startup.
-(
 
 # We have moved the fanarts.txt file so it is not located on ramdisk.
 # Move old file from previous boots to the new location.
