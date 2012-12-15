@@ -7,17 +7,41 @@ then
   touch "/storage/.xbmc/temp/spotify/spotify.disabled"
 fi
 
-# The rest of this script is executed as a background task,
-# allowing fast XBMC startup.
-(
+# Our total RAM memory is (megabytes):
+TOTALMEMORY=$(free -m | sed  -n -e '/^Mem:/s/^[^0-9]*\([0-9]*\) .*/\1/p')
+if [ ! "$TOTALMEMORY" ]
+then
+  TOTALMEMORY=128
+fi
+
+# We do not want the user to create a too big ramdisk.
+RAMDISK_USABLE_MEMORY=$(($TOTALMEMORY-700))
 
 # Copy the spotyXBMC plugin to a writeable disk area.
 # Need to make sure plugin gets updated when user upgrade to a newer OpenELEC build.
 if [ ! -e "/storage/.xbmc/temp/spotify/cache/never_upgrade_plugin" ]
 then
   mkdir -p "/storage/.xbmc/addons"
-  ionice -c3 -n7 cp -ar "/usr/share/xbmc/addons/plugin.music.spotyXBMC" "/storage/.xbmc/addons"
+  cp -ar "/usr/share/xbmc/addons/plugin.music.spotyXBMC" "/storage/.xbmc/addons"
 fi
+
+# Set the max available ramdisk size for the
+# ramdisk slider in the spotyxbmc addon settings in xbmc.
+ADDON_PLUGIN="/storage/.xbmc/addons/plugin.music.spotyXBMC/resources/settings.xml"
+if [ -w "$ADDON_PLUGIN" ]
+then
+  sed -i '/ramdiskSize/ s/,[0-9]*"/,'$RAMDISK_USABLE_MEMORY'"/g' "$ADDON_PLUGIN"
+fi
+
+# remove from previous boot.
+if [ -w "/storage/.xbmc/temp/spotify/mounted_ramdisk_size" ]
+then
+  rm "/storage/.xbmc/temp/spotify/mounted_ramdisk_size"
+fi
+
+# The rest of this script is executed as a background task,
+# allowing fast XBMC startup.
+(
 
 # We have moved the fanarts.txt file so it is not located on ramdisk.
 # Move old file from previous boots to the new location.
@@ -33,30 +57,6 @@ if [ -r /storage/.xbmc/temp/spotify/cache/log.txt ]
 then
   mv "/storage/.xbmc/temp/spotify/cache/log.txt" \
      "/storage/.xbmc/temp/spotify/log.txt"
-fi
-
-# Our total RAM memory is (megabytes):
-TOTALMEMORY=$(free -m | sed  -n -e '/^Mem:/s/^[^0-9]*\([0-9]*\) .*/\1/p')
-if [ ! "$TOTALMEMORY" ]
-then
-  TOTALMEMORY=128
-fi
-
-# We do not want the user to create a too big ramdisk.
-RAMDISK_USABLE_MEMORY=$(($TOTALMEMORY-700))
-
-# Set the max available ramdisk size for the
-# ramdisk slider in the spotyxbmc addon settings in xbmc.
-ADDON_PLUGIN="/storage/.xbmc/addons/plugin.music.spotyXBMC/resources/settings.xml"
-if [ -w "$ADDON_PLUGIN" ]
-then
-  sed -i '/ramdiskSize/ s/,[0-9]*"/,'$RAMDISK_USABLE_MEMORY'"/g' "$ADDON_PLUGIN"
-fi
-
-# remove from previous boot.
-if [ -w "/storage/.xbmc/temp/spotify/mounted_ramdisk_size" ]
-then
-  rm "/storage/.xbmc/temp/spotify/mounted_ramdisk_size"
 fi
 
 ADDON_STORED_SETTINGS="/storage/.xbmc/userdata/addon_data/plugin.music.spotyXBMC/settings.xml"
