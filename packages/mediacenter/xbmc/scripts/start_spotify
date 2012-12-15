@@ -1,0 +1,245 @@
+#!/bin/sh
+
+# Until we figure out if we want a ramdisk, do not start Spotify
+if [ ! -e "/storage/.xbmc/temp/spotify/spotify.disabled" ]
+then
+  mkdir -p "/storage/.xbmc/temp/spotify"
+  touch "/storage/.xbmc/temp/spotify/spotify.disabled"
+fi
+
+# Copy the spotyXBMC plugin to a writeable disk area.
+if [ ! -d "/storage/.xbmc/addons/plugin.music.spotyXBMC" ]
+then
+  mkdir -p "/storage/.xbmc/addons"
+  cp -ar "/usr/share/xbmc/addons/plugin.music.spotyXBMC" "/storage/.xbmc/addons"
+  SPOTIFY_PLUGIN_COPIED=true
+  export SPOTIFY_PLUGIN_COPIED
+else
+  SPOTIFY_PLUGIN_COPIED=false
+  export SPOTIFY_PLUGIN_COPIED
+fi
+
+# The rest of this script is executed as a background task,
+# allowing fast XBMC startup.
+(
+
+# We have moved the fanarts.txt file so it is not located on ramdisk.
+# Move old file from previous boots to the new location.
+if [ -r /storage/.xbmc/temp/spotify/cache/fanarts.txt ]
+then
+  mv "/storage/.xbmc/temp/spotify/cache/fanarts.txt" \
+     "/storage/.xbmc/temp/spotify/fanarts.txt"
+fi
+
+# We have moved the spotyXBMC log.txt file so it is not located on ramdisk.
+# Move old file from previous boots to the new location.
+if [ -r /storage/.xbmc/temp/spotify/cache/log.txt ]
+then
+  mv "/storage/.xbmc/temp/spotify/cache/log.txt" \
+     "/storage/.xbmc/temp/spotify/log.txt"
+fi
+
+# Our total RAM memory is (megabytes):
+TOTALMEMORY=$(free -m | sed  -n -e '/^Mem:/s/^[^0-9]*\([0-9]*\) .*/\1/p')
+if [ ! "$TOTALMEMORY" ]
+then
+  TOTALMEMORY=128
+fi
+
+# We do not want the user to create a too big ramdisk.
+RAMDISK_USABLE_MEMORY=$(($TOTALMEMORY-700))
+
+# Set the max available ramdisk size for the
+# ramdisk slider in the spotyxbmc addon settings in xbmc.
+ADDON_PLUGIN="/storage/.xbmc/addons/plugin.music.spotyXBMC/resources/settings.xml"
+if [ -w "$ADDON_PLUGIN" ]
+then
+  sed -i '/ramdiskSize/ s/,[0-9]*"/,'$RAMDISK_USABLE_MEMORY'"/g' "$ADDON_PLUGIN"
+fi
+
+# remove from previous boot.
+if [ -w "/storage/.xbmc/temp/spotify/mounted_ramdisk_size" ]
+then
+  rm "/storage/.xbmc/temp/spotify/mounted_ramdisk_size"
+fi
+
+ADDON_STORED_SETTINGS="/storage/.xbmc/userdata/addon_data/plugin.music.spotyXBMC/settings.xml"
+if [ -w "$ADDON_STORED_SETTINGS" ]
+then
+  # Is the spotify enabled in the spotyXBMC addon settings inside XBMC?
+  SPOTIFY_ADDON_ENABLED=$(grep "setting id=\"enable\"" "$ADDON_STORED_SETTINGS" | cut -d "\"" -f4)
+  if [ ! "$SPOTIFY_ADDON_ENABLED" ]
+  then
+    SPOTIFY_ADDON_ENABLED=false
+  fi
+
+  # Is the ramdisk enabled in the spotyXBMC addon settings inside XBMC?
+  SPOTIFY_RAMDISK_ENABLED=$(grep "setting id=\"ramdiskEnable\"" "$ADDON_STORED_SETTINGS" | cut -d "\"" -f4)
+  if [ ! "$SPOTIFY_RAMDISK_ENABLED" ]
+  then
+    SPOTIFY_RAMDISK_ENABLED=false
+  fi
+
+  # What is the user configured ramdisk size in the spotyXBMC addon settings?
+  SPOTIFY_RAMDISK_SIZE=$(grep "setting id=\"ramdiskSize\"" "$ADDON_STORED_SETTINGS" | cut -d "\"" -f4 | cut -d "." -f0)
+  if [ ! "$SPOTIFY_RAMDISK_SIZE" ]
+  then
+    SPOTIFY_RAMDISK_SIZE=300
+    # 300MB is a good default.
+  fi
+
+  # Do we have enough RAM for OpenELEC, XBMC and the configured Spotify ramdisk size?
+  SPOTIFY_RAMDISK_SAFETYCHECK=$(($TOTALMEMORY-$SPOTIFY_RAMDISK_SIZE))
+
+  # If user managed to enable the ramdisk when he have too little RAM, disable it.
+  if [ "$TOTALMEMORY" -lt "750" -a "$SPOTIFY_RAMDISK_ENABLED" = "true" ]
+  then
+    sed -i '/ramdiskEnable/ s/value="true"/value="false"/' "$ADDON_STORED_SETTINGS"
+    killall xbmc.bin 2>/dev/null
+    $SPOTIFY_RAMDISK_ENABLED=false
+  fi
+
+  # If user managed to configure a too big ramdisk compared to his total RAM, disable it.
+  if [ "$SPOTIFY_RAMDISK_SAFETYCHECK" -lt "350" -a "$SPOTIFY_RAMDISK_ENABLED" = "true" ]
+  then
+    sed -i '/ramdiskSize/ d' "$ADDON_STORED_SETTINGS"
+    sed -i '/ramdiskEnable/ s/value="true"/value="false"/' "$ADDON_STORED_SETTINGS"
+    killall xbmc.bin 2>/dev/null
+    SPOTIFY_RAMDISK_ENABLED=false
+    SPOTIFY_RAMDISK_SIZE=256
+  fi
+else
+  SPOTIFY_ADDON_ENABLED=false
+  SPOTIFY_RAMDISK_ENABLED=false
+  SPOTIFY_RAMDISK_SIZE=1
+  SPOTIFY_RAMDISK_SAFETYCHECK="$TOTALMEMORY"
+fi
+
+if [ -r "/proc/cmdline" ]
+then
+  NORAM_BOOTOPTION=$(grep -c noram "/proc/cmdline")
+else
+  NORAM_BOOTOPTION=0
+fi
+
+if [ "$NORAM_BOOTOPTION" -ge "1" -o "$SPOTIFY_ADDON_ENABLED" = "false" \
+      -o "$SPOTIFY_RAMDISK_ENABLED" = "false" ]
+then
+  # Will boot without ramdisk.
+  if [ -d "/storage/.xbmc/temp/spotify/on-disk-cache" ]
+  then
+    if [ -d "/storage/.xbmc/temp/spotify/cache" ]
+    then
+      # We both have a on-disk cache and a non-ramdisk cache.
+      # This should never happen, we will delete one of them.
+      ionice -c3 -n7 rm -rf "/storage/.xbmc/temp/spotify/cache"
+    fi
+    # Found a on-disk cache from previous ramdisk usage, we should use that cache.
+    mv "/storage/.xbmc/temp/spotify/on-disk-cache" "/storage/.xbmc/temp/spotify/cache"
+  fi
+  # Allow libspotify to start.
+  rm "/storage/.xbmc/temp/spotify/spotify.disabled"
+  exit
+else
+  # We will use ramdisk. Check if we have a on-disk-cache from previous boot.
+  if [ -d "/storage/.xbmc/temp/spotify/on-disk-cache" ]
+  then
+    # Current size of the on-disk spotify cache in MB. We trust nobody have messed
+    # with the cache and made it too big, so will attempt copy below.
+    DISK_CACHE_SIZE=1
+  else
+    # First boot using ramdisk.
+    if [ -d "/storage/.xbmc/temp/spotify/cache" ]
+    then
+      # Spotyxbmc have been used before, move non-ramdisk cache to the on-disk cache directory.
+      mv "/storage/.xbmc/temp/spotify/cache" "/storage/.xbmc/temp/spotify/on-disk-cache"
+      mkdir -p "/storage/.xbmc/temp/spotify/cache"
+      # Current size of the on-disk spotify cache in MB.
+      DISK_CACHE_SIZE=$(ionice -c3 -n7 du -cms "/storage/.xbmc/temp/spotify/on-disk-cache/" \
+                        | tail -n1 | cut -f1)
+    else
+      # First spotyxbmc boot.
+      mkdir -p "/storage/.xbmc/temp/spotify/on-disk-cache"
+      mkdir -p "/storage/.xbmc/temp/spotify/cache"
+      DISK_CACHE_SIZE=0
+    fi
+  fi
+
+  # Create and mount ramdisk for spotify cache
+  mount -t tmpfs -o size="$SPOTIFY_RAMDISK_SIZE"M,mode=700 tmpfs /storage/.xbmc/temp/spotify/cache
+
+  # File is read by xbmc and it will configure the libspotify cache
+  # to consume max 90% of the ramdisk size.
+  echo $SPOTIFY_RAMDISK_SIZE>"/storage/.xbmc/temp/spotify/mounted_ramdisk_size"
+
+  if [ "$DISK_CACHE_SIZE" -lt "$SPOTIFY_RAMDISK_SIZE" ]
+  then
+    # Cache contens on disk will fit in ramdisk.
+    # Start copy from on-disk cache to our ramdisk.
+    if [ "$DISK_CACHE_SIZE" -gt 0 ]
+    then
+      # Copy on-disk-cache to ramdisk with low prio.
+      # If not succesful, delete cache contents and recreate folder.
+      ionice -c3 -n7 \
+      cp -a /storage/.xbmc/temp/spotify/on-disk-cache/* "/storage/.xbmc/temp/spotify/cache" || \
+       ( rm -rf "/storage/.xbmc/temp/spotify/on-disk-cache" /storage/.xbmc/temp/spotify/cache/* ; \
+         mkdir -p "/storage/.xbmc/temp/spotify/on-disk-cache" )
+    fi
+  else
+    # Cache will be emptied because it was too big. Does not fit in ramdisk.
+    rm -rf "/storage/.xbmc/temp/spotify/on-disk-cache"
+    mkdir -p "/storage/.xbmc/temp/spotify/on-disk-cache"
+  fi
+  # Now we allow libspotify to start
+  rm -f "/storage/.xbmc/temp/spotify/spotify.disabled"
+
+  # Avoid consuming cpu cycles while XBMC is starting up.
+  sleep 30
+
+  # Grab user configured lsyncd.conf if it exist.
+  mkdir -p "/var/run"
+  if [ -e "/storage/.config/lsyncd.conf" ]
+  then
+    cp "/storage/.config/lsyncd.conf" "/var/run/lsyncd.conf"
+  else
+    # TODO fix a lsyncd.conf file
+    unset DISK_CACHE_SIZE
+    # cp "/etc/lsyncd.conf" "/var/run/lsyncd.conf"
+  fi
+
+  # Start lsync job to replicate data from the ramdisk to our on-disk-cache area.
+  # TODO use a lsyncd.conf file.
+  ionice -c2 -n6 lsyncd -delay 2 -rsync "/storage/.xbmc/temp/spotify/cache" \
+                                        "/storage/.xbmc/temp/spotify/on-disk-cache"
+
+  if [ ! -e "/storage/.xbmc/temp/spotify/cache/CAUTION" ]
+  then
+    touch "/storage/.xbmc/temp/spotify/cache/CAUTION"
+  fi
+
+  if [ ! -e "/storage/.xbmc/temp/spotify/cache/PUT-NO-FILES-HERE" ]
+  then
+    touch "/storage/.xbmc/temp/spotify/cache/PUT-NO-FILES-HERE"
+  fi
+
+  if [ ! -e "/storage/.xbmc/temp/spotify/cache/PUT-NO-FILES-IN-SUBFOLDERS" ]
+  then
+    touch "/storage/.xbmc/temp/spotify/cache/PUT-NO-FILES-IN-SUBFOLDERS"
+  fi
+
+  if [ ! -e "/storage/.xbmc/temp/spotify/cache/RAMDISK-SPACE-CONSTRAINED" ]
+  then
+    touch "/storage/.xbmc/temp/spotify/cache/RAMDISK-SPACE-CONSTRAINED"
+  fi
+fi
+
+#Need to make sure plugin gets updated when user upgrade to a newer OpenELEC build.
+if [ ! "$SPOTIFY_PLUGIN_COPIED" = "true" \
+     -a ! -e "/storage/.xbmc/temp/spotify/cache/never_upgrade_plugin" ]
+then
+  cp -ar "/usr/share/xbmc/addons/plugin.music.spotyXBMC" "/storage/.xbmc/addons" && \
+    sed -i '/ramdiskSize/ s/,[0-9]*"/,'$RAMDISK_USABLE_MEMORY'"/g' "$ADDON_PLUGIN"
+fi
+unset SPOTIFY_PLUGIN_COPIED
+
+)&

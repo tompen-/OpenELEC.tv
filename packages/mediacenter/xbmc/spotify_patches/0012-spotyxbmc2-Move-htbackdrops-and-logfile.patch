@@ -1,0 +1,98 @@
+--- a/xbmc/music/spotyXBMC/thumb/ThumbStore.cpp	2012-12-06 03:31:31.882869602 +0400
++++ b/xbmc/music/spotyXBMC/thumb/ThumbStore.cpp	2012-12-06 03:32:46.143869734 +0400
+@@ -48,7 +48,7 @@
+ 		m_stdFanart = new CStdString(Settings::getInstance()->getFanart());
+ 
+ 		//load the fanartmap from file
+-		string path = Settings::getInstance()->getCachePath() + "fanarts.txt";
++		string path = Settings::getInstance()->getSpotifyPath() + "fanarts.txt";
+ 		Logger::printOut("loading fanart list");
+ 		ifstream file(path.c_str());
+ 		if (file.is_open()) {
+@@ -188,7 +188,7 @@
+ 								stringMap::value_type(artistNameString, fanartUrl));
+ 
+ 						//save the fanart url to the cachefile
+-						string path = Settings::getInstance()->getCachePath() + "fanarts.txt";
++						string path = Settings::getInstance()->getSpotifyPath() + "fanarts.txt";
+ 						Logger::printOut("saving fanart list");
+ 						ofstream file(path.c_str(), ios::app);
+ 						if (file.is_open()) {
+@@ -205,7 +205,7 @@
+ 			m_fanarts.insert(stringMap::value_type(artistNameString, m_stdFanart));
+ 
+ 			//save the fanart url to the cachefile
+-			string path = Settings::getInstance()->getCachePath() + "fanarts.txt";
++			string path = Settings::getInstance()->getSpotifyPath() + "fanarts.txt";
+ 			Logger::printOut("saving fanart list");
+ 			ofstream file(path.c_str(), ios::app);
+ 			if (file.is_open()) {
+--- a/xbmc/music/spotyXBMC/SxSettings.cpp	2012-12-06 03:24:36.846868799 +0400
++++ b/xbmc/music/spotyXBMC/SxSettings.cpp	2012-12-06 03:26:07.672869586 +0400
+@@ -43,6 +43,7 @@
+ 		  m_userName =  addon->GetSetting("username");
+ 		  m_password = addon->GetSetting("password");
+ 
++		  m_spotifyPath = CSpecialProtocol::TranslatePath("special://temp/spotify/");
+ 		  m_cachePath = CSpecialProtocol::TranslatePath("special://temp/spotify/cache/");
+ 		  m_thumbPath = CSpecialProtocol::TranslatePath("special://temp/spotify/thumbs/");
+ 		  m_artistThumbPath = CSpecialProtocol::TranslatePath("special://temp/spotify/artistthumbs/");
+--- a/xbmc/music/spotyXBMC/SxSettings.h	2012-12-06 03:24:45.396868835 +0400
++++ b/xbmc/music/spotyXBMC/SxSettings.h	2012-12-06 03:27:37.740869565 +0400
+@@ -51,6 +51,10 @@
+       return m_password;
+     }
+ 
++    CStdString getSpotifyPath() {
++    	return m_spotifyPath;
++    }
++
+     CStdString getCachePath() {
+     	return m_cachePath;
+     }
+@@ -242,6 +246,7 @@
+ 
+     CStdString m_userName;
+     CStdString m_password;
++    CStdString m_spotifyPath;
+     CStdString m_cachePath;
+     CStdString m_thumbPath;
+     CStdString m_artistThumbPath;
+--- a/xbmc/music/spotyXBMC/Logger.h	2012-12-06 03:29:19.232868747 +0400
++++ b/xbmc/music/spotyXBMC/Logger.h	2012-12-06 03:30:32.766869233 +0400
+@@ -40,7 +40,7 @@
+ 	  CLog::Log(LOGDEBUG, "spotifylog: %s", text);
+       cout << text << "\n";
+       if (Settings::getInstance()->saveLogToFile()){
+-        string path = Settings::getInstance()->getCachePath() + "log.txt";
++        string path = Settings::getInstance()->getSpotifyPath() + "log.txt";
+         ofstream file(path.c_str(), ios::app);
+         if (file.is_open()) {
+       	  file << text << "\n";
+@@ -52,7 +52,7 @@
+       CLog::Log(LOGDEBUG, "spotifylog: %s", text);
+       cout << text << "\n";
+       if (Settings::getInstance()->saveLogToFile()){
+-        string path = Settings::getInstance()->getCachePath() + "log.txt";
++        string path = Settings::getInstance()->getSpotifyPath() + "log.txt";
+         ofstream file(path.c_str(), ios::app);
+         if (file.is_open()) {
+       	  file << text << "\n";
+@@ -64,7 +64,7 @@
+       CLog::Log(LOGDEBUG, "spotifylog: %c", text);
+       cout << text << "\n";
+       if (Settings::getInstance()->saveLogToFile()){
+-        string path = Settings::getInstance()->getCachePath() + "log.txt";
++        string path = Settings::getInstance()->getSpotifyPath() + "log.txt";
+         ofstream file(path.c_str(), ios::app);
+         if (file.is_open()) {
+       	  file << text << "\n";
+@@ -76,7 +76,7 @@
+     	CLog::Log(LOGDEBUG, "spotifylog: %s", text.c_str());
+       cout << text << "\n";
+       if (Settings::getInstance()->saveLogToFile()){
+-        string path = Settings::getInstance()->getCachePath() + "log.txt";
++        string path = Settings::getInstance()->getSpotifyPath() + "log.txt";
+         ofstream file(path.c_str(), ios::app);
+         if (file.is_open()) {
+       	  file << text << "\n";

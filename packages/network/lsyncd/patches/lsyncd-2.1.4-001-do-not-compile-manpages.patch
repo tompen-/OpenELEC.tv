@@ -1,0 +1,31 @@
+--- a/Makefile.am	2012-10-02 20:15:16.000000000 +0100
++++ b/Makefile.am	2012-12-02 00:13:55.166789772 +0000
+@@ -31,13 +31,9 @@
+ 	tests/schedule.lua \
+ 	tests/l4rsyncdata.lua
+ 
+-dist_man1_MANS = doc/lsyncd.1
+-EXTRA_DIST = doc/lsyncd.1.txt inotify.c fsevents.c bin2carray.lua \
++EXTRA_DIST = inotify.c fsevents.c bin2carray.lua \
+ 	default.lua default-rsync.lua default-rsyncssh.lua default-direct.lua
+ 
+-doc/lsyncd.1: doc/lsyncd.1.txt
+-	$(A2X) --format=manpage $<
+-
+ CLEANFILES = runner.out defaults.out runner.c defaults.c
+ 
+ # compiles the runner and the defaults into the binary
+--- a/configure.ac	2012-11-24 13:32:52.000000000 +0000
++++ b/configure.ac	2012-12-02 00:16:14.129046554 +0000
+@@ -15,11 +15,6 @@
+ AC_PROG_INSTALL
+ AC_PROG_MAKE_SET
+ 
+-AC_PATH_PROG([A2X], [a2x], [no])
+-if test x${A2X} = xno ; then
+-	AC_MSG_ERROR([Program 'a2x' (package asciidoc) is required])
+-fi
+-
+ ###
+ # Checks for Lua
+ 

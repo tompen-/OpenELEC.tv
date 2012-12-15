@@ -34,7 +34,7 @@ cd $PKG_BUILD
        CC="$HOST_CC" \
        AR="$HOST_AR rcu" \
        RANLIB="$HOST_RANLIB" \
-       CFLAGS="$HOST_CFLAGS" \
+       CFLAGS="-DLUA_COMPAT_ALL $HOST_CFLAGS" \
        LDFLAGS="$HOST_LDFLAGS" \
        linux
 
@@ -49,7 +49,7 @@ cd $PKG_BUILD
        INSTALL_TOP=/usr \
        PLAT=linux \
        CC="$TARGET_CC" \
-       CFLAGS="$TARGET_CFLAGS" \
+       CFLAGS="-DLUA_COMPAT_ALL $TARGET_CFLAGS" \
        AR="$TARGET_AR rcu" \
        RANLIB="$TARGET_RANLIB" \
        liblua.a

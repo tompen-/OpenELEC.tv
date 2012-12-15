@@ -25,4 +25,11 @@ LOCKFILE="xbmc.disabled"
 touch "$LOCKDIR/$LOCKFILE"
 wait_on_xbmc_exit
 killall sshd
+
+LSYNCD_ACTIVE=$(pidof lsyncd | wc -l)
+if [ "$LSYNCD_ACTIVE" != "0" ]
+then
+  sleep 6
+fi
+
 reboot

@@ -1,0 +1,29 @@
+--- a/xbmc/music/spotyXBMC/session/Session.cpp	2012-12-11 02:31:43.155243860 +0400
++++ b/xbmc/music/spotyXBMC/session/Session.cpp	2012-12-11 02:33:30.010244534 +0400
+@@ -109,6 +109,26 @@
+       //set high bitrate
+       if (Settings::getInstance()->useHighBitrate()) sp_session_preferred_bitrate(m_session, SP_BITRATE_320k);
+ 
++      // Default cache may only use 10% of available space, will set a higher, fixed amount if using ramdisk.
++      // OpenELEC boot process writes, if a ramdisk is mounted, the MB size of the ramdisk to the below file.
++      std::string path = CSpecialProtocol::TranslatePath("special://temp/spotify/") + "mounted_ramdisk_size";
++      std::ifstream ramdiskEnabled;
++      ramdiskEnabled.open(path.c_str(), std::ios::in | std::ios::binary);
++      if (ramdiskEnabled.is_open())
++      {
++        Logger::printOut("Spotify cache is located on ramdisk. Adjusting allowed cache size.");
++        std::string ramdiskSize;
++        if (ramdiskEnabled.good())
++          std::getline(ramdiskEnabled, ramdiskSize);
++        ramdiskEnabled.close();
++        int size = atoi(ramdiskSize.c_str());
++        if ( size > 255 )
++          size = (size - 50);
++        else
++          size = 206;
++        sp_session_set_cache_size(m_session, size);
++      }
++
+       sp_session_set_connection_type(m_session, SP_CONNECTION_TYPE_WIRED);
+       sp_session_set_connection_rules(m_session, SP_CONNECTION_RULE_NETWORK);
+       sp_session_set_volume_normalization(m_session, Settings::getInstance()->useNormalization());

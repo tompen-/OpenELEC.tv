@@ -1,5 +1,3 @@
-#!/bin/sh
-
 ################################################################################
 #      This file is part of OpenELEC - http://www.openelec.tv
 #      Copyright (C) 2009-2012 Stephan Raue (stephan@openelec.tv)
@@ -20,16 +18,19 @@
 #  http://www.gnu.org/copyleft/gpl.html
 ################################################################################
 
-LOCKDIR="/var/lock/"
-LOCKFILE="xbmc.disabled"
-touch "$LOCKDIR/$LOCKFILE"
-wait_on_xbmc_exit
-killall sshd
+PKG_NAME="lsyncd"
+PKG_VERSION="2.1.4"
+PKG_REV="1"
+PKG_ARCH="any"
+PKG_LICENSE="GPL"
+PKG_SITE="http://http://code.google.com/p/lsyncd/"
+PKG_URL="http://github.com/downloads/axkibe/lsyncd/$PKG_NAME-$PKG_VERSION.tar.gz"
+PKG_DEPENDS=""
+PKG_BUILD_DEPENDS="toolchain lua"
+PKG_PRIORITY="optional"
+PKG_SECTION="network"
+PKG_SHORTDESC="lsyncd: Live Syncing (Mirror) Daemon"
+PKG_LONGDESC="Lsyncd is designed to use rsync and synchronize a local directory tree with low io profile of expected changes to a remote mirror."
+PKG_IS_ADDON="no"
 
-LSYNCD_ACTIVE=$(pidof lsyncd | wc -l)
-if [ "$LSYNCD_ACTIVE" != "0" ]
-then
-  sleep 6
-fi
-
-poweroff
+PKG_AUTORECONF="no"

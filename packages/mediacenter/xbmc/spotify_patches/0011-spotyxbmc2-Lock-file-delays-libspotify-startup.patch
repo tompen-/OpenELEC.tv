@@ -1,0 +1,36 @@
+--- a/xbmc/music/spotyXBMC/session/BackgroundThread.cpp	2012-12-05 01:36:40.593868812 +0400
++++ b/xbmc/music/spotyXBMC/session/BackgroundThread.cpp	2012-12-05 06:01:02.661868793 +0400
+@@ -33,13 +33,31 @@
+   }
+ 
+   void BackgroundThread::OnStartup() {
+-  	Sleep(100);
++    Sleep(100);
+     Logger::printOut("bgthread OnStartup");
+     if (!Settings::getInstance()->init()){
+     	Logger::printOut("bgthread quiting, spotyxbmc is not enabled or the addon is missing");
+     	return;
+     }
+-  	Sleep(Settings::getInstance()->getStartDelay());
++    Sleep(Settings::getInstance()->getStartDelay()); //User demand startup delay in the addon settings.
++
++    //If lockfile exists, dont start spotyxbmc until lock file is removed.
++    //This makes it possible to copy the libspotify cache to a ramdisk before libspotify starts.
++    std::string path = CSpecialProtocol::TranslatePath("special://temp/spotify/") + "spotify.disabled";
++    std::filebuf startupDisabled;
++    startupDisabled.open(path.c_str(), std::ios::in | std::ios::binary);
++    if (startupDisabled.is_open())
++    {
++      Logger::printOut("bgthread spotify.disabled file exists, waiting for removal");
++      while (startupDisabled.is_open())
++      {
++        startupDisabled.close();
++        Sleep(500);
++        startupDisabled.open(path.c_str(), std::ios::in | std::ios::binary);
++      }
++      Logger::printOut("bgthread spotify.disabled have been removed, continuing startup");
++    }
++
+     Session::getInstance()->connect();
+     Session::getInstance()->unlock();
+     Logger::printOut("bgthread OnStartup done");

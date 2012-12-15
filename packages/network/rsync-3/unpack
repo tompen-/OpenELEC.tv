@@ -20,16 +20,6 @@
 #  http://www.gnu.org/copyleft/gpl.html
 ################################################################################
 
-LOCKDIR="/var/lock/"
-LOCKFILE="xbmc.disabled"
-touch "$LOCKDIR/$LOCKFILE"
-wait_on_xbmc_exit
-killall sshd
+. config/options $1
 
-LSYNCD_ACTIVE=$(pidof lsyncd | wc -l)
-if [ "$LSYNCD_ACTIVE" != "0" ]
-then
-  sleep 6
-fi
-
-poweroff
+cp -r $BUILD/`echo $PKG_NAME|cut -d - -f 1`-$PKG_VERSION $BUILD/$PKG_NAME-$PKG_VERSION

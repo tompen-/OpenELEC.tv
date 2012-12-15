@@ -143,7 +143,7 @@ fi
 
 if [ "$SPOTIFY_SUPPORT" = yes ]; then
   PKG_BUILD_DEPENDS="$PKG_BUILD_DEPENDS libspotify"
-  PKG_DEPENDS="$PKG_DEPENDS libspotify"
+  PKG_DEPENDS="$PKG_DEPENDS libspotify lsyncd rsync-3"
 fi
 
 if [ "$SAMBA_CLIENT" = yes ]; then
