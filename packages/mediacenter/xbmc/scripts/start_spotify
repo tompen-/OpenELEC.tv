@@ -7,21 +7,17 @@ then
   touch "/storage/.xbmc/temp/spotify/spotify.disabled"
 fi
 
-# Copy the spotyXBMC plugin to a writeable disk area.
-if [ ! -d "/storage/.xbmc/addons/plugin.music.spotyXBMC" ]
-then
-  mkdir -p "/storage/.xbmc/addons"
-  cp -ar "/usr/share/xbmc/addons/plugin.music.spotyXBMC" "/storage/.xbmc/addons"
-  SPOTIFY_PLUGIN_COPIED=true
-  export SPOTIFY_PLUGIN_COPIED
-else
-  SPOTIFY_PLUGIN_COPIED=false
-  export SPOTIFY_PLUGIN_COPIED
-fi
-
 # The rest of this script is executed as a background task,
 # allowing fast XBMC startup.
 (
+
+# Copy the spotyXBMC plugin to a writeable disk area.
+# Need to make sure plugin gets updated when user upgrade to a newer OpenELEC build.
+if [ ! -e "/storage/.xbmc/temp/spotify/cache/never_upgrade_plugin" ]
+then
+  mkdir -p "/storage/.xbmc/addons"
+  ionice -c3 -n7 cp -ar "/usr/share/xbmc/addons/plugin.music.spotyXBMC" "/storage/.xbmc/addons"
+fi
 
 # We have moved the fanarts.txt file so it is not located on ramdisk.
 # Move old file from previous boots to the new location.
@@ -139,15 +135,6 @@ then
   fi
   # Allow libspotify to start.
   rm "/storage/.xbmc/temp/spotify/spotify.disabled"
-
-  # Need to make sure plugin gets updated when user upgrade to a newer OpenELEC build.
-  if [ ! "$SPOTIFY_PLUGIN_COPIED" = "true" \
-       -a ! -e "/storage/.xbmc/temp/spotify/cache/never_upgrade_plugin" ]
-  then
-    cp -ar "/usr/share/xbmc/addons/plugin.music.spotyXBMC" "/storage/.xbmc/addons" && \
-      sed -i '/ramdiskSize/ s/,[0-9]*"/,'$RAMDISK_USABLE_MEMORY'"/g' "$ADDON_PLUGIN"
-  fi
-  unset SPOTIFY_PLUGIN_COPIED
   exit
 else
   # We will use ramdisk. Check if we have a on-disk-cache from previous boot.
@@ -241,14 +228,5 @@ else
     touch "/storage/.xbmc/temp/spotify/cache/RAMDISK-SPACE-CONSTRAINED"
   fi
 fi
-
-#Need to make sure plugin gets updated when user upgrade to a newer OpenELEC build.
-if [ ! "$SPOTIFY_PLUGIN_COPIED" = "true" \
-     -a ! -e "/storage/.xbmc/temp/spotify/cache/never_upgrade_plugin" ]
-then
-  cp -ar "/usr/share/xbmc/addons/plugin.music.spotyXBMC" "/storage/.xbmc/addons" && \
-    sed -i '/ramdiskSize/ s/,[0-9]*"/,'$RAMDISK_USABLE_MEMORY'"/g' "$ADDON_PLUGIN"
-fi
-unset SPOTIFY_PLUGIN_COPIED
 
 )&
