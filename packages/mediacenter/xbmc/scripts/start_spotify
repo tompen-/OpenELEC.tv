@@ -1,5 +1,25 @@
 #!/bin/sh
 
+################################################################################
+#      This file is part of OpenELEC - http://www.openelec.tv
+#      Copyright (C) 2009-2012 Stephan Raue (stephan@openelec.tv)
+#
+#  This Program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2, or (at your option)
+#  any later version.
+#
+#  This Program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with OpenELEC.tv; see the file COPYING.  If not, write to
+#  the Free Software Foundation, 51 Franklin Street, Suite 500, Boston, MA 02110, USA.
+#  http://www.gnu.org/copyleft/gpl.html
+################################################################################
+
 # Until we figure out if we want a ramdisk, do not start Spotify
 if [ ! -e "/storage/.xbmc/temp/spotify/spotify.disabled" ]
 then
@@ -81,7 +101,6 @@ then
   if [ ! "$SPOTIFY_RAMDISK_SIZE" ]
   then
     SPOTIFY_RAMDISK_SIZE=300
-    # 300MB is a good default.
   fi
 
   # Do we have enough RAM for OpenELEC, XBMC and the configured Spotify ramdisk size?
@@ -165,7 +184,8 @@ else
   mount -t tmpfs -o size="$SPOTIFY_RAMDISK_SIZE"M,mode=700 tmpfs /storage/.xbmc/temp/spotify/cache
 
   # File is read by xbmc and it will configure the libspotify cache
-  # to consume max 90% of the ramdisk size.
+  # to be allowed to consume all the of the ramdisk size (except a 50MB margin).
+  # For normal (non ramdisk) cache, it is allowed to consume 10% of the capacity.
   echo $SPOTIFY_RAMDISK_SIZE>"/storage/.xbmc/temp/spotify/mounted_ramdisk_size"
 
   if [ "$DISK_CACHE_SIZE" -lt "$SPOTIFY_RAMDISK_SIZE" ]
