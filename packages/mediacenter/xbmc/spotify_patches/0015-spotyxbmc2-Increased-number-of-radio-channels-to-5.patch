@@ -1,0 +1,412 @@
+--- a/xbmc/music/spotyXBMC//SxSettings.h	2012-12-16 23:05:21.539530836 +0100
++++ b/xbmc/music/spotyXBMC//SxSettings.h	2012-12-16 18:12:01.932787792 +0100
+@@ -153,6 +153,54 @@
+     	return m_radio2Genres;
+     }
+ 
++    CStdString getRadio3Name() {
++      return m_radio3Name;
++    }
++
++    int getRadio3From() {
++      return m_radio3From;
++    }
++
++    int getRadio3To() {
++      return m_radio3To;
++    }
++
++    sp_radio_genre getRadio3Genres() {
++    	return m_radio3Genres;
++    }
++
++    CStdString getRadio4Name() {
++      return m_radio4Name;
++    }
++
++    int getRadio4From() {
++      return m_radio4From;
++    }
++
++    int getRadio4To() {
++      return m_radio4To;
++    }
++
++    sp_radio_genre getRadio4Genres() {
++    	return m_radio4Genres;
++    }
++
++    CStdString getRadio5Name() {
++      return m_radio5Name;
++    }
++
++    int getRadio5From() {
++      return m_radio5From;
++    }
++
++    int getRadio5To() {
++      return m_radio5To;
++    }
++
++    sp_radio_genre getRadio5Genres() {
++    	return m_radio5Genres;
++    }
++
+     int getRadioNumberTracks() {
+       return m_radioNumberTracks;
+     }
+@@ -236,6 +284,13 @@
+     int m_radio1To;
+     int m_radio2From;
+     int m_radio2To;
++    int m_radio3From;
++    int m_radio3To;
++    int m_radio4From;
++    int m_radio4To;
++    int m_radio5From;
++    int m_radio5To;
++
+     int m_radioNumberTracks;
+     int m_artistNumberArtists;
+     int m_artistNumberAlbums;
+@@ -243,6 +298,9 @@
+ 
+     sp_radio_genre m_radio1Genres;
+     sp_radio_genre m_radio2Genres;
++    sp_radio_genre m_radio3Genres;
++    sp_radio_genre m_radio4Genres;
++    sp_radio_genre m_radio5Genres;
+ 
+     CStdString m_userName;
+     CStdString m_password;
+@@ -254,6 +312,9 @@
+     CStdString m_fanart;
+     CStdString m_radio1Name;
+     CStdString m_radio2Name;
++    CStdString m_radio3Name;
++    CStdString m_radio4Name;
++    CStdString m_radio5Name;
+     CStdString m_topListArtistString;
+     CStdString m_topListAlbumString;
+     CStdString m_topListTrackString;
+--- a/xbmc/music/spotyXBMC//SxSettings.cpp	2012-12-16 23:05:21.539530836 +0100
++++ b/xbmc/music/spotyXBMC//SxSettings.cpp	2012-12-16 18:12:12.084662409 +0100
+@@ -92,6 +92,25 @@
+ 
+ 		  m_radio2Genres = getRadioGenres(addon, 2);
+ 
++		  m_radio3Name = addon->GetSetting("radio3name");
++		  m_radio3From = 1900 + (10 * (4 + atoi(addon->GetSetting("radio3from"))));
++		  m_radio3To = 1900 + (10 * (4 + atoi(addon->GetSetting("radio3to"))));
++
++		  m_radio3Genres = getRadioGenres(addon, 3);
++
++		  m_radio4Name = addon->GetSetting("radio4name");
++		  m_radio4From = 1900 + (10 * (4 + atoi(addon->GetSetting("radio4from"))));
++		  m_radio4To = 1900 + (10 * (4 + atoi(addon->GetSetting("radio4to"))));
++
++		  m_radio4Genres = getRadioGenres(addon, 4);
++
++		  m_radio5Name = addon->GetSetting("radio5name");
++		  m_radio5From = 1900 + (10 * (4 + atoi(addon->GetSetting("radio5from"))));
++		  m_radio5To = 1900 + (10 * (4 + atoi(addon->GetSetting("radio5to"))));
++
++		  m_radio5Genres = getRadioGenres(addon, 5);
++
++
+ 		  m_radioNumberTracks = atoi(addon->GetSetting("radioNoTracks")) + 3;
+ 		  m_toplistRegionEverywhere = addon->GetSetting("topListRegion") == "1";
+ 		  m_preloadTopLists = addon->GetSetting("preloadToplists") == "true";
+--- a/xbmc/music/spotyXBMC//Addon.music.spotify.cpp	2012-12-16 23:05:21.503531289 +0100
++++ b/xbmc/music/spotyXBMC//Addon.music.spotify.cpp	2012-12-17 21:32:24.443452907 +0100
+@@ -379,7 +379,7 @@
+ 	if (isReady()) {
+ 		int lowestTrackNumber = RadioHandler::getInstance()->getLowestTrackNumber(
+ 				radio);
+-		if (radio == 1 || radio == 2) {
++		if (radio <= 5)  {
+ 			vector<SxTrack*> tracks = RadioHandler::getInstance()->getTracks(radio);
+ 			for (int i = 0; i < tracks.size(); i++) {
+ 				const CFileItemPtr pItem = Utils::SxTrackToItem(tracks[i], "",
+@@ -526,6 +526,36 @@
+ 		items.Add(pItem2);
+ 		pItem2->SetArt("fanart", Settings::getInstance()->getFanart());
+ 
++		//add radio 3
++		name.Format("%s%s", Settings::getInstance()->getRadioPrefixString(),
++				Settings::getInstance()->getRadio3Name());
++		CFileItemPtr pItem3(new CFileItem(name));
++		path.Format("musicdb://3/spotify:radio:3/");
++		pItem3->SetPath(path);
++		pItem3->m_bIsFolder = true;
++		items.Add(pItem3);
++		pItem3->SetArt("fanart", Settings::getInstance()->getFanart());
++
++		//add radio 4
++		name.Format("%s%s", Settings::getInstance()->getRadioPrefixString(),
++				Settings::getInstance()->getRadio4Name());
++		CFileItemPtr pItem4(new CFileItem(name));
++		path.Format("musicdb://3/spotify:radio:4/");
++		pItem4->SetPath(path);
++		pItem4->m_bIsFolder = true;
++		items.Add(pItem4);
++		pItem4->SetArt("fanart", Settings::getInstance()->getFanart());
++
++		//add radio 5
++		name.Format("%s%s", Settings::getInstance()->getRadioPrefixString(),
++				Settings::getInstance()->getRadio5Name());
++		CFileItemPtr pItem5(new CFileItem(name));
++		path.Format("musicdb://3/spotify:radio:5/");
++		pItem5->SetPath(path);
++		pItem5->m_bIsFolder = true;
++		items.Add(pItem5);
++		pItem3->SetArt("fanart", Settings::getInstance()->getFanart());
++
+ 	}
+ 	return true;
+ }
+--- a/xbmc/music/spotyXBMC//radio/RadioHandler.cpp	2012-12-16 23:05:21.527530986 +0100
++++ b/xbmc/music/spotyXBMC//radio/RadioHandler.cpp	2012-12-17 21:34:56.285540397 +0100
+@@ -38,10 +38,16 @@
+     //hardcode two radios, allow for any number of radios later maybe
+     SxRadio *radio1 = new SxRadio(1, Settings::getInstance()->getRadio1From(), Settings::getInstance()->getRadio1To(), Settings::getInstance()->getRadio1Genres());
+     SxRadio *radio2 = new SxRadio(2, Settings::getInstance()->getRadio2From(), Settings::getInstance()->getRadio2To(), Settings::getInstance()->getRadio2Genres());
++    SxRadio *radio3 = new SxRadio(3, Settings::getInstance()->getRadio3From(), Settings::getInstance()->getRadio3To(), Settings::getInstance()->getRadio3Genres());
++    SxRadio *radio4 = new SxRadio(4, Settings::getInstance()->getRadio4From(), Settings::getInstance()->getRadio4To(), Settings::getInstance()->getRadio4Genres());
++    SxRadio *radio5 = new SxRadio(5, Settings::getInstance()->getRadio5From(), Settings::getInstance()->getRadio5To(), Settings::getInstance()->getRadio5Genres());
+ 
+     m_radios.push_back(radio1);
+     m_radios.push_back(radio2);
+-    Logger::printOut("creating radio handler done");
++    m_radios.push_back(radio3);
++    m_radios.push_back(radio4);
++    m_radios.push_back(radio5);
++    Logger::printOut("creating radio handlers done");
+   }
+ 
+   RadioHandler* RadioHandler::m_instance = 0;
+--- a/addons/plugin.music.spotyXBMC/resources/settings.xml	2012-12-16 23:05:21.559530583 +0100
++++ b/addons/plugin.music.spotyXBMC/resources/settings.xml	2012-12-18 12:26:31.661013314 +0100
+@@ -40,70 +40,169 @@
+     <setting id="preloadToplists" type="bool" label="30434" default="false" />
+   </category>
+   <category label="30440">
+-    <setting id="radio1name" type="text" label="30442" default="Rock"/>
+-    <setting id="radio1from" type="enum" label="30460" values="Older|50s|60s|70s|80s|90s|00s|10s" default="3" />
++    <setting id="radio1name" type="text" label="30442" default="Pop"/>
++    <setting id="radio1from" type="enum" label="30460" values="Older|50s|60s|70s|80s|90s|00s|10s" default="5" />
+     <setting id="radio1to" type="enum" label="30461" values="Older|50s|60s|70s|80s|90s|00s|10s" default="7" />
+     <setting id="radio1genre1" type="bool" label="30443" default="false" />
+-    <setting id="radio1genre2" type="bool" label="30444" default="true" />
++    <setting id="radio1genre2" type="bool" label="30444" default="false" />
+     <setting id="radio1genre3" type="bool" label="30445" default="false" />
+     <setting id="radio1genre4" type="bool" label="30446" default="false" />
+     <setting id="radio1genre5" type="bool" label="30447" default="false" />
+     <setting id="radio1genre6" type="bool" label="30448" default="false" />
+-    <setting id="radio1genre7" type="bool" label="30449" default="true" />
++    <setting id="radio1genre7" type="bool" label="30449" default="false" />
+     <setting id="radio1genre8" type="bool" label="30450" default="false" />
+     <setting id="radio1genre9" type="bool" label="30451" default="false" />
+     <setting id="radio1genre10" type="bool" label="30452" default="false" />
+     <setting id="radio1genre11" type="bool" label="30453" default="false" />
+-    <setting id="radio1genre12" type="bool" label="30454" default="true" />
++    <setting id="radio1genre12" type="bool" label="30454" default="false" />
+     <setting id="radio1genre13" type="bool" label="30455" default="false" />
+     <setting id="radio1genre14" type="bool" label="30456" default="false" />
+     <setting id="radio1genre15" type="bool" label="30457" default="false" />
+     <setting id="radio1genre16" type="bool" label="30458" default="false" />
+-    <setting id="radio1genre17" type="bool" label="30459" default="false" />
++    <setting id="radio1genre17" type="bool" label="30459" default="true" />
+     <setting id="radio1genre18" type="bool" label="30462" default="false" />
+     <setting id="radio1genre19" type="bool" label="30463" default="false" />
+     <setting id="radio1genre20" type="bool" label="30464" default="false" />
+-    <setting id="radio1genre21" type="bool" label="30465" default="true" />
++    <setting id="radio1genre21" type="bool" label="30465" default="false" />
+     <setting id="radio1genre22" type="bool" label="30466" default="false" />
+     <setting id="radio1genre23" type="bool" label="30467" default="false" />
+     <setting id="radio1genre24" type="bool" label="30468" default="false" />
+     <setting id="radio1genre25" type="bool" label="30469" default="false" />
+     <setting id="radio1genre26" type="bool" label="30471" default="false" />
+     <setting id="radio1genre27" type="bool" label="30472" default="false" />
+-    
++  </category>
+ 
+-</category>
+   <category label="30441">
+-    <setting id="radio2name" type="text" label="30442" default="Dance"/>
+-    <setting id="radio2from" type="enum" label="30460" values="Older|50s|60s|70s|80s|90s|00s|10s" default="0" />
+-    <setting id="radio2to" type="enum" label="30461" values="Older|50s|60s|70s|80s|90s|00s|10s" default="7" />
++    <setting id="radio2name" type="text" label="30442" default="80s"/>
++    <setting id="radio2from" type="enum" label="30460" values="Older|50s|60s|70s|80s|90s|00s|10s" default="4" />
++    <setting id="radio2to" type="enum" label="30461" values="Older|50s|60s|70s|80s|90s|00s|10s" default="4" />
+     <setting id="radio2genre1" type="bool" label="30443" default="false" />
+     <setting id="radio2genre2" type="bool" label="30444" default="false" />
+     <setting id="radio2genre3" type="bool" label="30445" default="false" />
+     <setting id="radio2genre4" type="bool" label="30446" default="false" />
+     <setting id="radio2genre5" type="bool" label="30447" default="false" />
+-    <setting id="radio2genre6" type="bool" label="30448" default="true" />
++    <setting id="radio2genre6" type="bool" label="30448" default="false" />
+     <setting id="radio2genre7" type="bool" label="30449" default="false" />
+     <setting id="radio2genre8" type="bool" label="30450" default="false" />
+     <setting id="radio2genre9" type="bool" label="30451" default="false" />
+     <setting id="radio2genre10" type="bool" label="30452" default="false" />
+     <setting id="radio2genre11" type="bool" label="30453" default="false" />
+     <setting id="radio2genre12" type="bool" label="30454" default="false" />
+-    <setting id="radio2genre13" type="bool" label="30455" default="true" />
++    <setting id="radio2genre13" type="bool" label="30455" default="false" />
+     <setting id="radio2genre14" type="bool" label="30456" default="false" />
+     <setting id="radio2genre15" type="bool" label="30457" default="false" />
+     <setting id="radio2genre16" type="bool" label="30458" default="false" />
+-    <setting id="radio2genre17" type="bool" label="30459" default="true" />
+-    <setting id="radio2genre18" type="bool" label="30462" default="false" />
++    <setting id="radio2genre17" type="bool" label="30459" default="false" />
+     <setting id="radio2genre18" type="bool" label="30462" default="false" />
+     <setting id="radio2genre19" type="bool" label="30463" default="false" />
+-    <setting id="radio2genre20" type="bool" label="30464" default="true" />
++    <setting id="radio2genre20" type="bool" label="30464" default="false" />
+     <setting id="radio2genre21" type="bool" label="30465" default="false" />
+     <setting id="radio2genre22" type="bool" label="30466" default="false" />
+-    <setting id="radio2genre23" type="bool" label="30467" default="true" />
+-    <setting id="radio2genre24" type="bool" label="30468" default="true" />
++    <setting id="radio2genre23" type="bool" label="30467" default="false" />
++    <setting id="radio2genre24" type="bool" label="30468" default="false" />
+     <setting id="radio2genre25" type="bool" label="30469" default="false" />
+     <setting id="radio2genre26" type="bool" label="30471" default="false" />
+-    <setting id="radio2genre27" type="bool" label="30472" default="false" />
+-</category>
++    <setting id="radio2genre27" type="bool" label="30472" default="true" />
++  </category>
++
++  <category label="30473">
++    <setting id="radio3name" type="text" label="30442" default="Dance/Trance"/>
++    <setting id="radio3from" type="enum" label="30460" values="Older|50s|60s|70s|80s|90s|00s|10s" default="5" />
++    <setting id="radio3to" type="enum" label="30461" values="Older|50s|60s|70s|80s|90s|00s|10s" default="7" />
++    <setting id="radio3genre1" type="bool" label="30443" default="false" />
++    <setting id="radio3genre2" type="bool" label="30444" default="false" />
++    <setting id="radio3genre3" type="bool" label="30445" default="false" />
++    <setting id="radio3genre4" type="bool" label="30446" default="false" />
++    <setting id="radio3genre5" type="bool" label="30447" default="false" />
++    <setting id="radio3genre6" type="bool" label="30448" default="true" />
++    <setting id="radio3genre7" type="bool" label="30449" default="false" />
++    <setting id="radio3genre8" type="bool" label="30450" default="false" />
++    <setting id="radio3genre9" type="bool" label="30451" default="false" />
++    <setting id="radio3genre10" type="bool" label="30452" default="false" />
++    <setting id="radio3genre11" type="bool" label="30453" default="false" />
++    <setting id="radio3genre12" type="bool" label="30454" default="false" />
++    <setting id="radio3genre13" type="bool" label="30455" default="false" />
++    <setting id="radio3genre14" type="bool" label="30456" default="false" />
++    <setting id="radio3genre15" type="bool" label="30457" default="false" />
++    <setting id="radio3genre16" type="bool" label="30458" default="false" />
++    <setting id="radio3genre17" type="bool" label="30459" default="false" />
++    <setting id="radio3genre18" type="bool" label="30462" default="false" />
++    <setting id="radio3genre19" type="bool" label="30463" default="false" />
++    <setting id="radio3genre20" type="bool" label="30464" default="false" />
++    <setting id="radio3genre21" type="bool" label="30465" default="false" />
++    <setting id="radio3genre22" type="bool" label="30466" default="false" />
++    <setting id="radio3genre23" type="bool" label="30467" default="false" />
++    <setting id="radio3genre24" type="bool" label="30468" default="false" />
++    <setting id="radio3genre25" type="bool" label="30469" default="false" />
++    <setting id="radio3genre26" type="bool" label="30471" default="false" />
++    <setting id="radio3genre27" type="bool" label="30472" default="false" />
++  </category>
++
++  <category label="30474">
++    <setting id="radio4name" type="text" label="30442" default="Rock"/>
++    <setting id="radio4from" type="enum" label="30460" values="Older|50s|60s|70s|80s|90s|00s|10s" default="4" />
++    <setting id="radio4to" type="enum" label="30461" values="Older|50s|60s|70s|80s|90s|00s|10s" default="7" />
++    <setting id="radio4genre1" type="bool" label="30443" default="false" />
++    <setting id="radio4genre2" type="bool" label="30444" default="false" />
++    <setting id="radio4genre3" type="bool" label="30445" default="false" />
++    <setting id="radio4genre4" type="bool" label="30446" default="false" />
++    <setting id="radio4genre5" type="bool" label="30447" default="false" />
++    <setting id="radio4genre6" type="bool" label="30448" default="false" />
++    <setting id="radio4genre7" type="bool" label="30449" default="false" />
++    <setting id="radio4genre8" type="bool" label="30450" default="false" />
++    <setting id="radio4genre9" type="bool" label="30451" default="false" />
++    <setting id="radio4genre10" type="bool" label="30452" default="false" />
++    <setting id="radio4genre11" type="bool" label="30453" default="false" />
++    <setting id="radio4genre12" type="bool" label="30454" default="false" />
++    <setting id="radio4genre13" type="bool" label="30455" default="false" />
++    <setting id="radio4genre14" type="bool" label="30456" default="false" />
++    <setting id="radio4genre15" type="bool" label="30457" default="false" />
++    <setting id="radio4genre16" type="bool" label="30458" default="false" />
++    <setting id="radio4genre17" type="bool" label="30459" default="false" />
++    <setting id="radio4genre18" type="bool" label="30462" default="false" />
++    <setting id="radio4genre19" type="bool" label="30463" default="false" />
++    <setting id="radio4genre20" type="bool" label="30464" default="false" />
++    <setting id="radio4genre21" type="bool" label="30465" default="true" />
++    <setting id="radio4genre22" type="bool" label="30466" default="false" />
++    <setting id="radio4genre23" type="bool" label="30467" default="false" />
++    <setting id="radio4genre24" type="bool" label="30468" default="false" />
++    <setting id="radio4genre25" type="bool" label="30469" default="false" />
++    <setting id="radio4genre26" type="bool" label="30471" default="false" />
++    <setting id="radio4genre27" type="bool" label="30472" default="false" />
++  </category>
++
++
++  <category label="30475">
++    <setting id="radio5name" type="text" label="30442" default="Alternative"/>
++    <setting id="radio5from" type="enum" label="30460" values="Older|50s|60s|70s|80s|90s|00s|10s" default="5" />
++    <setting id="radio5to" type="enum" label="30461" values="Older|50s|60s|70s|80s|90s|00s|10s" default="7" />
++    <setting id="radio5genre1" type="bool" label="30443" default="true" />
++    <setting id="radio5genre2" type="bool" label="30444" default="false" />
++    <setting id="radio5genre3" type="bool" label="30445" default="false" />
++    <setting id="radio5genre4" type="bool" label="30446" default="false" />
++    <setting id="radio5genre5" type="bool" label="30447" default="false" />
++    <setting id="radio5genre6" type="bool" label="30448" default="false" />
++    <setting id="radio5genre7" type="bool" label="30449" default="false" />
++    <setting id="radio5genre8" type="bool" label="30450" default="false" />
++    <setting id="radio5genre9" type="bool" label="30451" default="false" />
++    <setting id="radio5genre10" type="bool" label="30452" default="false" />
++    <setting id="radio5genre11" type="bool" label="30453" default="false" />
++    <setting id="radio5genre12" type="bool" label="30454" default="false" />
++    <setting id="radio5genre13" type="bool" label="30455" default="false" />
++    <setting id="radio5genre14" type="bool" label="30456" default="false" />
++    <setting id="radio5genre15" type="bool" label="30457" default="false" />
++    <setting id="radio5genre16" type="bool" label="30458" default="false" />
++    <setting id="radio5genre17" type="bool" label="30459" default="false" />
++    <setting id="radio5genre18" type="bool" label="30462" default="false" />
++    <setting id="radio5genre19" type="bool" label="30463" default="false" />
++    <setting id="radio5genre20" type="bool" label="30464" default="false" />
++    <setting id="radio5genre21" type="bool" label="30465" default="false" />
++    <setting id="radio5genre22" type="bool" label="30466" default="false" />
++    <setting id="radio5genre23" type="bool" label="30467" default="false" />
++    <setting id="radio5genre24" type="bool" label="30468" default="false" />
++    <setting id="radio5genre25" type="bool" label="30469" default="false" />
++    <setting id="radio5genre26" type="bool" label="30471" default="false" />
++    <setting id="radio5genre27" type="bool" label="30472" default="false" />
++  </category>
++
+ </settings>
+--- a/addons/plugin.music.spotyXBMC/changelog.txt	2012-12-16 23:05:21.487531489 +0100
++++ b/addons/plugin.music.spotyXBMC/changelog.txt	2012-12-18 13:52:47.639943066 +0100
+@@ -1,2 +1,3 @@
+-[B]0.0.1[/B]
++[B]0.0.2[/B]
+ - Created
++- 18 dec 2012 : added 3 extra radio channels
+--- a/addons/plugin.music.spotyXBMC/resources/language/English/strings.xml	2012-12-16 23:05:21.555530634 +0100
++++ b/addons/plugin.music.spotyXBMC/resources/language/English/strings.xml	2012-12-16 20:12:44.849737231 +0100
+@@ -67,6 +67,10 @@
+     <string id="30469">60s</string>
+     <string id="30471">70s</string>
+     <string id="30472">80s</string>
++    <string id="30473">Spotify radio3</string>
++    <string id="30474">Spotify radio4</string>
++    <string id="30475">Spotify radio5</string>
++
+     
+     <string id="30460">From decade</string>
+     <string id="30461">To decade</string>
+--- a/addons/plugin.music.spotyXBMC/resources/language/French/strings.xml	2012-12-16 23:05:21.491531439 +0100
++++ b/addons/plugin.music.spotyXBMC/resources/language/French/strings.xml	2012-12-16 20:13:21.905270247 +0100
+@@ -64,6 +64,9 @@
+     <string id="30469">60s</string>
+     <string id="30471">70s</string>
+     <string id="30472">80s</string>
++    <string id="30473">Spotify radio3</string>
++    <string id="30474">Spotify radio4</string>
++    <string id="30475">Spotify radio5</string>
+     
+     <string id="30460">De la décénnie</string>
+     <string id="30461">à la décénnie</string>
