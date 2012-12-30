@@ -13636,9 +13636,9 @@ index f85326e..2a972d3 100644
 +//spotify
 +#include "music/spotyXBMC/Addon.music.spotify.h"
 +
+ #include "network/Network.h"
  #include "threads/SystemClock.h"
  #include "system.h"
- #include "Application.h"
 @@ -1381,6 +1384,9 @@ bool CApplication::Initialize()
      ADDON::CAddonMgr::Get().StartServices(false);
    }
