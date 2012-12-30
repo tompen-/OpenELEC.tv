@@ -19,7 +19,7 @@
 ################################################################################
 
 PKG_NAME="xbmc"
-PKG_VERSION="a296342"
+PKG_VERSION="5ea5421"
 PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="GPL"
@@ -41,6 +41,7 @@ PKG_AUTORECONF="no"
 # some python stuff needed for various addons
   PKG_DEPENDS="$PKG_DEPENDS Imaging"
   PKG_DEPENDS="$PKG_DEPENDS simplejson"
+  PKG_DEPENDS="$PKG_DEPENDS pycrypto"
 
 # various PVR clients
   PKG_DEPENDS="$PKG_DEPENDS xbmc-pvr-addons"
@@ -60,16 +61,20 @@ if [ "$DISPLAYSERVER" = "xorg-server" ]; then
   PKG_DEPENDS="$PKG_DEPENDS SDL SDL_image"
 fi
 
-if [ "$OPENGL_SUPPORT" = yes ]; then
+if [ "$OPENGL" = "Mesa" ]; then
   # for OpenGL (GLX) support
-  PKG_BUILD_DEPENDS="$PKG_BUILD_DEPENDS $OPENGL glew"
-  PKG_DEPENDS="$PKG_DEPENDS $OPENGL glew"
+  PKG_BUILD_DEPENDS="$PKG_BUILD_DEPENDS Mesa glu glew"
+  PKG_DEPENDS="$PKG_DEPENDS Mesa glu glew"
 fi
 
 if [ "$OPENGLES_SUPPORT" = yes ]; then
   # for OpenGL-ES support
   PKG_BUILD_DEPENDS="$PKG_BUILD_DEPENDS $OPENGLES"
   PKG_DEPENDS="$PKG_DEPENDS $OPENGLES"
+  if [ "$OPENGLES" = "marvell-libgfx" ]; then
+    PKG_BUILD_DEPENDS="$PKG_BUILD_DEPENDS marvell-libvmeta marvell-ipp"
+    PKG_DEPENDS="$PKG_DEPENDS marvell-libvmeta marvell-ipp"
+  fi
 fi
 
 # for dbus support
@@ -90,6 +95,10 @@ if [ "$CEC_SUPPORT" = yes ]; then
   PKG_BUILD_DEPENDS="$PKG_BUILD_DEPENDS libcec"
   PKG_DEPENDS="$PKG_DEPENDS libcec"
 fi
+
+#if [ ! "$LCD_DRIVER" = "none" ]; then
+#  PKG_DEPENDS="$PKG_DEPENDS xbmc-addon-lcd"
+#fi
 
 if [ "$XBMC_SCR_RSXS" = yes ]; then
   PKG_BUILD_DEPENDS="$PKG_BUILD_DEPENDS libXt libXmu"

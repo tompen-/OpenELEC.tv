@@ -92,6 +92,9 @@
 # Configuration for u-boot
   UBOOT_CONFIG=""
 
+# Target Configfile for u-boot
+  UBOOT_CONFIGFILE=""
+
 # Kernel to use. values can be:
 # default:  default mainline kernel
 # ti-omap4: Ti's OMAP4 kernel
@@ -158,7 +161,7 @@
 # for a list of additinoal drivers see packages/linux-drivers
 # Space separated list is supported,
 # e.g. ADDITIONAL_DRIVERS="DRIVER1 DRIVER2"
-  ADDITIONAL_DRIVERS="RTL8192CU"
+  ADDITIONAL_DRIVERS="RTL8192CU dvbhdhomerun"
 
 # build with network support (yes / no)
   NETWORK="yes"
@@ -206,13 +209,16 @@
 # build and install PPP support (yes / no)
   PPTP_SUPPORT="yes"
 
+# build and install OpenVPN support (yes / no)
+  OPENVPN_SUPPORT="yes"
+
 # build and install diskmounter service (udisks)
 # this service provide auto mounting support for external drives
 # in the mediacenter also automount internally drives at boottime (yes / no)
   UDISKS="yes"
 
 # build and install powermanagement support (upower) (yes / no)
-  UPOWER="no"
+  UPOWER="yes"
 
 # build and install exFAT fuse support (yes / no)
   EXFAT="yes"
@@ -238,7 +244,7 @@
 # Xorg Graphic drivers to use (all / i915,i965,r200,r300,r600,fglrx,nvidia,nouveau,vmware)
 # Space separated list is supported,
 # e.g. GRAPHIC_DRIVERS="i915 i965 r300 r600 radeon nvidia nouveau"
-  GRAPHIC_DRIVERS="nvidia"
+  GRAPHIC_DRIVERS="nvidia-legacy"
 
 # OpenMAX implementation to use (no / bcm2835-driver)
   OPENMAX="no"
@@ -275,7 +281,7 @@
   ISCSI_SUPPORT="yes"
 
 # LCD driver to Use - Possible drivers are ( Comma seperated:
-# bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,
+# bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,dm140,
 # ea65,EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,
 # icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,
 # joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,mdm166a,

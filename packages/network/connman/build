@@ -27,7 +27,13 @@ if [ "$PPTP_SUPPORT" = yes ]; then
   export PPPD="/usr/sbin/pppd"
   export PPTP="/usr/sbin/pptp"
 else
-  CONNMAN_PPP="--disable-pptp"
+  CONNMAN_PPTP="--disable-pptp"
+fi
+
+if [ "$OPENVPN_SUPPORT" = yes ]; then
+  CONNMAN_OPENVPN="--enable-openvpn --with-openvpn=/usr/sbin/openvpn"
+else
+  CONNMAN_OPENVPN="--disable-openvpn"
 fi
 
 export WPASUPPLICANT="/usr/bin/wpa_supplicant"
@@ -52,7 +58,7 @@ cd $PKG_BUILD
             --disable-wispr \
             --disable-ofono \
             --disable-openconnect \
-            --disable-openvpn \
+            $CONNMAN_OPENVPN \
             --disable-vpnc \
             --disable-l2tp \
             $CONNMAN_PPTP \

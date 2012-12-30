@@ -91,10 +91,13 @@
 # Configuration for u-boot
   UBOOT_CONFIG=""
 
+# Target Configfile for u-boot
+  UBOOT_CONFIGFILE=""
+
 # Kernel to use. values can be:
 # default:  default mainline kernel
 # ti-omap4: Ti's OMAP4 kernel
-  LINUX="3.2"
+  LINUX="default"
 
 # use linux-next (latest rc) instead latest released version
   LINUX_NEXT="no"
@@ -157,7 +160,7 @@
 # for a list of additinoal drivers see packages/linux-drivers
 # Space separated list is supported,
 # e.g. ADDITIONAL_DRIVERS="DRIVER1 DRIVER2"
-  ADDITIONAL_DRIVERS="RTL8192CU"
+  ADDITIONAL_DRIVERS="RTL8192CU dvbhdhomerun"
 
 # build with network support (yes / no)
   NETWORK="yes"
@@ -204,6 +207,9 @@
 
 # build and install PPP support (yes / no)
   PPTP_SUPPORT="yes"
+
+# build and install OpenVPN support (yes / no)
+  OPENVPN_SUPPORT="yes"
 
 # build and install diskmounter service (udisks)
 # this service provide auto mounting support for external drives
@@ -274,7 +280,7 @@
   ISCSI_SUPPORT="yes"
 
 # LCD driver to Use - Possible drivers are ( Comma seperated:
-# bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,
+# bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,dm140,
 # ea65,EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,
 # icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,
 # joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,mdm166a,
@@ -284,7 +290,7 @@
 # 'all' compiles all drivers;
 # 'all,!xxx,!yyy' de-selects previously selected drivers
 # "none" for disable LCD support
-  LCD_DRIVER="irtrans,imon,imonlcd,mdm166a,MtxOrb,lis"
+  LCD_DRIVER="irtrans,imon,imonlcd,mdm166a,MtxOrb,lis,dm140,hd44780"
 
 # Modules to install in initramfs for early boot
   INITRAMFS_MODULES=""
