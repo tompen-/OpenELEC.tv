@@ -85,33 +85,18 @@ fi
       0)
         if [ ! $(pidof console-kit-daemon) ]; then
           touch "$LOCKDIR/$LOCKFILE"
-          LSYNCD_ACTIVE=$(pidof lsyncd | wc -l)
-          if [ "$LSYNCD_ACTIVE" != "0" ]
-          then
-            sleep 6
-          fi
           poweroff -f
         fi
         ;;
       64)
         if [ ! $(pidof console-kit-daemon) ]; then
           touch "$LOCKDIR/$LOCKFILE"
-          LSYNCD_ACTIVE=$(pidof lsyncd | wc -l)
-          if [ "$LSYNCD_ACTIVE" != "0" ]
-          then
-            sleep 6
-          fi
           poweroff -f
         fi
         ;;
       66)
         if [ ! $(pidof console-kit-daemon) ]; then
           touch "$LOCKDIR/$LOCKFILE"
-          LSYNCD_ACTIVE=$(pidof lsyncd | wc -l)
-          if [ "$LSYNCD_ACTIVE" != "0" ]
-          then
-            sleep 6
-          fi
           reboot
         fi
         ;;
