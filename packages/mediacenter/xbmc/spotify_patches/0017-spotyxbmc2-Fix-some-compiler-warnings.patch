@@ -1,0 +1,150 @@
+diff --git a/xbmc/music/spotyXBMC/Addon.music.spotify.cpp b/xbmc/music/spotyXBMC/Addon.music.spotify.cpp
+index 7a10a81..0161576 100644
+--- a/xbmc/music/spotyXBMC/Addon.music.spotify.cpp
++++ b/xbmc/music/spotyXBMC/Addon.music.spotify.cpp
+@@ -61,8 +61,9 @@
+ bool Addon_music_spotify::enable(bool enable) {
+ 	if (enable)
+ 		return Session::getInstance()->enable();
+-	else
+-		Session::getInstance()->deInit();
++
++	Session::getInstance()->deInit();
++	return false;
+ }
+ 
+ bool Addon_music_spotify::isReady() {
+@@ -168,7 +169,7 @@ bool Addon_music_spotify::getArtistAlbums(CFileItemList& items,
+ 
+ 	//add the albums
+ 	vector<SxAlbum*> albums = artist->getAlbums();
+-	for (int i = 0; i < albums.size(); i++) {
++	for (unsigned int i = 0; i < albums.size(); i++) {
+ 		items.Add(Utils::SxAlbumToItem(albums[i]));
+ 	}
+ 	return true;
+@@ -293,7 +294,7 @@ bool Addon_music_spotify::getAlbumTracksFromTrack(CFileItemList& items,
+ 					Session::getInstance()->processEvents();
+ 				}
+ 				vector<SxTrack*> tracks = album->getTracks();
+-				for (int i = 0; i < tracks.size(); i++) {
++				for (unsigned int i = 0; i < tracks.size(); i++) {
+ 					items.Add(Utils::SxTrackToItem(tracks[i]));
+ 				}
+ 			}
+@@ -319,7 +320,7 @@ bool Addon_music_spotify::getAlbumTracks(CFileItemList& items,
+ 		sp_album *spAlbum = sp_link_as_album(spLink);
+ 		SxAlbum* salbum = AlbumStore::getInstance()->getAlbum(spAlbum, true);
+ 		vector<SxTrack*> tracks = salbum->getTracks();
+-		for (int i = 0; i < tracks.size(); i++) {
++		for (unsigned int i = 0; i < tracks.size(); i++) {
+ 			if (disc == tracks[i]->getDisc())
+ 				items.Add(Utils::SxTrackToItem(tracks[i]));
+ 		}
+@@ -346,7 +347,7 @@ bool Addon_music_spotify::getArtistTracks(CFileItemList& items,
+ 		while (!artist->isTracksLoaded())
+ 			;
+ 		vector<SxTrack*> tracks = artist->getTracks();
+-		for (int i = 0; i < tracks.size(); i++) {
++		for (unsigned int i = 0; i < tracks.size(); i++) {
+ 			items.Add(Utils::SxTrackToItem(tracks[i]));
+ 		}
+ 	}
+@@ -382,7 +383,7 @@ bool Addon_music_spotify::getRadioTracks(CFileItemList& items, int radio) {
+ 				radio);
+ 		if (radio == 1 || radio == 2) {
+ 			vector<SxTrack*> tracks = RadioHandler::getInstance()->getTracks(radio);
+-			for (int i = 0; i < tracks.size(); i++) {
++			for (unsigned int i = 0; i < tracks.size(); i++) {
+ 				const CFileItemPtr pItem = Utils::SxTrackToItem(tracks[i], "",
+ 						i + lowestTrackNumber + 1);
+ 				CStdString path;
+@@ -447,7 +448,7 @@ bool Addon_music_spotify::getArtistSimilarArtists(CFileItemList& items,
+ 		while (!artist->isTracksLoaded())
+ 			;
+ 		vector<SxArtist*> artists = artist->getArtists();
+-		for (int i = 0; i < artists.size(); i++) {
++		for (unsigned int i = 0; i < artists.size(); i++) {
+ 			items.Add(Utils::SxArtistToItem(artists[i]));
+ 		}
+ 	}
+@@ -668,7 +669,7 @@ bool Addon_music_spotify::getTopListArtists(CFileItemList& items) {
+ 		}
+ 
+ 		vector<SxArtist*> artists = tl->getArtists();
+-		for (int i = 0; i < artists.size(); i++) {
++		for (unsigned int i = 0; i < artists.size(); i++) {
+ 			items.Add(Utils::SxArtistToItem(artists[i]));
+ 		}
+ 
+@@ -690,7 +691,7 @@ bool Addon_music_spotify::getTopListAlbums(CFileItemList& items) {
+ 		}
+ 
+ 		vector<SxAlbum*> albums = tl->getAlbums();
+-		for (int i = 0; i < albums.size(); i++) {
++		for (unsigned int i = 0; i < albums.size(); i++) {
+ 			items.Add(Utils::SxAlbumToItem(albums[i]));
+ 		}
+ 	}
+@@ -711,7 +712,7 @@ bool Addon_music_spotify::getTopListTracks(CFileItemList& items) {
+ 		}
+ 
+ 		vector<SxTrack*> tracks = tl->getTracks();
+-		for (int i = 0; i < tracks.size(); i++) {
++		for (unsigned int i = 0; i < tracks.size(); i++) {
+ 			items.Add(Utils::SxTrackToItem(tracks[i], "", i + 1));
+ 		}
+ 	}
+@@ -727,7 +728,7 @@ bool Addon_music_spotify::Search(CStdString query, CFileItemList& items) {
+ 			albumPrefix.Format("[%s] ", g_localizeStrings.Get(558).c_str());
+ 			Logger::printOut("search fetch albums");
+ 			vector<SxAlbum*> albums = SearchHandler::getInstance()->getAlbumResults();
+-			for (int i = 0; i < albums.size(); i++) {
++			for (unsigned int i = 0; i < albums.size(); i++) {
+ 				//if its a multidisc we need to add them all
+ 				int discNumber = albums[i]->getNumberOfDiscs();
+ 				if (discNumber == 1) {
+@@ -741,7 +742,7 @@ bool Addon_music_spotify::Search(CStdString query, CFileItemList& items) {
+ 			}
+ 			Logger::printOut("search fetch tracks");
+ 			vector<SxTrack*> tracks = SearchHandler::getInstance()->getTrackResults();
+-			for (int i = 0; i < tracks.size(); i++)
++			for (unsigned int i = 0; i < tracks.size(); i++)
+ 				items.Add(Utils::SxTrackToItem(tracks[i]));
+ 
+ 			CStdString artistPrefix;
+@@ -750,7 +751,7 @@ bool Addon_music_spotify::Search(CStdString query, CFileItemList& items) {
+ 			Logger::printOut("search fetch artists");
+ 			vector<SxArtist*> artists =
+ 					SearchHandler::getInstance()->getArtistResults();
+-			for (int i = 0; i < artists.size(); i++)
++			for (unsigned int i = 0; i < artists.size(); i++)
+ 				items.Add(Utils::SxArtistToItem(artists[i], artistPrefix));
+ 		}
+ 	}
+diff --git a/xbmc/music/spotyXBMC/SxSettings.cpp b/xbmc/music/spotyXBMC/SxSettings.cpp
+index 6fe69bc..f21f7a2 100644
+--- a/xbmc/music/spotyXBMC/SxSettings.cpp
++++ b/xbmc/music/spotyXBMC/SxSettings.cpp
+@@ -162,7 +162,7 @@
+     };
+ 
+     int mask = 0;
+-    for (int i = 0; i < sizeof(radiogenres) / sizeof(radiogenres[0]); i++)
++    for (unsigned int i = 0; i < sizeof(radiogenres) / sizeof(radiogenres[0]); i++)
+       if (radiogenres[i].enable) mask |= radiogenres[i].id;
+ 
+     return (sp_radio_genre) mask;
+diff --git a/xbmc/music/spotyXBMC/Utils.cpp b/xbmc/music/spotyXBMC/Utils.cpp
+index c35e915..c3394f7 100644
+--- a/xbmc/music/spotyXBMC/Utils.cpp
++++ b/xbmc/music/spotyXBMC/Utils.cpp
+@@ -217,7 +217,7 @@
+    void Utils::updateSearchResults(string query) {
+      //we need to replace the whitespaces with %20
+ 
+-     int pos = 0;
++     unsigned int pos = 0;
+      while (pos != string::npos) {
+        pos = query.find(' ');
+        if (pos != string::npos) {
