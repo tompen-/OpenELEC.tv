@@ -1,0 +1,1622 @@
+diff --git a/xbmc/cores/dvdplayer/DVDDemuxers/DVDDemuxSpotify.cpp b/xbmc/cores/dvdplayer/DVDDemuxers/DVDDemuxSpotify.cpp
+new file mode 100644
+index 0000000..c9606e7
+--- /dev/null
++++ b/xbmc/cores/dvdplayer/DVDDemuxers/DVDDemuxSpotify.cpp
+@@ -0,0 +1,180 @@
++/*
++ spotyxbmc2 - A project to integrate Spotify into XBMC
++ Copyright (C) 2013  Samuel Cabrero <samuelcabrero@gmail.com>
++
++ This program is free software: you can redistribute it and/or modify
++ it under the terms of the GNU General Public License as published by
++ the Free Software Foundation, either version 3 of the License, or
++ (at your option) any later version.
++
++ This program is distributed in the hope that it will be useful,
++ but WITHOUT ANY WARRANTY; without even the implied warranty of
++ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ GNU General Public License for more details.
++
++ You should have received a copy of the GNU General Public License
++ along with this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include "DVDDemuxSpotify.h"
++#include "DVDInputStreams/DVDInputStream.h"
++#include "DVDDemuxUtils.h"
++#include "music/spotyXBMC/SxSettings.h"
++#include "utils/log.h"
++#include "../DVDClock.h"
++
++using namespace std;
++
++class CDemuxStreamAudioSpotify: public CDemuxStreamAudio {
++	CDVDDemuxSpotify *m_parent;
++	string m_codec;
++public:
++	CDemuxStreamAudioSpotify(CDVDDemuxSpotify *parent, const string& codec) :
++			m_parent(parent), m_codec(codec)
++
++	{
++	}
++	void GetStreamInfo(string& strInfo) {
++		CStdString info;
++		info.Format("%s", m_codec.c_str());
++		strInfo = info;
++	}
++};
++
++CDVDDemuxSpotify::CDVDDemuxSpotify() :
++		CDVDDemux() {
++	m_pInput = NULL;
++	m_stream = NULL;
++	m_pts = 0;
++}
++
++CDVDDemuxSpotify::~CDVDDemuxSpotify() {
++	Dispose();
++}
++
++bool CDVDDemuxSpotify::Open(CDVDInputStream* pInput) {
++	if (!pInput || !pInput->IsStreamType(DVDSTREAM_TYPE_SPOTIFY))
++		return false;
++
++	m_pInput = pInput;
++	m_stream = new CDemuxStreamAudioSpotify(this, "Spotify");
++
++	m_stream->iSampleRate = 44100;
++	m_stream->iBitsPerSample = 16;
++	m_stream->iBitRate =
++			addon_music_spotify::Settings::getInstance()->useHighBitrate() ?
++					320000 : 160000;
++	m_stream->iChannels = 2;
++	m_stream->type = STREAM_AUDIO;
++	m_stream->codec = CODEC_ID_PCM_S16LE;
++
++	return true;
++}
++
++void CDVDDemuxSpotify::Dispose() {
++	delete m_stream;
++	m_stream = NULL;
++
++	m_pInput = NULL;
++	m_pts = 0;
++}
++
++void CDVDDemuxSpotify::Reset() {
++	CDVDInputStream* pInputStream = m_pInput;
++	Dispose();
++	Open(pInputStream);
++}
++
++void CDVDDemuxSpotify::Abort() {
++	if (m_pInput)
++		return m_pInput->Abort();
++}
++
++#define SPOTIFY_READ_SIZE (2048 * sizeof(int16_t))
++DemuxPacket* CDVDDemuxSpotify::Read() {
++	if (!m_pInput)
++		return NULL;
++
++	DemuxPacket* pPacket = CDVDDemuxUtils::AllocateDemuxPacket(
++			SPOTIFY_READ_SIZE);
++
++	if (!pPacket) {
++		if (m_pInput)
++			m_pInput->Close();
++		return NULL;
++	}
++
++	pPacket->iStreamId = 0;
++	pPacket->iSize = m_pInput->Read(pPacket->pData, SPOTIFY_READ_SIZE);
++	if (pPacket->iSize < 1) {
++		delete pPacket;
++		pPacket = NULL;
++	} else {
++		int n = (m_stream->iChannels * m_stream->iBitsPerSample
++				* m_stream->iSampleRate) >> 3;
++		if (n > 0) {
++			m_pts += ((double) pPacket->iSize * DVD_TIME_BASE) / n;
++			pPacket->dts = m_pts;
++			pPacket->pts = m_pts;
++		} else {
++			pPacket->dts = DVD_NOPTS_VALUE;
++			pPacket->pts = DVD_NOPTS_VALUE;
++		}
++	}
++
++	return pPacket;
++}
++
++void CDVDDemuxSpotify::Flush() {
++
++}
++
++bool CDVDDemuxSpotify::SeekTime(int time, bool backwords, double *startpts) {
++	if (time < 0)
++		time = 0;
++
++	CDVDInputStream::ISeekTime* ist =
++			dynamic_cast<CDVDInputStream::ISeekTime*>(m_pInput);
++	if (ist) {
++		if (!ist->SeekTime(time))
++			return false;
++		m_pts = (int64_t) time * (AV_TIME_BASE / 1000);
++		if (startpts)
++			*startpts = DVD_NOPTS_VALUE;
++		return true;
++	}
++	return false;
++}
++
++void CDVDDemuxSpotify::SetSpeed(int iSpeed) {
++
++}
++
++CDemuxStream* CDVDDemuxSpotify::GetStream(int iStreamId) {
++	if (iStreamId != 0)
++		return NULL;
++
++	return m_stream;
++}
++
++int CDVDDemuxSpotify::GetStreamLength() {
++	if (m_pInput)
++		return m_pInput->GetLength();
++	return 0;
++}
++
++int CDVDDemuxSpotify::GetNrOfStreams() {
++	return (m_stream == NULL ? 0 : 1);
++}
++
++std::string CDVDDemuxSpotify::GetFileName() {
++	if (m_pInput)
++		return m_pInput->GetFileName();
++	else
++		return "";
++}
++
++void CDVDDemuxSpotify::GetStreamCodecName(int iStreamId, CStdString &strName) {
++	if (m_stream && iStreamId == 0)
++		strName = "BXA";
++}
+diff --git a/xbmc/cores/dvdplayer/DVDDemuxers/DVDDemuxSpotify.h b/xbmc/cores/dvdplayer/DVDDemuxers/DVDDemuxSpotify.h
+new file mode 100644
+index 0000000..4ecb9a4
+--- /dev/null
++++ b/xbmc/cores/dvdplayer/DVDDemuxers/DVDDemuxSpotify.h
+@@ -0,0 +1,47 @@
++#pragma once
++/*
++ spotyxbmc2 - A project to integrate Spotify into XBMC
++ Copyright (C) 2013  Samuel Cabrero <samuelcabrero@gmail.com>
++
++ This program is free software: you can redistribute it and/or modify
++ it under the terms of the GNU General Public License as published by
++ the Free Software Foundation, either version 3 of the License, or
++ (at your option) any later version.
++
++ This program is distributed in the hope that it will be useful,
++ but WITHOUT ANY WARRANTY; without even the implied warranty of
++ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ GNU General Public License for more details.
++
++ You should have received a copy of the GNU General Public License
++ along with this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include "DVDDemux.h"
++
++class CDVDDemuxSpotify: public CDVDDemux {
++public:
++	CDVDDemuxSpotify();
++	virtual ~CDVDDemuxSpotify();
++
++	bool Open(CDVDInputStream* pInput);
++	void Dispose();
++	void Reset();
++	void Abort();
++	void Flush();
++	DemuxPacket* Read();
++
++	bool SeekTime(int time, bool backwords = false, double* startpts = NULL);
++	void SetSpeed(int iSpeed);
++	int GetStreamLength();
++	CDemuxStream* GetStream(int iStreamId);
++	int GetNrOfStreams();
++	std::string GetFileName();
++	virtual void GetStreamCodecName(int iStreamId, CStdString &strName);
++private:
++	friend class CDemuxStreamAudioSpotify;
++	CDVDInputStream *m_pInput;
++	CDemuxStreamAudio *m_stream;
++	double m_pts;
++};
++
+diff --git a/xbmc/cores/dvdplayer/DVDDemuxers/DVDFactoryDemuxer.cpp b/xbmc/cores/dvdplayer/DVDDemuxers/DVDFactoryDemuxer.cpp
+index ecc536a..e63d04d 100644
+--- a/xbmc/cores/dvdplayer/DVDDemuxers/DVDFactoryDemuxer.cpp
++++ b/xbmc/cores/dvdplayer/DVDDemuxers/DVDFactoryDemuxer.cpp
+@@ -32,6 +32,7 @@
+ #endif
+ #include "DVDDemuxBXA.h"
+ #include "DVDDemuxPVRClient.h"
++#include "DVDDemuxSpotify.h"
+ #include "pvr/PVRManager.h"
+ #include "pvr/addons/PVRClients.h"
+ 
+@@ -52,6 +53,15 @@ CDVDDemux* CDVDFactoryDemuxer::CreateDemuxer(CDVDInputStream* pInputStream)
+       return NULL;
+   }
+ 
++  if (pInputStream->IsStreamType(DVDSTREAM_TYPE_SPOTIFY))
++  {
++    auto_ptr<CDVDDemuxSpotify> demuxer(new CDVDDemuxSpotify());
++    if(demuxer->Open(pInputStream))
++      return demuxer.release();
++    else
++      return NULL;
++  }
++
+   if (pInputStream->IsStreamType(DVDSTREAM_TYPE_HTTP))
+   {
+     CDVDInputStreamHttp* pHttpStream = (CDVDInputStreamHttp*)pInputStream;
+diff --git a/xbmc/cores/dvdplayer/DVDDemuxers/Makefile.in b/xbmc/cores/dvdplayer/DVDDemuxers/Makefile.in
+index b83c631..df04ac8 100644
+--- a/xbmc/cores/dvdplayer/DVDDemuxers/Makefile.in
++++ b/xbmc/cores/dvdplayer/DVDDemuxers/Makefile.in
+@@ -8,6 +8,7 @@ SRCS += DVDDemuxPVRClient.cpp
+ SRCS += DVDDemuxShoutcast.cpp
+ SRCS += DVDDemuxUtils.cpp
+ SRCS += DVDDemuxVobsub.cpp
++SRCS += DVDDemuxSpotify.cpp
+ SRCS += DVDFactoryDemuxer.cpp
+ 
+ LIB = DVDDemuxers.a
+diff --git a/xbmc/cores/dvdplayer/DVDInputStreams/DVDFactoryInputStream.cpp b/xbmc/cores/dvdplayer/DVDInputStreams/DVDFactoryInputStream.cpp
+index 03fae82..6fbb11a 100644
+--- a/xbmc/cores/dvdplayer/DVDInputStreams/DVDFactoryInputStream.cpp
++++ b/xbmc/cores/dvdplayer/DVDInputStreams/DVDFactoryInputStream.cpp
+@@ -28,6 +28,7 @@
+ #include "DVDInputStreamPVRManager.h"
+ #include "DVDInputStreamTV.h"
+ #include "DVDInputStreamRTMP.h"
++#include "DVDInputStreamSpotify.h"
+ #ifdef HAVE_LIBBLURAY
+ #include "DVDInputStreamBluray.h"
+ #endif
+@@ -113,6 +114,9 @@ CDVDInputStream* CDVDFactoryInputStream::CreateInputStream(IDVDPlayer* pPlayer,
+   else if(file.substr(0, 7) == "htsp://")
+     return new CDVDInputStreamHTSP();
+ #endif
++  if (item.IsSpotify()){
++	  return new CDVDInputStreamSpotify();
++  }
+ 
+   // our file interface handles all these types of streams
+   return (new CDVDInputStreamFile());
+diff --git a/xbmc/cores/dvdplayer/DVDInputStreams/DVDInputStream.h b/xbmc/cores/dvdplayer/DVDInputStreams/DVDInputStream.h
+index b3b7ae3..7467617 100644
+--- a/xbmc/cores/dvdplayer/DVDInputStreams/DVDInputStream.h
++++ b/xbmc/cores/dvdplayer/DVDInputStreams/DVDInputStream.h
+@@ -40,6 +40,7 @@ enum DVDStreamType
+   DVDSTREAM_TYPE_MPLS   = 10,
+   DVDSTREAM_TYPE_BLURAY = 11,
+   DVDSTREAM_TYPE_PVRMANAGER = 12,
++  DVDSTREAM_TYPE_SPOTIFY = 13,
+ };
+ 
+ #define SEEK_POSSIBLE 0x10 // flag used to check if protocol allows seeks
+diff --git a/xbmc/cores/dvdplayer/DVDInputStreams/DVDInputStreamSpotify.cpp b/xbmc/cores/dvdplayer/DVDInputStreams/DVDInputStreamSpotify.cpp
+new file mode 100644
+index 0000000..935390c
+--- /dev/null
++++ b/xbmc/cores/dvdplayer/DVDInputStreams/DVDInputStreamSpotify.cpp
+@@ -0,0 +1,232 @@
++/*
++ spotyxbmc2 - A project to integrate Spotify into XBMC
++ Copyright (C) 2013  Samuel Cabrero <samuelcabrero@gmail.com>
++
++ This program is free software: you can redistribute it and/or modify
++ it under the terms of the GNU General Public License as published by
++ the Free Software Foundation, either version 3 of the License, or
++ (at your option) any later version.
++
++ This program is distributed in the hope that it will be useful,
++ but WITHOUT ANY WARRANTY; without even the implied warranty of
++ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ GNU General Public License for more details.
++
++ You should have received a copy of the GNU General Public License
++ along with this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include "DVDInputStreamSpotify.h"
++#include "playlists/PlayList.h"
++#include "PlayListPlayer.h"
++#include "utils/log.h"
++#include "utils/URIUtils.h"
++#include "music/spotyXBMC/session/Session.h"
++#include "music/spotyXBMC/radio/RadioHandler.h"
++#include "music/spotyXBMC/player/PlayerHandler.h"
++#include "utils/RingBuffer.h"
++
++#define XMIN(a,b) ((a)<(b)?(a):(b))
++
++using namespace addon_music_spotify;
++using namespace PLAYLIST;
++
++CDVDInputStreamSpotify::CDVDInputStreamSpotify() :
++		CDVDInputStream(DVDSTREAM_TYPE_SPOTIFY) {
++	m_buffer.Destroy();
++	m_currentTrack = 0;
++	m_isPlayerLoaded = false;
++	m_endOfTrack = false;
++	m_totalTime = 0;
++}
++
++CDVDInputStreamSpotify::~CDVDInputStreamSpotify() {
++	Close();
++}
++
++bool CDVDInputStreamSpotify::Open(const char* strFile,
++		const std::string& content) {
++	m_buffer.Create(2048 * sizeof(int16_t) * 50);
++
++	CStdString uri = URIUtils::GetFileName(strFile);
++	CStdString extension = uri.Right(uri.GetLength() - uri.Find('.') - 1);
++	if (extension.Left(12) == "spotifyradio") {
++		//if its a radiotrack the radionumber and tracknumber is secretly
++		// encoded at the end of the extension
++		CStdString trackStr = extension.Right(
++				extension.GetLength() - extension.ReverseFind('#') - 1);
++		CStdString radioNumber = extension.Left(uri.Find('#'));
++		radioNumber = radioNumber.Right(
++				radioNumber.GetLength() - radioNumber.Find('#') - 1);
++		RadioHandler::getInstance()->pushToTrack(atoi(radioNumber),
++				atoi(trackStr));
++	}
++
++	//we have a non legit extension so remove it manually
++	uri = uri.Left(uri.Find('.'));
++
++	Logger::printOut("trying to load track:");
++	Logger::printOut(uri);
++	sp_link *spLink = sp_link_create_from_string(uri);
++	m_currentTrack = sp_link_as_track(spLink);
++	sp_track_add_ref(m_currentTrack);
++	sp_link_release(spLink);
++	m_endOfTrack = false;
++	m_isPlayerLoaded = false;
++	m_totalTime = sp_track_duration(m_currentTrack);
++
++	// Prefetch the next track!
++
++	CPlayList & playlist = g_playlistPlayer.GetPlaylist(PLAYLIST_MUSIC);
++	int nextSong = g_playlistPlayer.GetNextSong();
++
++	if (nextSong >= 0 && nextSong < playlist.size()) {
++		CFileItemPtr song = playlist[nextSong];
++		if (song != NULL) {
++			CStdString uri = song->GetPath();
++			if (uri.Left(7).Equals("spotify")) {
++				uri = uri.Left(uri.Find('.'));
++				Logger::printOut("prefetching track:");
++				Logger::printOut(uri);
++				sp_link *spLink = sp_link_create_from_string(uri);
++				sp_track* track = sp_link_as_track(spLink);
++				sp_session_player_prefetch(getSession(), track);
++				sp_link_release(spLink);
++			}
++		}
++	}
++	return true;
++}
++
++void CDVDInputStreamSpotify::Close() {
++	unloadPlayer();
++	m_buffer.Destroy();
++}
++
++int CDVDInputStreamSpotify::Read(BYTE* pBuffer, int size) {
++	if (!m_isPlayerLoaded)
++		loadPlayer();
++
++	// Wait at most 3 seconds to fill buffer
++	int maxLoops = 60;
++	while (!m_endOfTrack && m_buffer.getMaxReadSize() <= 0) {
++		if (--maxLoops <= 0) {
++			Logger::printOut("Empty buffer");
++			return 0;
++		}
++		Sleep(50);
++	}
++
++	unsigned int want = (unsigned int)
++			XMIN(m_buffer.getMaxReadSize(), (unsigned int)size);
++
++	if (m_buffer.ReadData((char *) pBuffer, want))
++		return want;
++
++	return 0;
++}
++
++bool CDVDInputStreamSpotify::SeekTime(int iTimeInMsec) {
++	Logger::printOut("trying to seek");
++	//if (sp_session_player_seek(getSession(), iTimeInMsec) != SP_ERROR_OK)
++	//	return false;
++	sp_session_player_seek(getSession(), iTimeInMsec);
++	return true;
++}
++
++int64_t CDVDInputStreamSpotify::Seek(int64_t offset, int whence) {
++
++	if (whence == SEEK_POSSIBLE)
++		return 0;
++	return -1;
++}
++
++bool CDVDInputStreamSpotify::IsEOF() {
++// TODO Semaphore
++	return m_endOfTrack;
++}
++
++int64_t CDVDInputStreamSpotify::GetLength() {
++	return m_totalTime;
++}
++
++bool CDVDInputStreamSpotify::Pause(double dTime) {
++//CSingleLock lock(m_RTMPSection);
++	return true;
++}
++
++bool CDVDInputStreamSpotify::loadPlayer() {
++	Logger::printOut("load player");
++	if (!m_isPlayerLoaded) {
++		//do we have a track at all?
++		if (m_currentTrack) {
++			CStdString name;
++			Logger::printOut("load player 2");
++			if (sp_track_is_loaded(m_currentTrack)) {
++				sp_error error = sp_session_player_load(getSession(),
++						m_currentTrack);
++				CStdString message;
++				Logger::printOut("load player 3");
++				message.Format("%s", sp_error_message(error));
++				Logger::printOut(message);
++				Logger::printOut("load player 4");
++				if (SP_ERROR_OK == error) {
++					PlayerHandler::getInstance()->attachPlayer(this);
++					sp_session_player_play(getSession(), true);
++					m_isPlayerLoaded = true;
++					Logger::printOut("load player 5");
++					return true;
++				}
++			}
++		} else
++			return false;
++	}
++	return true;
++}
++
++bool CDVDInputStreamSpotify::unloadPlayer() {
++//make sure there is no music_delivery while we are removing the codec
++	while (!Session::getInstance()->lock()) {
++	}
++	if (m_isPlayerLoaded) {
++		sp_session_player_play(getSession(), false);
++		sp_session_player_unload(getSession());
++		if (m_currentTrack != NULL) {
++			sp_track_release(m_currentTrack);
++		}
++		PlayerHandler::getInstance()->detachPlayer(this);
++	}
++
++	m_currentTrack = NULL;
++	m_isPlayerLoaded = false;
++	m_endOfTrack = true;
++	Session::getInstance()->unlock();
++	return true;
++}
++
++sp_session* CDVDInputStreamSpotify::getSession() {
++	return Session::getInstance()->getSpSession();
++}
++
++int CDVDInputStreamSpotify::sp_musicDelivery(const sp_audioformat *format,
++		const void *frames, int num_frames) {
++	if (num_frames == 0) {
++		Logger::printOut("musicDelivery Discontinuity");
++		// A discontinuity has occurred, flush buffers and return
++		m_buffer.Clear();
++		return 0;
++	}
++
++	int consumedFrames = 0;
++	unsigned int size = num_frames * (int) sizeof(int16_t) * format->channels;
++
++	if (m_buffer.getMaxWriteSize() > size) {
++		if (m_buffer.WriteData((char *) frames, size))
++			consumedFrames = size / ((int) sizeof(int16_t) * format->channels);
++	}
++	return consumedFrames;
++}
++
++void CDVDInputStreamSpotify::sp_endOfTrack() {
++	m_endOfTrack = true;
++}
+diff --git a/xbmc/cores/dvdplayer/DVDInputStreams/DVDInputStreamSpotify.h b/xbmc/cores/dvdplayer/DVDInputStreams/DVDInputStreamSpotify.h
+new file mode 100644
+index 0000000..ec23281
+--- /dev/null
++++ b/xbmc/cores/dvdplayer/DVDInputStreams/DVDInputStreamSpotify.h
+@@ -0,0 +1,59 @@
++#pragma once
++
++/*
++ spotyxbmc2 - A project to integrate Spotify into XBMC
++ Copyright (C) 2013  Samuel Cabrero <samuelcabrero@gmail.com>
++
++ This program is free software: you can redistribute it and/or modify
++ it under the terms of the GNU General Public License as published by
++ the Free Software Foundation, either version 3 of the License, or
++ (at your option) any later version.
++
++ This program is distributed in the hope that it will be useful,
++ but WITHOUT ANY WARRANTY; without even the implied warranty of
++ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ GNU General Public License for more details.
++
++ You should have received a copy of the GNU General Public License
++ along with this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include "DVDInputStream.h"
++#include "utils/RingBuffer.h"
++#include "music/spotyXBMC/player/ISpotifyPlayer.h"
++#include <libspotify/api.h>
++
++using namespace addon_music_spotify;
++class CDVDInputStreamSpotify: public CDVDInputStream,
++		public CDVDInputStream::ISeekTime,
++		public ISpotifyPlayer {
++public:
++	CDVDInputStreamSpotify();
++	virtual ~CDVDInputStreamSpotify();
++
++	virtual bool Open(const char* strFile, const std::string& content);
++	virtual void Close();
++	virtual int Read(BYTE* buf, int buf_size);
++	bool SeekTime(int iTimeInMsec);
++	virtual int64_t Seek(int64_t offset, int whence);
++	virtual bool IsEOF();
++	virtual int64_t GetLength();
++	virtual bool Pause(double dTime);
++
++	int sp_musicDelivery(const sp_audioformat *format, const void *frames,
++			int num_frames);
++	void sp_endOfTrack();
++
++private:
++	bool loadPlayer();
++	bool unloadPlayer();
++	sp_session * getSession();
++
++	sp_track *m_currentTrack;
++	CRingBuffer m_buffer;
++	//bool m_startStream;
++	bool m_isPlayerLoaded;
++	bool m_endOfTrack;
++	int64_t m_totalTime; // time in milliseconds
++};
++
+diff --git a/xbmc/cores/dvdplayer/DVDInputStreams/Makefile b/xbmc/cores/dvdplayer/DVDInputStreams/Makefile
+index 4607ed3..0bed883 100644
+--- a/xbmc/cores/dvdplayer/DVDInputStreams/Makefile
++++ b/xbmc/cores/dvdplayer/DVDInputStreams/Makefile
+@@ -14,6 +14,7 @@ SRCS=	DVDFactoryInputStream.cpp \
+ 	DVDInputStreamPVRManager.cpp \
+ 	DVDInputStreamStack.cpp \
+ 	DVDInputStreamTV.cpp \
++	DVDInputStreamSpotify.cpp \
+ 	DVDStateSerializer.cpp \
+ 
+ LIB=	DVDInputStreams.a
+diff --git a/xbmc/cores/paplayer/CodecFactory.cpp b/xbmc/cores/paplayer/CodecFactory.cpp
+index c88f4a8..80c6967 100644
+--- a/xbmc/cores/paplayer/CodecFactory.cpp
++++ b/xbmc/cores/paplayer/CodecFactory.cpp
+@@ -41,8 +41,7 @@
+ #include "URL.h"
+ #include "DVDPlayerCodec.h"
+ #include "PCMCodec.h"
+-
+-#include "../../music/spotyXBMC/Addon.music.spotify.h"
++#include "SpotifyCodec.h"
+ 
+ ICodec* CodecFactory::CreateCodec(const CStdString& strFileType)
+ {
+@@ -114,7 +113,7 @@ ICodec* CodecFactory::CreateCodec(const CStdString& strFileType)
+   //spotify
+   //TODO see if any addon has the ability to play the format.... now hardcode spotify
+   else if (strFileType.Left(7).Equals("spotify"))
+-    return g_spotify->GetCodec();
++    return new SpotifyCodec();
+ 
+   return NULL;
+ }
+diff --git a/xbmc/cores/paplayer/Makefile.in b/xbmc/cores/paplayer/Makefile.in
+index 31cc8bd..660e5b2 100644
+--- a/xbmc/cores/paplayer/Makefile.in
++++ b/xbmc/cores/paplayer/Makefile.in
+@@ -25,6 +25,7 @@ SRCS += TimidityCodec.cpp
+ SRCS += VGMCodec.cpp
+ SRCS += WAVcodec.cpp
+ SRCS += YMCodec.cpp
++SRCS += SpotifyCodec.cpp
+ 
+ ifeq (@USE_ASAP_CODEC@,1)
+ SRCS += ASAPCodec.cpp
+diff --git a/xbmc/cores/paplayer/SpotifyCodec.cpp b/xbmc/cores/paplayer/SpotifyCodec.cpp
+new file mode 100644
+index 0000000..b6b2cd2
+--- /dev/null
++++ b/xbmc/cores/paplayer/SpotifyCodec.cpp
+@@ -0,0 +1,247 @@
++/*
++ spotyxbmc2 - A project to integrate Spotify into XBMC
++ Copyright (C) 2011  David Erenger
++               2013  Samuel Cabrero <samuelcabrero@gmail.com>
++
++ This program is free software: you can redistribute it and/or modify
++ it under the terms of the GNU General Public License as published by
++ the Free Software Foundation, either version 3 of the License, or
++ (at your option) any later version.
++
++ This program is distributed in the hope that it will be useful,
++ but WITHOUT ANY WARRANTY; without even the implied warranty of
++ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ GNU General Public License for more details.
++
++ You should have received a copy of the GNU General Public License
++ along with this program.  If not, see <http://www.gnu.org/licenses/>.
++
++ For contact with the author:
++ david.erenger@gmail.com
++ */
++
++#include "SpotifyCodec.h"
++#include "playlists/PlayList.h"
++#include "PlayListPlayer.h"
++#include "Util.h"
++#include "utils/URIUtils.h"
++#include <stdint.h>
++#include <string.h>
++#include "music/spotyXBMC/session/Session.h"
++#include "music/spotyXBMC/radio/RadioHandler.h"
++#include "music/spotyXBMC/player/PlayerHandler.h"
++
++using namespace addon_music_spotify;
++using namespace PLAYLIST;
++
++SpotifyCodec::SpotifyCodec() {
++	m_SampleRate = 44100;
++	m_Channels = 2;
++	m_BitsPerSample = 16;
++	// The bitrate is hardcoded, we dont no it before first music delivery and
++	// then its to late, the skin has already printed it out
++	m_Bitrate = Settings::getInstance()->useHighBitrate() ? 320000 : 160000;
++	m_CodecName = "spotify";
++	m_DataFormat = AE_FMT_S16NE;
++	m_TotalTime = 0;
++	m_currentTrack = 0;
++	m_isPlayerLoaded = false;
++	m_buffer = 0;
++	m_bufferPos = 0;
++	m_bufferSize = 0;
++	m_endOfTrack = false;
++	m_startStream = false;
++}
++
++SpotifyCodec::~SpotifyCodec() {
++	DeInit();
++	delete m_buffer;
++}
++
++bool SpotifyCodec::Init(const CStdString & strFile, unsigned int filecache) {
++	m_bufferSize = 2048 * sizeof(int16_t) * 50;
++	m_buffer = new char[m_bufferSize];
++	CStdString uri = URIUtils::GetFileName(strFile);
++	CStdString extension = uri.Right(uri.GetLength() - uri.Find('.') - 1);
++	if (extension.Left(12) == "spotifyradio") {
++		//if its a radiotrack the radionumber and tracknumber is secretly
++		// encoded at the end of the extension
++		CStdString trackStr = extension.Right(
++				extension.GetLength() - extension.ReverseFind('#') - 1);
++		Logger::printOut(extension);
++		CStdString radioNumber = extension.Left(uri.Find('#'));
++		Logger::printOut(radioNumber);
++		radioNumber = radioNumber.Right(
++				radioNumber.GetLength() - radioNumber.Find('#') - 1);
++		Logger::printOut("loading codec radio");
++		RadioHandler::getInstance()->pushToTrack(atoi(radioNumber),
++				atoi(trackStr));
++	}
++	//we have a non legit extension so remove it manually
++	uri = uri.Left(uri.Find('.'));
++
++	Logger::printOut("trying to load track:");
++	Logger::printOut(uri);
++	sp_link *spLink = sp_link_create_from_string(uri);
++	m_currentTrack = sp_link_as_track(spLink);
++	sp_track_add_ref(m_currentTrack);
++	sp_link_release(spLink);
++	m_endOfTrack = false;
++	m_bufferPos = 0;
++	m_startStream = false;
++	m_isPlayerLoaded = false;
++	m_TotalTime = sp_track_duration(m_currentTrack);
++
++	//prefetch the next track!
++
++	CPlayList & playlist = g_playlistPlayer.GetPlaylist(PLAYLIST_MUSIC);
++	int nextSong = g_playlistPlayer.GetNextSong();
++
++	if (nextSong >= 0 && nextSong < playlist.size()) {
++		CFileItemPtr song = playlist[nextSong];
++		if (song != NULL) {
++			CStdString uri = song->GetPath();
++			if (uri.Left(7).Equals("spotify")) {
++				uri = uri.Left(uri.Find('.'));
++				Logger::printOut("prefetching track:");
++				Logger::printOut(uri);
++				sp_link *spLink = sp_link_create_from_string(uri);
++				sp_track* track = sp_link_as_track(spLink);
++				sp_session_player_prefetch(getSession(), track);
++				sp_link_release(spLink);
++			}
++		}
++	}
++	return true;
++}
++
++void SpotifyCodec::DeInit() {
++	unloadPlayer();
++}
++
++bool SpotifyCodec::CanSeek() {
++	return true;
++}
++
++int64_t SpotifyCodec::Seek(int64_t iSeekTime) {
++	Logger::printOut("trying to seek");
++	sp_session_player_seek(getSession(), (int) iSeekTime);
++	m_bufferPos = 0;
++	return iSeekTime;
++}
++
++int SpotifyCodec::ReadPCM(BYTE *pBuffer, int size, int *actualsize) {
++	*actualsize = 0;
++	if (!m_isPlayerLoaded)
++		loadPlayer();
++
++	if (m_startStream) {
++		if (m_endOfTrack && m_bufferPos == 0) {
++			return READ_EOF;
++		} else if (m_bufferPos > 0) {
++			int amountToMove = m_bufferPos;
++			if (m_bufferPos > size)
++				amountToMove = size;
++			memcpy(pBuffer, m_buffer, amountToMove);
++			memmove(m_buffer, m_buffer + amountToMove,
++					m_bufferSize - amountToMove);
++			m_bufferPos -= amountToMove;
++			*actualsize = amountToMove;
++		}
++	}
++	return READ_SUCCESS;
++}
++
++bool SpotifyCodec::CanInit() {
++	return true;
++}
++
++bool SpotifyCodec::loadPlayer() {
++	Logger::printOut("load player");
++	if (!m_isPlayerLoaded) {
++		//do we have a track at all?
++		if (m_currentTrack) {
++			CStdString name;
++			Logger::printOut("load player 2");
++			if (sp_track_is_loaded(m_currentTrack)) {
++				sp_error error = sp_session_player_load(getSession(),
++						m_currentTrack);
++				CStdString message;
++				Logger::printOut("load player 3");
++				message.Format("%s", sp_error_message(error));
++				Logger::printOut(message);
++				Logger::printOut("load player 4");
++				if (SP_ERROR_OK == error) {
++					PlayerHandler::getInstance()->attachPlayer(this);
++					sp_session_player_play(getSession(), true);
++					m_isPlayerLoaded = true;
++					Logger::printOut("load player 5");
++					return true;
++				}
++			}
++		} else
++			return false;
++	}
++	return true;
++}
++
++bool SpotifyCodec::unloadPlayer() {
++	//make sure there is no music_delivery while we are removing the codec
++	while (!Session::getInstance()->lock()) {
++	}
++	if (m_isPlayerLoaded) {
++		sp_session_player_play(getSession(), false);
++		sp_session_player_unload(getSession());
++		if (m_currentTrack != NULL) {
++			sp_track_release(m_currentTrack);
++		}
++		PlayerHandler::getInstance()->detachPlayer(this);
++	}
++
++	m_currentTrack = NULL;
++	m_isPlayerLoaded = false;
++	m_endOfTrack = true;
++	Session::getInstance()->unlock();
++	return true;
++}
++
++int SpotifyCodec::sp_musicDelivery(const sp_audioformat *format,
++		const void *frames, int num_frames) {
++	//Logger::printOut("music delivery");
++	int amountToMove = num_frames * (int) sizeof(int16_t) * format->channels;
++
++	if ((m_bufferPos + amountToMove) >= m_bufferSize) {
++		amountToMove = m_bufferSize - m_bufferPos;
++	}
++
++	memcpy(m_buffer + m_bufferPos, frames, amountToMove);
++	m_bufferPos += amountToMove;
++
++	if (!m_startStream && m_bufferPos == m_bufferSize) {
++		//now the buffer is full, start playing
++		m_startStream = true;
++	}
++
++	return amountToMove / ((int) sizeof(int16_t) * format->channels);
++}
++
++void SpotifyCodec::sp_endOfTrack() {
++	m_endOfTrack = true;
++}
++
++sp_session* SpotifyCodec::getSession() {
++	return Session::getInstance()->getSpSession();
++}
++
++CAEChannelInfo SpotifyCodec::GetChannelInfo() {
++	static enum AEChannel map[2][3] = { { AE_CH_FC, AE_CH_NULL }, { AE_CH_FL,
++			AE_CH_FR, AE_CH_NULL } };
++
++	if (m_Channels > 2) {
++		Logger::printOut("m_Channels is bigger than 2, please fix code,"
++				"I can't return a valid AEChannel map");
++//    return CAEUtil::GuessChLayout(m_Channels);
++	}
++
++	return CAEChannelInfo(map[m_Channels - 1]);
++}
+diff --git a/xbmc/cores/paplayer/SpotifyCodec.h b/xbmc/cores/paplayer/SpotifyCodec.h
+new file mode 100644
+index 0000000..fa243a6
+--- /dev/null
++++ b/xbmc/cores/paplayer/SpotifyCodec.h
+@@ -0,0 +1,58 @@
++#pragma once
++/*
++ spotyxbmc2 - A project to integrate Spotify into XBMC
++ Copyright (C) 2011  David Erenger
++               2013  Samuel Cabrero <samuelcabrero@gmail.com>
++
++ This program is free software: you can redistribute it and/or modify
++ it under the terms of the GNU General Public License as published by
++ the Free Software Foundation, either version 3 of the License, or
++ (at your option) any later version.
++
++ This program is distributed in the hope that it will be useful,
++ but WITHOUT ANY WARRANTY; without even the implied warranty of
++ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ GNU General Public License for more details.
++
++ You should have received a copy of the GNU General Public License
++ along with this program.  If not, see <http://www.gnu.org/licenses/>.
++
++ For contact with the author:
++ david.erenger@gmail.com
++ */
++
++#include "cores/paplayer/CachingCodec.h"
++#include "music/spotyXBMC/player/ISpotifyPlayer.h"
++#include <libspotify/api.h>
++
++using namespace addon_music_spotify;
++class SpotifyCodec: public CachingCodec, public ISpotifyPlayer {
++public:
++	SpotifyCodec();
++	virtual ~SpotifyCodec();
++
++	bool Init(const CStdString &strFile, unsigned int filecache);
++	void DeInit();
++	bool CanSeek();
++	int64_t Seek(int64_t iSeekTime);
++	int ReadPCM(BYTE *pBuffer, int size, int *actualsize);
++	bool CanInit();
++	CAEChannelInfo GetChannelInfo();
++
++	int sp_musicDelivery(const sp_audioformat *format, const void *frames,
++			int num_frames);
++	void sp_endOfTrack();
++
++private:
++	bool loadPlayer();
++	bool unloadPlayer();
++
++	sp_session * getSession();
++	sp_track *m_currentTrack;
++	bool m_startStream;
++	bool m_isPlayerLoaded;
++	bool m_endOfTrack;
++	int m_bufferSize;
++	char *m_buffer;
++	int m_bufferPos;
++};
+diff --git a/xbmc/music/Makefile b/xbmc/music/Makefile
+index e0b8012..2f33242 100644
+--- a/xbmc/music/Makefile
++++ b/xbmc/music/Makefile
+@@ -23,8 +23,6 @@ SRCS=Album.cpp \
+      spotyXBMC/search/Search.cpp \
+      spotyXBMC/search/SearchHandler.cpp \
+      spotyXBMC/search/SearchResultBackgroundLoader.cpp \
+-     spotyXBMC/player/Codec.cpp \
+-     spotyXBMC/player/PlayerHandler.cpp \
+      spotyXBMC/playlist/TopLists.cpp \
+      spotyXBMC/playlist/SxPlaylist.cpp \
+      spotyXBMC/playlist/StarredList.cpp \
+@@ -37,7 +35,9 @@ SRCS=Album.cpp \
+      spotyXBMC/thumb/ThumbStore.cpp \
+      spotyXBMC/track/SxTrack.cpp \
+      spotyXBMC/track/TrackStore.cpp \
+-     spotyXBMC/track/TrackContainer.cpp
++     spotyXBMC/track/TrackContainer.cpp \
++     spotyXBMC/player/PlayerHandler.cpp \
++     spotyXBMC/player/ISpotifyPlayer.cpp
+ 
+ LIB=music.a
+ 
+diff --git a/xbmc/music/spotyXBMC/Addon.music.spotify.cpp b/xbmc/music/spotyXBMC/Addon.music.spotify.cpp
+index a743531..7a10a81 100644
+--- a/xbmc/music/spotyXBMC/Addon.music.spotify.cpp
++++ b/xbmc/music/spotyXBMC/Addon.music.spotify.cpp
+@@ -1,6 +1,7 @@
+ /*
+  spotyxbmc2 - A project to integrate Spotify into XBMC
+  Copyright (C) 2011  David Erenger
++               2013  Samuel Cabrero <samuelcabrero@gmail.com>
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+@@ -756,7 +757,3 @@ bool Addon_music_spotify::Search(CStdString query, CFileItemList& items) {
+ 	return true;
+ }
+ 
+-ICodec* Addon_music_spotify::GetCodec() {
+-	return (ICodec*) PlayerHandler::getInstance()->getCodec();
+-}
+-
+diff --git a/xbmc/music/spotyXBMC/Addon.music.spotify.h b/xbmc/music/spotyXBMC/Addon.music.spotify.h
+index d54d427..38eac7b 100644
+--- a/xbmc/music/spotyXBMC/Addon.music.spotify.h
++++ b/xbmc/music/spotyXBMC/Addon.music.spotify.h
+@@ -1,6 +1,7 @@
+ /*
+  spotyxbmc2 - A project to integrate Spotify into XBMC
+  Copyright (C) 2011  David Erenger
++               2013  Samuel Cabrero <samuelcabrero@gmail.com>
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+@@ -59,7 +60,6 @@ public:
+   bool ToggleStarAlbum(CFileItemPtr& item);
+ 
+   bool Search(CStdString query, CFileItemList& items);
+-  ICodec* GetCodec();
+ 
+ private:
+   bool m_isEnabled;
+diff --git a/xbmc/music/spotyXBMC/player/Codec.cpp b/xbmc/music/spotyXBMC/player/Codec.cpp
+deleted file mode 100644
+index 8ce9a29..0000000
+--- a/xbmc/music/spotyXBMC/player/Codec.cpp
++++ /dev/null
+@@ -1,241 +0,0 @@
+-/*
+- spotyxbmc2 - A project to integrate Spotify into XBMC
+- Copyright (C) 2011  David Erenger
+-
+- This program is free software: you can redistribute it and/or modify
+- it under the terms of the GNU General Public License as published by
+- the Free Software Foundation, either version 3 of the License, or
+- (at your option) any later version.
+-
+- This program is distributed in the hope that it will be useful,
+- but WITHOUT ANY WARRANTY; without even the implied warranty of
+- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- GNU General Public License for more details.
+-
+- You should have received a copy of the GNU General Public License
+- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-
+- For contact with the author:
+- david.erenger@gmail.com
+- */
+-
+-#include "../session/Session.h"
+-#include "Codec.h"
+-#include "Util.h"
+-#include "utils/URIUtils.h"
+-#include <stdint.h>
+-#include "PlayerHandler.h"
+-#include "../radio/RadioHandler.h"
+-#include "../SxSettings.h"
+-#include "../../PlayListPlayer.h"
+-#include "../../../playlists/PlayList.h"
+-
+-using namespace std;
+-using namespace PLAYLIST;
+-
+-namespace addon_music_spotify {
+-
+-  Codec::Codec() {
+-    m_SampleRate = 44100;
+-    m_Channels = 2;
+-    m_BitsPerSample = 16;
+-    //the bitrate is hardcoded, we dont no it before first music delivery and then its to late, the skin has already printed it out
+-    m_Bitrate = Settings::getInstance()->useHighBitrate() ? 320000 : 160000;
+-    m_CodecName = "spotify";
+-	m_DataFormat = AE_FMT_S16NE;
+-    m_TotalTime = 0;
+-    m_currentTrack = 0;
+-    m_isPlayerLoaded = false;
+-    m_buffer = 0;
+-  }
+-
+-  Codec::~Codec() {
+-    DeInit();
+-    delete m_buffer;
+-  }
+-
+-  bool Codec::Init(const CStdString & strFile, unsigned int filecache) {
+-    m_bufferSize = 2048 * sizeof(int16_t) * 50;
+-    m_buffer = new char[m_bufferSize];
+-    CStdString uri = URIUtils::GetFileName(strFile);
+-    CStdString extension = uri.Right(uri.GetLength() - uri.Find('.') - 1);
+-    if (extension.Left(12) == "spotifyradio") {
+-      //if its a radiotrack the radionumber and tracknumber is secretly encoded at the end of the extension
+-      CStdString trackStr = extension.Right(
+-          extension.GetLength() - extension.ReverseFind('#') - 1);
+-      Logger::printOut(extension);
+-      CStdString radioNumber = extension.Left(uri.Find('#'));
+-      Logger::printOut(radioNumber);
+-      radioNumber = radioNumber.Right(
+-          radioNumber.GetLength() - radioNumber.Find('#') - 1);
+-      Logger::printOut("loading codec radio");
+-      RadioHandler::getInstance()->pushToTrack(atoi(radioNumber),
+-          atoi(trackStr));
+-    }
+-    //we have a non legit extension so remove it manually
+-    uri = uri.Left(uri.Find('.'));
+-
+-    Logger::printOut("trying to load track:");
+-    Logger::printOut(uri);
+-    sp_link *spLink = sp_link_create_from_string(uri);
+-    m_currentTrack = sp_link_as_track(spLink);
+-    sp_track_add_ref(m_currentTrack);
+-    sp_link_release(spLink);
+-    m_endOfTrack = false;
+-    m_bufferPos = 0;
+-    m_startStream = false;
+-    m_isPlayerLoaded = false;
+-    m_TotalTime = sp_track_duration(m_currentTrack);
+-
+-    //prefetch the next track!
+-
+-	  CPlayList& playlist = g_playlistPlayer.GetPlaylist(PLAYLIST_MUSIC);
+-	  int nextSong = g_playlistPlayer.GetNextSong();
+-
+-	  if (nextSong >= 0 && nextSong < playlist.size()){
+-	  	CFileItemPtr song = playlist[nextSong];
+-	  	if (song != NULL){
+-	  		CStdString uri = song->GetPath();
+-	  		if (uri.Left(7).Equals("spotify")){
+-	  			uri = uri.Left(uri.Find('.'));
+-	  	    Logger::printOut("prefetching track:");
+-	  	    Logger::printOut(uri);
+-	  	    sp_link *spLink = sp_link_create_from_string(uri);
+-	  	    sp_track* track = sp_link_as_track(spLink);
+-	  	    sp_session_player_prefetch(getSession(), track);
+-	  	    sp_link_release(spLink);
+-	  		}
+-	  	}
+-	  }
+-
+-    return true;
+-  }
+-
+-  void Codec::DeInit() {
+-    unloadPlayer();
+-    PlayerHandler::getInstance()->removeCodec();
+-  }
+-
+-  int64_t Codec::Seek(int64_t iSeekTime) {
+-    Logger::printOut("trying to seek");
+-    sp_session_player_seek(getSession(), iSeekTime);
+-    m_bufferPos = 0;
+-    return iSeekTime;
+-  }
+-
+-  int Codec::ReadPCM(BYTE *pBuffer, int size, int *actualsize) {
+-    *actualsize = 0;
+-    if (!m_isPlayerLoaded)
+-      loadPlayer();
+-
+-    if (m_startStream) {
+-      if (m_endOfTrack && m_bufferPos == 0) {
+-        return READ_EOF;
+-      } else if (m_bufferPos > 0) {
+-        int amountToMove = m_bufferPos;
+-        if (m_bufferPos > size)
+-          amountToMove = size;
+-        memcpy(pBuffer, m_buffer, amountToMove);
+-        memmove(m_buffer, m_buffer + amountToMove, m_bufferSize - amountToMove);
+-        m_bufferPos -= amountToMove;
+-        *actualsize = amountToMove;
+-      }
+-    }
+-    return READ_SUCCESS;
+-  }
+-
+-  bool Codec::CanInit() {
+-    return true;
+-  }
+-
+-  void Codec::endOfTrack() {
+-    m_endOfTrack = true;
+-  }
+-
+-  bool Codec::loadPlayer() {
+-    Logger::printOut("load player");
+-    if (!m_isPlayerLoaded) {
+-      //do we have a track at all?
+-      if (m_currentTrack) {
+-        CStdString name;
+-        Logger::printOut("load player 2");
+-        if (sp_track_is_loaded(m_currentTrack)) {
+-          sp_error error = sp_session_player_load(getSession(), m_currentTrack);
+-          CStdString message;
+-          Logger::printOut("load player 3");
+-          message.Format("%s", sp_error_message(error));
+-          Logger::printOut(message);
+-          Logger::printOut("load player 4");
+-          if (SP_ERROR_OK == error) {
+-            sp_session_player_play(getSession(), true);
+-            m_isPlayerLoaded = true;
+-            Logger::printOut("load player 5");
+-            return true;
+-          }
+-        }
+-      } else
+-        return false;
+-    }
+-    return true;
+-  }
+-
+-  bool Codec::unloadPlayer() {
+-    //make sure there is no music_delivery while we are removing the codec
+-    while (!Session::getInstance()->lock()) {
+-    }
+-    if (m_isPlayerLoaded) {
+-      sp_session_player_play(getSession(), false);
+-      sp_session_player_unload(getSession());
+-      if (m_currentTrack != NULL) {
+-        sp_track_release(m_currentTrack);
+-      }
+-    }
+-
+-    m_currentTrack = NULL;
+-    m_isPlayerLoaded = false;
+-    m_endOfTrack = true;
+-    Session::getInstance()->unlock();
+-    return true;
+-  }
+-
+-  int Codec::musicDelivery(int channels, int sample_rate, const void *frames,
+-      int num_frames) {
+-    //Logger::printOut("music delivery");
+-    int amountToMove = num_frames * (int) sizeof(int16_t) * channels;
+-
+-    if ((m_bufferPos + amountToMove) >= m_bufferSize) {
+-      amountToMove = m_bufferSize - m_bufferPos;
+-    }
+-
+-    memcpy(m_buffer + m_bufferPos, frames, amountToMove);
+-    m_bufferPos += amountToMove;
+-
+-    if (!m_startStream && m_bufferPos == m_bufferSize) {
+-      //now the buffer is full, start playing
+-      m_startStream = true;
+-    }
+-
+-    return amountToMove / ((int) sizeof(int16_t) * channels);
+-  }
+-
+-  sp_session* Codec::getSession() {
+-    return Session::getInstance()->getSpSession();
+-  }
+-
+-  CAEChannelInfo Codec::GetChannelInfo()
+-  {
+-    static enum AEChannel map[2][3] = {
+-      {AE_CH_FC, AE_CH_NULL},
+-      {AE_CH_FL, AE_CH_FR  , AE_CH_NULL}
+-    };
+-
+-    if (m_Channels > 2) {
+-	  Logger::printOut("m_Channels is bigger than 2, please fix code, I can´t return a valid AEChannel map");
+-//    return CAEUtil::GuessChLayout(m_Channels);
+-    }
+-
+-  return CAEChannelInfo(map[m_Channels - 1]);
+-  }
+-}
+-
+-/* namespace addon_music_spotify */
+diff --git a/xbmc/music/spotyXBMC/player/Codec.h b/xbmc/music/spotyXBMC/player/Codec.h
+deleted file mode 100644
+index 09a32d4..0000000
+--- a/xbmc/music/spotyXBMC/player/Codec.h
++++ /dev/null
+@@ -1,63 +0,0 @@
+-/*
+- spotyxbmc2 - A project to integrate Spotify into XBMC
+- Copyright (C) 2011  David Erenger
+-
+- This program is free software: you can redistribute it and/or modify
+- it under the terms of the GNU General Public License as published by
+- the Free Software Foundation, either version 3 of the License, or
+- (at your option) any later version.
+-
+- This program is distributed in the hope that it will be useful,
+- but WITHOUT ANY WARRANTY; without even the implied warranty of
+- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- GNU General Public License for more details.
+-
+- You should have received a copy of the GNU General Public License
+- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-
+- For contact with the author:
+- david.erenger@gmail.com
+- */
+-
+-#ifndef CODEC_H_
+-#define CODEC_H_
+-#include "../../../cores/paplayer/CachingCodec.h"
+-#include <libspotify/api.h>
+-
+-namespace addon_music_spotify {
+-
+-  class Codec: public CachingCodec {
+-  public:
+-    Codec();
+-    virtual ~Codec();
+-    virtual bool Init(const CStdString &strFile, unsigned int filecache);
+-    virtual void DeInit();
+-    virtual bool CanSeek() {
+-      return true;
+-    }
+-    virtual int64_t Seek(int64_t iSeekTime);
+-    virtual int ReadPCM(BYTE *pBuffer, int size, int *actualsize);
+-    virtual bool CanInit();
+-	virtual CAEChannelInfo GetChannelInfo();
+-
+-    int musicDelivery(int channels, int sample_rate, const void *frames, int num_frames);
+-    void endOfTrack();
+-
+-    friend class PlayerHandler;
+-
+-  private:
+-
+-    bool loadPlayer();
+-    bool unloadPlayer();
+-    sp_session * getSession();
+-    sp_track *m_currentTrack;
+-    bool m_startStream;
+-    bool m_isPlayerLoaded;
+-    bool m_endOfTrack;
+-    int m_bufferSize;
+-    char *m_buffer;
+-    int m_bufferPos;
+-  };
+-
+-} /* namespace addon_music_spotify */
+-#endif /* CODEC_H_ */
+diff --git a/xbmc/music/spotyXBMC/player/ISpotifyPlayer.cpp b/xbmc/music/spotyXBMC/player/ISpotifyPlayer.cpp
+new file mode 100644
+index 0000000..3a49fbc
+--- /dev/null
++++ b/xbmc/music/spotyXBMC/player/ISpotifyPlayer.cpp
+@@ -0,0 +1,27 @@
++/*
++ spotyxbmc2 - A project to integrate Spotify into XBMC
++ Copyright (C) 2013  Samuel Cabrero <samuelcabrero@gmail.com>
++
++ This program is free software: you can redistribute it and/or modify
++ it under the terms of the GNU General Public License as published by
++ the Free Software Foundation, either version 3 of the License, or
++ (at your option) any later version.
++
++ This program is distributed in the hope that it will be useful,
++ but WITHOUT ANY WARRANTY; without even the implied warranty of
++ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ GNU General Public License for more details.
++
++ You should have received a copy of the GNU General Public License
++ along with this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include "ISpotifyPlayer.h"
++
++namespace addon_music_spotify {
++ISpotifyPlayer::ISpotifyPlayer() {
++}
++
++ISpotifyPlayer::~ISpotifyPlayer() {
++}
++}
+diff --git a/xbmc/music/spotyXBMC/player/ISpotifyPlayer.h b/xbmc/music/spotyXBMC/player/ISpotifyPlayer.h
+new file mode 100644
+index 0000000..5118e22
+--- /dev/null
++++ b/xbmc/music/spotyXBMC/player/ISpotifyPlayer.h
+@@ -0,0 +1,33 @@
++#pragma once
++
++/*
++ spotyxbmc2 - A project to integrate Spotify into XBMC
++ Copyright (C) 2013  Samuel Cabrero <samuelcabrero@gmail.com>
++
++ This program is free software: you can redistribute it and/or modify
++ it under the terms of the GNU General Public License as published by
++ the Free Software Foundation, either version 3 of the License, or
++ (at your option) any later version.
++
++ This program is distributed in the hope that it will be useful,
++ but WITHOUT ANY WARRANTY; without even the implied warranty of
++ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ GNU General Public License for more details.
++
++ You should have received a copy of the GNU General Public License
++ along with this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include <libspotify/api.h>
++
++namespace addon_music_spotify {
++class ISpotifyPlayer {
++public:
++	ISpotifyPlayer();
++	virtual ~ISpotifyPlayer();
++
++	virtual int sp_musicDelivery(const sp_audioformat *format,
++			const void *frames, int num_frames)=0;
++	virtual void sp_endOfTrack()=0;
++};
++}
+diff --git a/xbmc/music/spotyXBMC/player/PlayerHandler.cpp b/xbmc/music/spotyXBMC/player/PlayerHandler.cpp
+index a23f7c8..6ae7259 100644
+--- a/xbmc/music/spotyXBMC/player/PlayerHandler.cpp
++++ b/xbmc/music/spotyXBMC/player/PlayerHandler.cpp
+@@ -1,6 +1,7 @@
+ /*
+  spotyxbmc2 - A project to integrate Spotify into XBMC
+  Copyright (C) 2011  David Erenger
++               2013  Samuel Cabrero <samuelcabrero@gmail.com>
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+@@ -20,62 +21,58 @@
+  */
+ 
+ #include "PlayerHandler.h"
+-#include "Codec.h"
++#include "ISpotifyPlayer.h"
+ #include "../session/Session.h"
+ 
+ namespace addon_music_spotify {
+ 
+-  PlayerHandler::PlayerHandler() {
+-    m_currentCodec = NULL;
+-    m_preloadingCodec = NULL;
+-  }
+-
+-  PlayerHandler* PlayerHandler::m_instance = 0;
+-  PlayerHandler *PlayerHandler::getInstance() {
+-    return m_instance ? m_instance : (m_instance = new PlayerHandler);
+-  }
++PlayerHandler* PlayerHandler::m_instance = 0;
++ISpotifyPlayer* PlayerHandler::m_player = 0;
++PlayerHandler *PlayerHandler::getInstance() {
++	return m_instance ? m_instance : (m_instance = new PlayerHandler());
++}
++ISpotifyPlayer* PlayerHandler::getPlayer() {
++	return m_player;
++}
+ 
+-  void PlayerHandler::deInit() {
+-    if (m_instance == NULL)
+-      return;
+-    if (m_instance->m_currentCodec != NULL)
+-      m_instance->m_currentCodec->unloadPlayer();
+-    //The codec is probably deleted by xbmc on exit
+-    //  delete m_currentCodec();
+-  }
++PlayerHandler::PlayerHandler() {
++	m_instance = 0;
++}
+ 
+-  Codec *PlayerHandler::getCodec() {
+-    //do some checks if it is a spotify track and if its loaded and so on
+-    if (m_currentCodec == NULL) {
+-      //start with a init flag
+-      m_currentCodec = new Codec();
+-      return m_currentCodec;
+-    }
+-    return NULL;
+-    //}
+-    //if there is an other preloading track, remove it
+-    //if (m_preloadingCodec)
+-    //  delete m_preloadingCodec;
+-    //start with a preload flag
+-    //m_preloadingCodec = new Codec();
+-    //return m_preloadingCodec;
+-  }
++PlayerHandler::~PlayerHandler() {
++	if (!m_instance)
++		return;
++	m_instance->detachPlayer(m_player);
++}
+ 
+-  PlayerHandler::~PlayerHandler() {
+-  }
++void PlayerHandler::deInit() {
++	if (!m_instance)
++		return;
++	m_instance->detachPlayer(m_player);
++}
+ 
+-  void PlayerHandler::removeCodec() {
+-    m_currentCodec = NULL;
+-  }
++int PlayerHandler::cb_musicDelivery(sp_session *session,
++		const sp_audioformat *format, const void *frames, int num_frames) {
++	if (m_instance) {
++		ISpotifyPlayer *player = m_instance->getPlayer();
++		if (player)
++			return player->sp_musicDelivery(format, frames, num_frames);
++	}
++	return 0;
++}
+ 
+-  int PlayerHandler::cb_musicDelivery(sp_session *session,
+-      const sp_audioformat *format, const void *frames, int num_frames) {
+-    return m_instance->getCurrentCodec()->musicDelivery(format->channels,
+-        format->sample_rate, frames, num_frames);
+-  }
++void PlayerHandler::cb_endOfTrack(sp_session *session) {
++	if (m_instance) {
++		ISpotifyPlayer *player = m_instance->getPlayer();
++		if (player)
++			player->sp_endOfTrack();
++	}
++}
+ 
+-  void PlayerHandler::cb_endOfTrack(sp_session *session) {
+-    m_instance->getCurrentCodec()->endOfTrack();
+-  }
++void PlayerHandler::attachPlayer(ISpotifyPlayer *player) {
++	m_player = player;
++}
++void PlayerHandler::detachPlayer(ISpotifyPlayer *player) {
++	m_player = 0;
+ }
+-/* namespace addon_music_spotify */
++}/* namespace addon_music_spotify */
+diff --git a/xbmc/music/spotyXBMC/player/PlayerHandler.h b/xbmc/music/spotyXBMC/player/PlayerHandler.h
+index d29a0cb..c363da6 100644
+--- a/xbmc/music/spotyXBMC/player/PlayerHandler.h
++++ b/xbmc/music/spotyXBMC/player/PlayerHandler.h
+@@ -1,6 +1,7 @@
+ /*
+  spotyxbmc2 - A project to integrate Spotify into XBMC
+  Copyright (C) 2011  David Erenger
++               2013  Samuel Cabrero <samuelcabrero@gmail.com>
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+@@ -22,39 +23,31 @@
+ #ifndef PLAYERHANDLER_H_
+ #define PLAYERHANDLER_H_
+ 
+-#include <string>
+ #include <libspotify/api.h>
+ 
+ using namespace std;
+ 
+ namespace addon_music_spotify {
+ 
+-  class Codec;
+-  class PlayerHandler {
+-  public:
+-
+-    static PlayerHandler *getInstance();
+-    static void deInit();
+-
+-    void removeCodec();
+-
+-    Codec* getCodec();
+-    Codec* getCurrentCodec() {
+-      return m_currentCodec;
+-    }
+-
+-    static int SP_CALLCONV cb_musicDelivery(sp_session *session, const sp_audioformat *format, const void *frames, int num_frames);
+-    static void SP_CALLCONV cb_endOfTrack(sp_session *session);
+-
+-  private:
+-    PlayerHandler();
+-    virtual ~PlayerHandler();
+-    static PlayerHandler *m_instance;
+-
+-    Codec* m_currentCodec;
+-    Codec* m_preloadingCodec;
+-
+-  };
++class ISpotifyPlayer;
++class PlayerHandler {
++public:
++	static PlayerHandler *getInstance();
++	static void deInit();
++
++	void attachPlayer(ISpotifyPlayer *player);
++	void detachPlayer(ISpotifyPlayer *player);
++	static ISpotifyPlayer *getPlayer();
++
++	static int SP_CALLCONV cb_musicDelivery(sp_session *session,
++			const sp_audioformat *format, const void *frames, int num_frames);static void SP_CALLCONV cb_endOfTrack(sp_session *session);
++
++private:
++	PlayerHandler();
++	virtual ~PlayerHandler();
++	static PlayerHandler *m_instance;
++	static ISpotifyPlayer *m_player;
++};
+ 
+ } /* namespace addon_music_spotify */
+ #endif /* PLAYERHANDLER_H_ */

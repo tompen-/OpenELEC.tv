@@ -22,7 +22,7 @@ if [ -x "/storage/.config/start_spotify" ]
 then
   "/storage/.config/start_spotify"
 else
-  "/usr/share/misc/start_spotify"
+  [ -x "/usr/share/misc/start_spotify" ] && "/usr/share/misc/start_spotify"
 fi
 
 # starting XBMC

@@ -34,7 +34,20 @@ fi
 if [ "$SPOTIFY_SUPPORT" = yes ]; then
   echo "### Integrating spotify patches ###"
   for patch in `ls $PKG_DIR/spotify_patches/*.patch`; do
+    printf "%${BUILD_INDENT}c APPLY PATCH:   $patch\n" ' ' \
+      | sed s#$PKG_DIR/spotify_patches/## >&$SILENT_OUT
     cat $patch | patch -d \
       `echo $PKG_BUILD | cut -f1 -d\ ` -p1
   done
+
+  if [ $PROJECT = RPi ]; then
+    echo "### Integrating spotify patches for Raspberry Pi ###"
+    for patch in `ls $PKG_DIR/spotify_patches/RPi/*.patch`; do
+      printf "%${BUILD_INDENT}c APPLY PATCH:   $patch\n" ' ' \
+        | sed s#$PKG_DIR/spotify_patches/RPi/## >&$SILENT_OUT
+      cat $patch | patch -d \
+        `echo $PKG_BUILD | cut -f1 -d\ ` -p1
+    done
+  fi
 fi
+
