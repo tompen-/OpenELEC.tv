@@ -1,5 +1,5 @@
 diff --git a/udev/lircd_helper.in b/udev/lircd_helper.in
-index f580cc6..6befeed 100644
+index f580cc6..d4d7f3f 100644
 --- a/udev/lircd_helper.in
 +++ b/udev/lircd_helper.in
 @@ -41,7 +41,11 @@ case "${ACTION}" in

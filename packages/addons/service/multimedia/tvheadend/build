@@ -34,6 +34,11 @@ cd $PKG_BUILD
             --arch=$TARGET_ARCH \
             --cpu=$TARGET_CPU \
             --cc=$TARGET_CC \
+            --enable-timeshift \
+            --disable-libav \
             --enable-bundle
 
 make
+
+# compile capmt_ca.so library
+$CC -O -fbuiltin -fomit-frame-pointer -fPIC -shared -o capmt_ca.so src/extra/capmt_ca.c -ldl
