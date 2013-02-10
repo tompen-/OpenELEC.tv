@@ -27,11 +27,15 @@ progress "setup XBMC"
 #
 # clean temp dir
 #
-# delete .xbmc/temp but keep spotify cache intact
-  mkdir -p $HOME/.xbmc/temp
-  cd $HOME/.xbmc/temp
-  rm -rf `ls $HOME/.xbmc/temp | grep -v "spotify"`
-  cd - >/dev/null
+  # hack... we should always clean this temp dir, but we should keep
+  # the logfiles in debug mode
+  if [ ! "$DEBUG" = "yes" ]; then
+    # delete .xbmc/temp but keep spotify cache intact
+    mkdir -p $HOME/.xbmc/temp
+    cd $HOME/.xbmc/temp
+    rm -rf `ls $HOME/.xbmc/temp | grep -v "spotify"`
+    cd - >/dev/null
+  fi
 
 #
 # add some default settings
