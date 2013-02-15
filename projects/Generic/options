@@ -201,7 +201,7 @@
 # enable spotify support, requires appkey and valid, paid premium account (yes / no)
 ####################################################################################
 #  Note: Due to Spotify license terms mismatch with the open source licenses it is #
-#  ^^^^  a violation to distribute/release OpenElect with Spotify support enabled. #
+#  ^^^^  a violation to distribute/release OpenELEC with Spotify support enabled.  #
 ####################################################################################
   SPOTIFY_SUPPORT="yes"
 
