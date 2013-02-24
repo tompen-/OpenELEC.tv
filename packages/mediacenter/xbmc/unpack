@@ -22,15 +22,6 @@
 
 . config/options $1
 
-echo "### Applying architecture based patches ###"
-
-if [ ! $TARGET_ARCH = arm ]; then
-  for patch in `ls $PKG_DIR/patches.x86`; do
-    cat $PKG_DIR/patches.x86/$patch | patch -d \
-      `echo $PKG_BUILD | cut -f1 -d\ ` -p1
-  done
-fi
-
 if [ "$SPOTIFY_SUPPORT" = yes ]; then
   echo "### Integrating spotify patches ###"
   for patch in `ls $PKG_DIR/spotify_patches/*.patch`; do
